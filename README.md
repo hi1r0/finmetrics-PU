@@ -1,4 +1,4 @@
-# FinMetrics Suite: Cross-Sectional Financial Outlier Detection and Client Benchmarking System
+# FinMetrics Suite Pvt: Cross-Sectional Financial Outlier Detection and Client Benchmarking System
 
 An enterprise-grade cross-sectional financial intelligence platform for National Stock Exchange (NSE) listed equities and private client corporate entities. The system integrates automated financial statement acquisition, multi-method anomaly detection, 5-pillar composite solvency scoring, Tally ERP 9/Prime trial balance parsing, and automated executive PowerPoint/PDF briefing synthesis.
 
@@ -41,7 +41,7 @@ graph TD
 ## 2. Directory Structure and Component Mapping
 
 ```
-finmetrics-suite/
+finmetrics-suite-pvt/
 |-- app.py                         # Streamlit multi-tab enterprise dashboard entry point
 |-- generate_pdf.py                # Standalone technical & executive PDF compiler
 |-- requirements.txt               # Production Python dependency specification
@@ -189,8 +189,8 @@ The platform features an AI Handler supporting dynamic API key pooling:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/hi1r0/finmetrics-suite.git
-cd finmetrics-suite
+git clone https://github.com/<your-username>/finmetrics-suite-pvt.git
+cd finmetrics-suite-pvt
 
 # 2. Set up virtual environment (recommended)
 python -m venv .venv
