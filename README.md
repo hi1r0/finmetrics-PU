@@ -189,7 +189,7 @@ The platform features an AI Handler supporting dynamic API key pooling:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/finmetrics-suite-pvt.git
+git clone https://github.com/hi1r0/finmetrics-suite-pvt.git
 cd finmetrics-suite-pvt
 
 # 2. Set up virtual environment (recommended)
