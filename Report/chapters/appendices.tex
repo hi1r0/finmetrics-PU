@@ -1,0 +1,84 @@
+\chapter{Core Source Code}
+\label{ch:appendix_code}
+
+\section{Outlier Filtering Logic}
+The python source code for univariate outlier screening inside \textit{OutlierEngine} is shown below:
+
+\begin{lstlisting}[language=python, caption=Univariate Outlier Detection Code]
+def detect(self, ratio_matrix: pd.DataFrame) -> pd.DataFrame:
+    records = []
+    ratio_cols = [c for c in ratio_matrix.columns if c not in EXCLUDE_COLS]
+
+    for ratio in ratio_cols:
+        col = ratio_matrix[ratio].dropna()
+        if len(col) < self.min_peers:
+            continue
+
+        q1, q3 = col.quantile(0.25), col.quantile(0.75)
+        iqr = q3 - q1
+        lower = q1 - self.iqr_multiplier * iqr
+        upper = q3 + self.iqr_multiplier * iqr
+        median = col.median()
+        mean = col.mean()
+
+        # Robust Z-Scores
+        mad = (col - median).abs().median()
+        if mad == 0:
+            std = col.std()
+            zscore_series = (col - mean) / std if std != 0 else pd.Series(0.0, index=col.index)
+        else:
+            zscore_series = 0.6745 * (col - median) / mad
+
+        for ticker in ratio_matrix.index:
+            val = ratio_matrix.at[ticker, ratio]
+            if pd.isna(val):
+                continue
+
+            iqr_flag = bool(val < lower or val > upper)
+            z = float(zscore_series.get(ticker, 0.0))
+            zscore_flag = bool(abs(z) > self.zscore_threshold)
+
+            if iqr_flag or zscore_flag:
+                dev_pct = ((val - median) / abs(median) * 100) if median != 0 else np.nan
+                severity = self._severity(val, lower, upper, iqr, z)
+                direction = self._direction(ratio, val, median)
+                is_positive = self._is_positive_outlier(ratio, direction)
+
+                records.append({
+                    "ticker": ticker,
+                    "ratio": ratio,
+                    "value": round(val, 4),
+                    "sector_median": round(median, 4),
+                    "zscore": round(z, 3),
+                    "iqr_flag": iqr_flag,
+                    "zscore_flag": zscore_flag,
+                    "deviation_pct": round(dev_pct, 2) if not pd.isna(dev_pct) else np.nan,
+                    "severity_score": round(severity, 2),
+                    "is_positive_outlier": is_positive,
+                })
+
+    return pd.DataFrame(records)
+\end{lstlisting}
+
+\chapter{Tally ERP Ingestion Formats}
+\label{ch:appendix_tally_formats}
+The required CSV structures for uploading private enterprise ledger groups and double-entry transaction journals in the \textit{TallySync} bridge are defined below:
+
+\section{Ledger Master CSV Format}
+The Ledger Master file maps local transaction accounts to their primary Tally accounting groups:
+
+\begin{lstlisting}[language=python, caption=Ledger Master CSV Format]
+CLIENT_ID,COMPANY_NAME,FINANCIAL_YEAR,NAME,PARENT,PRIMARYGROUP,OPENING,CLOSING,GUID,SYNC_TIME
+10000_VSM,VIBRANT SUPERMARKET,2025-26,0% CST SALES,CST T/O,Sales Accounts,0.0,0.0,783aa38d-...,15-04-26 20:26
+10000_VSM,VIBRANT SUPERMARKET,2025-26,0% Integrated Supply,Purchase Accounts,Purchase Accounts,0.0,-6000907.42,783aa38d-...,15-04-26 20:26
+\end{lstlisting}
+
+\section{Journal Voucher CSV Format}
+The Journal Voucher file streams the actual credit and debit transaction journal voucher records:
+
+\begin{lstlisting}[language=python, caption=Journal Voucher CSV Format]
+CLIENT_ID,COMPANY_NAME,FINANCIAL_YEAR,DATE,PARTICULARS,VCHTYPE,VCHNO,DEBIT,CREDIT,VOUCHERKEY,NARRATION
+10000_VSM,VIBRANT SUPERMARKET,2025-26,1-Apr-25,KISHOREKUMAR,GST Common Invoices,KIS-01/25-26,0.0,2000.0,783aa38d-...,Being Rent
+10000_VSM,VIBRANT SUPERMARKET,2025-26,1-Apr-25,Rent,GST Common Invoices,KIS-01/25-26,-2000.0,0.0,783aa38d-...,Being Rent
+\end{lstlisting}
+

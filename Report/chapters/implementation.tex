@@ -1,0 +1,243 @@
+\chapter{Implementation}
+\label{ch:implementation}
+
+\section{Technologies Used}
+The \textit{FinMetrics Suite} is developed entirely in Python 3.10+, utilizing standard scientific computing, data science, and machine learning libraries.
+
+\section{Tools and Libraries}
+The package dependencies and their structural roles are defined below:
+\begin{itemize}
+    \item \textbf{Pandas (v2.1.1)}: Used for high-speed tabular operations, statement transpositions, mapping Tally ERP ledgers, and streaming journal logs in chunks.
+    \item \textbf{NumPy (v1.26.0)}: Provides vector operations, array manipulation, and robust calculations to avoid zero-division errors.
+    \item \textbf{SciPy (v1.11.3)}: Supplies scientific functions, specifically `scipy.stats.percentileofscore` for ranking companies.
+    \item \textbf{Scikit-Learn (v1.3.1)}: Powers the machine learning engines: `RobustScaler` for scaling, `IsolationForest` for anomaly detection, and `KMeans` for peer clustering.
+    \item \textbf{Streamlit (v1.27.2)}: Provides the web frontend framework, handling interactive dashboards, stateful re-runs, and file upload structures.
+    \item \textbf{Plotly (v5.17.0)}: Generates interactive visualizations (scatter plots, rank bar charts, heatmaps).
+    \item \textbf{yfinance (v0.2.31)}: Handles connections to the Yahoo Finance API to fetch statements and market metrics.
+    \item \textbf{openpyxl \& XlsxWriter (v3.1.2)}: Generates styled multi-sheet Excel reports.
+    \item \textbf{google-generativeai (v0.3.1)}: Manages Gemini model integration for natural-language stock discovery and diagnostic chats.
+\end{itemize}
+
+\section{Development Workflow and Methodology}
+The system was designed and developed following an iterative, modular development lifecycle. Decoupling the data harvesters, standardizing parsers, and statistical scoring kernels allowed for thorough testing and validation before building the frontend app layer. The sequential phases of our development workflow are illustrated in Figure~\ref{fig:dev_workflow}.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.55cm,
+        block/.style={rectangle, draw, fill=blue!5, text width=7.4cm, text centered, rounded corners, minimum height=0.9cm, font=\scriptsize},
+        arrow/.style={thick,->,>=stealth}
+    ]
+        \node (s1) [block] {\textbf{1. Planning \& Scoping}\\Define 30+ financial ratios, 7 categories, and 5-pillar composite structure};
+        \node (s2) [block, below=of s1] {\textbf{2. Data Ingestion \& Normalization}\\Implement yfinance harvester and 60-field synonym canonical parser};
+        \node (s3) [block, below=of s2] {\textbf{3. Mathematical \& Anomaly Engines}\\Build RatioEngine, outlier filters (IQR/Z/IF), and composite scoring};
+        \node (s4) [block, below=of s3] {\textbf{4. ERP Synchronization Bridge}\\Develop TallySync Bridge chunk-streamer and Trial Balance balancer};
+        \node (s5) [block, below=of s4] {\textbf{5. Clustering \& Strategic Diagnostics}\\Integrate K-Means archetypes, SWOT grid, and stateful Gemini API};
+        \node (s6) [block, fill=green!10, below=of s5] {\textbf{6. Application Release \& Reporting}\\Release Streamlit control dashboard and openpyxl Excel exporter};
+        
+        \draw [arrow] (s1) -- (s2);
+        \draw [arrow] (s2) -- (s3);
+        \draw [arrow] (s3) -- (s4);
+        \draw [arrow] (s4) -- (s5);
+        \draw [arrow] (s5) -- (s6);
+    \end{tikzpicture}
+    \caption{Iterative Modular Development Workflow}
+    \label{fig:dev_workflow}
+\end{figure}
+
+\section{Code Structure Explanation}
+The project directory is structured as a decoupled Python package:
+
+\begin{lstlisting}[language=bash, caption=FinMetrics Suite Folder Structure]
+finoutlier/
+|-- app.py                     # Streamlit dashboard UI
+|-- requirements.txt           # Package dependencies
+|
+|-- modules/
+|   |-- __init__.py
+|   |-- sector_loader.py       # Pre-mapped sectors and tickers
+|   |-- data_fetcher.py        # yfinance API scraper and cache
+|   |-- financial_parser.py    # Standardizes statements via aliases
+|   |-- ratio_engine.py        # Computes 30+ ratios and YoY growth
+|   |-- outlier_engine.py      # Tukey, Robust Z, Isolation Forest
+|   |-- benchmark_core.py      # Core baseline and pillar scoring
+|   |-- tally_bridge.py        # ERP double-entry aggregator
+|   |-- client_comparator.py   # Maps client metrics to baselines
+|   |-- benchmark_classifier.py# Assigns health and SWOT labels
+|   |-- report_generator.py    # Styled Excel workbook builder
+|   |-- ai_handler.py          # Gemini AI API interface
+|   |-- utils.py               # Math and cache utility functions
+|
+|-- data/
+|   |-- raw/                   # Cached raw statements (Parquet)
+|   |-- processed/             # Cleaned standardized statements
+|   |-- cache/                 # Stored sector baseline JSONs
+|
+|-- outputs/
+    |-- reports/               # Styled Excel reports
+    |-- tables/                # CSV tables
+\end{lstlisting}
+
+\section{Module-wise Implementation Details}
+The key modules are implemented as isolated classes:
+
+\subsection{Financial Standardizer (financial\_parser.py)}
+The standardizer uses a nested dictionary structure containing alias mappings for each statement. It scans the rows, maps variants using the alias list, removes duplicate metrics, and converts all entries to numeric types:
+\begin{lstlisting}[language=python, caption=Alias Resolver in FinancialParser]
+def _resolve_alias(self, raw_name: str, alias_dict: dict) -> str:
+    norm = raw_name.strip().lower()
+    for canonical, variants in alias_dict.items():
+        for v in variants:
+            if v.lower() == norm:
+                return canonical
+    return None
+\end{lstlisting}
+
+\subsection{Outlier Scoring (outlier\_engine.py)}
+Calculates severity scores and directional flags. It computes IQR fences and robust standard deviations to flag statistical anomalies:
+\begin{lstlisting}[language=python, caption=Severity Score Formulation]
+def _severity(self, val: float, lower: float, upper: float, iqr: float, z: float) -> float:
+    iqr_score = 0.0
+    if iqr > 0:
+        if val < lower:
+            iqr_score = (lower - val) / iqr
+        elif val > upper:
+            iqr_score = (val - upper) / iqr
+    z_score = max(0.0, abs(z) - self.zscore_threshold)
+    return round(0.6 * iqr_score + 0.4 * z_score, 3)
+\end{lstlisting}
+
+\subsection{Tally Bridge Streamer (tally\_bridge.py)}
+Processes large-scale journal CSV files in chunks using Pandas:
+\begin{lstlisting}[language=python, caption=Journal Streaming in TallyBridge]
+for chunk in pd.read_csv(self.jv_path, encoding="latin1", chunksize=self.chunk_size):
+    for _, row in chunk.iterrows():
+        ledger = str(row.get("PARTICULARS", "")).strip()
+        pillar = ledger_map.get(ledger, "EXCLUDE")
+        if pillar == "EXCLUDE":
+            continue
+        debit  = float(row["DEBIT"]) if not pd.isna(row.get("DEBIT")) else 0.0
+        credit = float(row["CREDIT"]) if not pd.isna(row.get("CREDIT")) else 0.0
+        
+        if pillar in _CREDIT_NATURE:
+            balance = credit - debit
+        else:
+            balance = debit - credit
+        pillars[pillar] += balance
+\end{lstlisting}
+
+\section{System Component Integration}
+To illustrate the orchestration pipeline, synchronous execution flow, and architectural relationships between the frontend UI, the Tally ERP translation bridge, the percentile comparator, and the outlier scoring engine, a detailed system architecture and orchestration flow diagram of the Phase 2 workflow is provided in Figure~\ref{fig:seq_diagram}.
+
+\definecolor{peachbg}{RGB}{253, 238, 224}
+\definecolor{peachborder}{RGB}{140, 110, 95}
+\definecolor{lavenderbg}{RGB}{232, 235, 253}
+\definecolor{lavenderborder}{RGB}{135, 145, 185}
+\definecolor{darktext}{RGB}{40, 45, 55}
+\definecolor{grayline}{RGB}{0, 0, 0}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.82, every node/.style={transform shape},
+        >={Stealth[length=6pt, width=4.5pt]},
+        % Central Orchestrator Style (Matching Participant Headers)
+        orchestrator/.style={
+            draw=peachborder, fill=peachbg, text=darktext, font=\bfseries, thick,
+            rounded corners=6pt, minimum width=12.5cm, minimum height=0.9cm, align=center
+        },
+        % Sub-Engine Module Style (Matching Lifeline/Activation Bars)
+        engine/.style={
+            draw=lavenderborder, fill=lavenderbg, text=darktext, rounded corners=8pt, thick,
+            minimum width=3.8cm, minimum height=2.4cm, text width=3.5cm, align=center, inner sep=10pt
+        },
+        % Input/Output Component Style (Matching Message Data Boxes)
+        io_box/.style={
+            draw=grayline, fill=white, rounded corners=6pt, thick, text=darktext,
+            minimum width=2.8cm, minimum height=1.0cm, align=center, font=\small
+        },
+        % Fixed Width Label Style to prevent text overlaps
+        arrow_label/.style={
+            font=\scriptsize\bfseries, text=darktext, text width=2.3cm, inner sep=3pt
+        }
+    ]
+
+        % =========================================================================
+        % 1. ARCHITECTURE LAYERS & NODES
+        % =========================================================================
+        
+        % Core Controller (Top Layer)
+        \node[orchestrator] (app) at (0, 2.5) {Streamlit UI (app.py) [Central Orchestrator]};
+
+        % Perimeter Entry/Exit Nodes (White Data Box Style)
+        \node[io_box] (user) at (-8.5, 2.5) {\textbf{User Input}\\Ingest Tally ERP or\\Manual Financials};
+        \node[io_box] (output) at (8.5, 2.5) {\textbf{Output View}\\Display SWOT\\\& Action Plan};
+
+        % Downstream Processing Engines (Bottom Layer - Lavender Lifeline Style)
+        \node[engine] (tally) at (-4.8, -1.5) {
+            \textbf{TallyBridge}\\[4pt]
+            \rule{3.3cm}{0.4pt}\\[4pt]
+            \raggedright
+            \scriptsize
+            $\bullet$ compute\_t\_balance()\\
+            $\bullet$ compute\_ratios()\\
+            \hskip 0.8em \textcolor{darktext!60}{(Outputs ratios dict)}
+        };
+
+        \node[engine] (comparator) at (0, -1.5) {
+            \textbf{ClientComparator}\\[4pt]
+            \rule{3.3cm}{0.4pt}\\[4pt]
+            \raggedright
+            \scriptsize
+            $\bullet$ compare\_client()\\
+            \hskip 0.8em \textcolor{darktext!60}{(Grades ratios)}
+        };
+
+        \node[engine] (outlier) at (4.8, -1.5) {
+            \textbf{OutlierEngine}\\[4pt]
+            \rule{3.3cm}{0.4pt}\\[4pt]
+            \raggedright
+            \scriptsize
+            $\bullet$ profile\_arch()\\
+            \hskip 0.8em \textcolor{darktext!60}{(KMeans Cluster)}
+        };
+
+        % =========================================================================
+        % 2. ORCHESTRATION PIPELINE FLOWS
+        % =========================================================================
+        
+        % Main Input/Output triggers
+        \draw[->, grayline, line width=1.2pt] (user) -- (app);
+        \draw[->, grayline, line width=1.2pt] (app) -- (output);
+
+        % Execution Track 1: Tally Bridge Linkages
+        \draw[->, thick, grayline] ($(app.south -| tally.north) - (0.3,0)$) -- 
+            node[left, arrow_label, align=right] {1. Instantiates\\TallyBridge} 
+            ($(tally.north) - (0.3,0)$);
+            
+        \draw[<-, thick, grayline] ($(app.south -| tally.north) + (0.3,0)$) -- 
+            node[right, arrow_label, align=left] {2. Returns\\ratios} 
+            ($(tally.north) + (0.3,0)$);
+
+        % Execution Track 2: Client Comparator Linkages
+        \draw[->, thick, grayline] ($(app.south -| comparator.north) - (0.3,0)$) -- 
+            node[left, arrow_label, align=right] {3. Passes\\ratios} 
+            ($(comparator.north) - (0.3,0)$);
+            
+        \draw[<-, thick, grayline] ($(app.south -| comparator.north) + (0.3,0)$) -- 
+            node[right, arrow_label, align=left] {4. Return\\Scorecard} 
+            ($(comparator.north) + (0.3,0)$);
+
+        % Execution Track 3: Outlier Engine Linkages
+        \draw[->, thick, grayline] ($(app.south -| outlier.north) - (0.3,0)$) -- 
+            node[left, arrow_label, align=right] {5. Passes benchmark\\baseline} 
+            ($(outlier.north) - (0.3,0)$);
+            
+        \draw[<-, thick, grayline] ($(app.south -| outlier.north) + (0.3,0)$) -- 
+            node[right, arrow_label, align=left] {6. Returns scorecard,\\archetype \& SWOT} 
+            ($(outlier.north) + (0.3,0)$);
+
+    \end{tikzpicture}
+    \caption{System Architecture and Orchestration Pipeline of Phase 2 Workflow}
+    \label{fig:seq_diagram}
+\end{figure}

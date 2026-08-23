@@ -1,0 +1,55 @@
+# Environments & Secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE & Editor Settings
+.idea/
+.vscode/
+.junie/
+*.swp
+*.swo
+
+# Project Cleanup Backup & Temporary Scratch
+_cleanup_backup/
+scratch/
+
+# Application Outputs & Dynamic Dumps
+outputs/reports/*
+outputs/charts/*
+outputs/tables/*
+colorbar_*.html
+conversation_export.md
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Databases & Data Caches
+*.db
+*.sqlite3
+data/cache/
+data/benchmark_cache/
+
+# LaTeX Build Intermediaries
+Report/build/
+Report/*.aux
+Report/*.log
+Report/*.toc
+Report/*.bbl
+Report/*.blg
+Report/*.synctex.gz
+Report/chapters/*.aux
+
+# OS Specific
+.DS_Store
+Thumbs.db

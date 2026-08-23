@@ -1,0 +1,28 @@
+Ledger Name,Final Debit,Final Credit,Benchmark Category
+HDFC Bank - Current A/c 5020001,18968000.42000027,0.0,cash
+Retail Sales - Counter,0.0,24500000.0,revenue
+Apex Supermarkets Ltd,3488666.7399999993,0.0,receivables
+Wholesale Outward Supply 18%,0.0,18200000.40000001,revenue
+Metro Department Stores,3488666.7399999993,0.0,receivables
+Greenfield Hypermarkets,0.0,588666.7899999982,receivables
+Institutional Supply 12%,0.0,9750000.0,revenue
+Urban Mart Franchisee,0.0,588666.7899999982,receivables
+FMCG Goods Purchase 18%,13199999.600000042,0.0,cogs
+National Distributors Corp,0.0,7674999.6000000425,payables
+Packaged Goods Purchase 12%,11250000.0,0.0,cogs
+Premier Consumer Brands Ltd,2475000.0,0.0,payables
+Direct Freight & Inward Cartage,7212000.0,0.0,cogs
+Commercial Rent - Retail Outlets,1800000.0,0.0,opex
+Staff Salaries & Wages,2450000.0399999996,0.0,opex
+Electricity & Utility Charges,420000.0,0.0,opex
+Digital Marketing & Promotion,680000.04,0.0,opex
+ICICI Bank - Oper A/c 0004050,0.0,1180000.08,cash
+Audit & Professional Fees,350000.03999999986,0.0,opex
+Logistics & Warehouse Overhead,500000.03999999986,0.0,opex
+Promoter Equity Capital,0.0,6000000.0,equity
+HDFC Term Loan - Secured,0.0,3200000.0,debt
+Store Fixtures & Display Racks,2400000.0,0.0,fixed_assets
+POS Terminals & IT Infrastructure,1100000.0,0.0,fixed_assets
+Delivery Vehicles & Forklifts,1000000.0,0.0,fixed_assets
+Finished Goods Inventory,8200000.0,0.0,inventory
+Retained Earnings & General Reserve,0.0,7300000.0,equity

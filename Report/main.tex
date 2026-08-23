@@ -1,0 +1,296 @@
+\documentclass[12pt,oneside]{report}
+
+% --- Packages ---
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern} % Latin Modern font
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage[pdftex,bookmarksnumbered=true,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
+\usepackage{bookmark}
+
+\hypersetup{
+    pdftitle={FinMetrics Suite: An AI-Powered Cross-Sectional Financial Analysis, Anomaly Detection, and Strategic Benchmarking System},
+    pdfauthor={N Rohit Vedhanandh},
+    pdfsubject={Corporate Internship},
+    pdfkeywords={Financial Analysis, Anomaly Detection, Outlier Screening, Unsupervised Learning, K-Means Clustering, Isolation Forest, ERP Integration, TallySync, SWOT Grid, Strategic Benchmarking}
+}
+
+% --- TikZ Package & Libraries ---
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, arrows.meta, positioning, calc}
+
+% --- Custom Colors ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codeblue}{rgb}{0,0,0.8}
+\definecolor{backgroundcolor}{rgb}{0.97,0.97,0.97}
+
+% --- Code Listing Styling ---
+\lstset{
+    backgroundcolor=\color{backgroundcolor},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+% --- Layout Configurations ---
+\onehalfspacing
+\pagestyle{fancy}
+\fancyhf{}
+\definecolor{charcoal}{rgb}{0.2,0.2,0.2}
+\definecolor{headergray}{rgb}{0.7,0.7,0.7}
+\definecolor{commentgray}{rgb}{0.5,0.5,0.5}
+\fancyhead[L]{\textcolor{charcoal}{\small\nouppercase{\leftmark}}}
+\fancyhead[R]{\textcolor{charcoal}{\small\thepage}}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{headergray}\leaders\hrule height 0.4pt\hfill}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\setlength{\headheight}{25pt}
+\addtolength{\topmargin}{-13pt}
+
+% --- Algorithmic Styling Refinements ---
+\renewcommand{\algorithmiccomment}[1]{\hfill\textcolor{commentgray}{\ensuremath{\triangleright}\ \textit{#1}}}
+
+% --- Chapter Title Spacing Optimization (Reducing Top Whitespace) ---
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}{\chaptername\ \thechapter}{10pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-25pt}{20pt}
+
+% --- Paragraph Spacing ---
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{1.5em}
+
+% --- Premium Float Layout Parameters (Prevents empty float pages & whitespace) ---
+\renewcommand{\topfraction}{0.9}      % max fraction of floats at top
+\renewcommand{\bottomfraction}{0.8}   % max fraction of floats at bottom
+\renewcommand{\textfraction}{0.05}    % allow minimal text on page
+\renewcommand{\floatpagefraction}{0.85} % require float page to be 85% full
+
+\begin{document}
+
+% =========================================================
+% TITLE PAGE
+% =========================================================
+\begin{titlepage}
+    \begin{center}
+        \vspace*{0.3cm}
+        
+        \textbf{\large PONDICHERRY UNIVERSITY} \\[0.2cm]
+        \textbf{\large RAMANUJAN SCHOOL OF MATHEMATICAL SCIENCES} \\[0.2cm]
+        \textbf{\large DEPARTMENT OF STATISTICS} \\[0.4cm]
+        
+        \includegraphics[width=0.25\textwidth]{pondicherry_university_logo} \\[0.4cm]
+        
+        \textbf{\large M.Sc. QUANTITATIVE FINANCE} \\[0.2cm]
+        \textbf{\large MSQF 534: Corporate Internship} \\[0.2cm]
+        \textbf{\large REPORT ON} \\[0.4cm]
+        
+        \textbf{\Large FinMetrics Suite} \\[0.3cm]
+        {\large An AI-Powered Cross-Sectional Financial Analysis, Anomaly Detection, \\ and Strategic Benchmarking System for Public \\ Sectors and Private ERP Ingestions \par}
+        \vspace{0.8cm}
+
+        
+        \textbf{\large SUBMITTED BY} \\[0.5cm]
+        
+        \textbf{\large NAME: N Rohit Vedhanandh} \\[0.2cm]
+        \textbf{\large REG. NO.: 25MSQUFPY0002} \\[0.8cm]
+        
+        \textbf{\large MAY 2026}
+        
+    \end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\pagestyle{plain}
+
+% =========================================================
+% UNIVERSITY CERTIFICATE PAGE
+% =========================================================
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Certificate}
+\begin{center}
+    \includegraphics[width=0.22\textwidth]{pondicherry_university_logo} \\[0.4cm]
+    \textbf{\large PONDICHERRY UNIVERSITY} \\[0.2cm]
+    \textbf{\large RAMANUJAN SCHOOL OF MATHEMATICAL SCIENCES} \\[0.2cm]
+    \textbf{\large DEPARTMENT OF STATISTICS} \\[0.6cm]
+    
+    \textbf{\large CERTIFICATE} \\[0.8cm]
+\end{center}
+
+\noindent
+Certified to be the bonafide record of work done in \textbf{MSQF 534: Corporate Internship} by \underline{\textbf{N Rohit Vedhanandh\vphantom{Q}}} with Register No. \underline{\textbf{25MSQUFPY0002}} of class \textbf{II M.Sc. Quantitative Finance} in the Department of Statistics, Pondicherry University, Puducherry 605 014, during the academic year 2026-27.
+
+\vspace{1.5cm}
+\noindent
+\begin{minipage}{0.45\textwidth}
+    \begin{flushleft}
+        \rule{4cm}{0.4pt} \\
+        \textbf{Faculty - in - charge}
+    \end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+        \rule{4cm}{0.4pt} \\
+        \textbf{Coordinator}
+    \end{flushright}
+\end{minipage}
+
+\vspace{1.0cm}
+\noindent
+\textbf{Date:}
+
+\vspace{1.5cm}
+\noindent
+\textbf{Submitted for the M.Sc. Degree Practical Examination held on \rule{4cm}{0.4pt}.}
+
+\vspace{1.0cm}
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+        \rule{4cm}{0.4pt} \\
+        \textbf{Examiners}
+    \end{flushright}
+\end{minipage}
+
+% =========================================================
+% INTERNSHIP COMPLETION CERTIFICATE (BLANK PAGE)
+% =========================================================
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Internship Certificate}
+\mbox{}
+
+% =========================================================
+% ABSTRACT
+% =========================================================
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Abstract}
+\begin{center}
+    \textbf{\LARGE ABSTRACT} \\[1.0cm]
+\end{center}
+
+Automated cross-sectional financial analysis is a critical tool in modern corporate intelligence and equity research, yet it remains constrained by reporting nomenclature disparities, baseline outlier skewness, and the divide between highly structured public statements and private enterprise databases. This thesis presents the design, implementation, and evaluation of the \textbf{\textit{FinMetrics Suite}} (the \textit{Financial Outlier Detection and Strategic Benchmarking System}), an end-to-end Python-based analytical framework. The system features a custom standardization parser with a 60-field alias map to resolve naming variations in public filings, a robust statistical engine implementing Tukey Fences (IQR) and robust Modified Z-Scores (using Median Absolute Deviation) to identify and mask reporting anomalies, and an unsupervised multivariate anomaly detector using Isolation Forests. To automate peer group alignment, the framework integrates the Gemini AI model to dynamically search, discover, and define the correct market sector for a given ticker or abstract query.
+
+Furthermore, to bridge the public-private operational divide, a high-throughput TallySync ERP bridge was developed alongside options for manual entering of financials or ratios. The bridge stream-processes raw transaction journal CSV exports in chunks of 50,000 rows, maps accounting groups to standard public statement pillars, balances a Trial Balance, and derives 30+ canonical financial ratios. Unsupervised K-Means clustering is deployed to segment the peer set and map the client to a corporate archetype (e.g. \textit{Elite Market Leader}), and a rule-based SWOT classifier synthesizes relative percentile ranks into a 2x2 SWOT grid. Results demonstrate that our outlier masking routine prevents baseline distortion, reducing the standard deviation of an outlier-contaminated sector Operating Margin distribution from $39.54\%$ to $1.28\%$, and our TallySync bridge aggregates journals to balance a Trial Balance to within $10^{-6}$ INR in 4.2 seconds. The system outputs interactive visual dashboards, stateful Gemini-driven diagnostic chat sessions, and professionally formatted multi-sheet Excel reports, providing independent financial advisors and SME managers with institutional-grade quantitative insights.
+
+% =========================================================
+% TABLE OF CONTENTS & LISTS
+% =========================================================
+\newpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Table of Contents}
+\tableofcontents
+
+
+
+% =========================================================
+% ABBREVIATIONS
+% =========================================================
+\newpage
+\phantomsection
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+\begin{center}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Abbreviation} & \textbf{Full Form} \\
+        \midrule
+        \textbf{API} & Application Programming Interface \\
+        \textbf{CAGR} & Compound Annual Growth Rate \\
+        \textbf{COGS} & Cost of Goods Sold \\
+        \textbf{DFD} & Data Flow Diagram \\
+        \textbf{EBIT} & Earnings Before Interest and Taxes \\
+        \textbf{EBITDA} & Earnings Before Interest, Taxes, Depreciation, and Amortization \\
+        \textbf{EPS} & Earnings Per Share \\
+        \textbf{ERP} & Enterprise Resource Planning \\
+        \textbf{FP\&A} & Financial Planning and Analysis \\
+        \textbf{IQR} & Interquartile Range \\
+        \textbf{JV} & Journal Voucher \\
+        \textbf{MAD} & Median Absolute Deviation \\
+        \textbf{ML} & Machine Learning \\
+        \textbf{OCF} & Operating Cash Flow \\
+        \textbf{QoQ} & Quarter-on-Quarter \\
+        \textbf{ROA} & Return on Assets \\
+        \textbf{ROCE} & Return on Capital Employed \\
+        \textbf{ROE} & Return on Equity \\
+        \textbf{SME} & Small and Medium Enterprise \\
+        \textbf{SWOT} & Strengths, Weaknesses, Opportunities, and Threats \\
+        \textbf{TTL} & Time-to-Live \\
+        \textbf{UML} & Unified Modeling Language \\
+        \textbf{WCSS} & Within-Cluster Sum of Squares \\
+        \textbf{YoY} & Year-on-Year \\
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+% =========================================================
+% MAIN CONTENT
+% =========================================================
+\newpage
+\pagenumbering{arabic}
+\pagestyle{fancy}
+\include{chapters/introduction}
+\include{chapters/literature_survey}
+\include{chapters/system_design}
+\include{chapters/algorithms}
+\include{chapters/implementation}
+\include{chapters/results}
+\include{chapters/conclusion}
+
+% =========================================================
+% BIBLIOGRAPHY
+% =========================================================
+\newpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plain}
+\bibliography{references}
+
+% =========================================================
+% APPENDICES
+% =========================================================
+\newpage
+\appendix
+\renewcommand{\chaptername}{Appendix}
+\bookmarksetup{startatroot}
+\pdfbookmark[0]{Appendices}{appendices}
+\makeatletter
+\renewcommand{\toclevel@chapter}{1}
+\renewcommand{\toclevel@section}{2}
+\renewcommand{\toclevel@subsection}{3}
+\makeatother
+\include{chapters/appendices}
+\bookmarksetup{startatroot}
+
+
+
+\end{document}

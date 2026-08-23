@@ -1,0 +1,259 @@
+\chapter{System Analysis and Design}
+\label{ch:design}
+
+\section{System Architecture}
+The \textit{FinMetrics Suite} is structured as a decoupled, multi-layer architecture. This decoupling ensures that the user interface (UI) layer is separated from the analytical modules, database cache, and API engines, facilitating code maintenance and extensions.
+
+The architecture is divided into three primary layers:
+\begin{enumerate}
+    \item \textbf{Presentation Layer (Streamlit UI)}: Renders the sidebar controls (scopes, calibrations), interactive data tabs, Plotly charts, and file upload dropzones.
+    \item \textbf{Analytical Kernel Layer (Python Packages)}: The core processing layer containing standard modules:
+        \begin{itemize}
+            \item \textbf{Sector Loader}: Maps sectors to public tickers.
+            \item \textbf{Data Fetcher}: Retrieves Yahoo Finance statements and manages local cache.
+            \item \textbf{Financial Parser}: Standardizes columns using the alias dictionary.
+            \item \textbf{Ratio Engine}: Computes 30+ ratios and YoY growth rates.
+            \item \textbf{Outlier Engine}: Identifies anomalies and runs archetype clustering.
+            \item \textbf{Benchmark Core}: Coordinates baseline, pillar scoring, and risk categorization.
+            \item \textbf{Tally Bridge}: Stream-processes ERP journals and balances Trial Balances.
+            \item \textbf{Client Comparator}: Aligns client ratios with public baselines.
+            \item \textbf{Benchmark Classifier}: Assigns health labels and structures the SWOT matrix.
+            \item \textbf{AI Handler}: Manages Gemini ticker discovery and diagnostic chat sessions.
+        \end{itemize}
+    \item \textbf{Data Cache Layer}: Persistent storage in JSON and Parquet formats to avoid API rate limits.
+\end{enumerate}
+
+\section{System Workflow}
+The application executes in a clean, stateful process flow divided into two phases:
+
+\subsection{Phase 1: Listed Peer Group Baseline Generation}
+\begin{enumerate}
+    \item The user defines the benchmark scope via the sidebar: choosing a pre-mapped Sector, selecting an Industry, or inputting an abstract term for Gemini AI Search.
+    \item The sidebar scans environment variables to configure the active Gemini API keys.
+    \item If AI Search is selected, the \textit{AI Handler} queries Gemini to discover listed stock tickers and dynamically define their sector and market (appending exchange suffixes like \textit{.NS}).
+    \item The \textit{Data Fetcher} checks local cache; if missing, it queries `yfinance` to pull quarterly and annual statements.
+    \item The \textit{Financial Parser} resolves nomenclature variations using the 60-field \texttt{ALIAS\_MAP}, standardizing statements.
+    \item The \textit{Ratio Engine} computes standard ratios.
+    \item The \textit{Outlier Engine} detects statistical anomalies across all ratios using Tukey Fences and Z-scores.
+    \item The \textit{Benchmark Core} masks the identified outlier cells, computes clean peer statistics, grades company ratios to assign percentile ranks, and ranks firms by their weighted composite health score.
+\end{enumerate}
+
+\subsection{Phase 2: Private Enterprise Client Benchmarking}
+\begin{enumerate}
+    \item The user uploads private data through the landing page dropzones (raw Tally ERP CSV files including Ledger Master and Journal Vouchers) or manually enters financials/ratios.
+    \item If Tally files are uploaded, the \textit{Tally Bridge} stream-processes the multi-thousand line journals, maps groups to internal pillars, balances the Trial Balance, and auto-computes the client's ratios.
+    \item The \textit{Client Comparator} normalizes the client's ratios and maps them to the frozen public peer distribution to determine their percentile rank.
+    \item The K-Means algorithm clusters the peer set and maps the client to a corporate archetype (e.g., \textit{Elite Market Leader}).
+    \item The \textit{Benchmark Classifier} maps the client's strengths and weaknesses into a 2x2 SWOT grid.
+    \item The user can download a styled multi-sheet Excel report or launch an stateful diagnostic chat session with Gemini to analyze operational improvements.
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        title/.style={font=\bfseries\small, text centered},
+        block/.style={rectangle, draw=black, fill=blue!5, text width=4.5cm, text centered, rounded corners, minimum height=0.9cm, font=\scriptsize, align=center},
+        arrow/.style={thick, -{Stealth[length=5pt, width=3.75pt]}}
+    ]
+        % Top Streamlit UI (Centered at x=0, y=0)
+        \node (ui) [block, fill=orange!10, text width=6cm, minimum height=1.0cm] at (0,0) {\textbf{Streamlit UI (Visual Control Deck)}};
+        
+        % Left Column (Phase 1: Public Peer Baseline, Centered at x=-3.5)
+        \node (yfinance) [block] at (-3.5, -2.0) {\textbf{yfinance API}\\Harvest real-time public statements};
+        \node (parser) [block] at (-3.5, -3.5) {\textbf{Financial Parser}\\Standardize nomenclature via 60-field alias map};
+        \node (ratio) [block] at (-3.5, -5.0) {\textbf{Ratio Engine}\\Compute 30+ canonical ratios \& YoY/QoQ growth};
+        \node (outlier) [block] at (-3.5, -6.5) {\textbf{Outlier Engine}\\IQR, Z-Score, and Isolation Forest detection};
+        \node (core) [block, fill=blue!10] at (-3.5, -8.0) {\textbf{Benchmark Core}\\Mask outliers, build clean baselines, rank peers};
+        
+        % Right Column (Phase 2: Client Integration, Centered at x=3.5)
+        \node (ingest) [block] at (3.5, -2.0) {\textbf{TallySync / Manual Entry}\\Ingest private ERP journals or manually enter financials};
+        \node (tally) [block] at (3.5, -3.5) {\textbf{Tally Bridge}\\Reconstruct Trial Balance \& autocompute ratios};
+        \node (comp) [block] at (3.5, -5.0) {\textbf{Client Comparator}\\Overlay client ratios against public distribution};
+        \node (swot) [block] at (3.5, -6.5) {\textbf{SWOT \& Archetype}\\Run KMeans clustering \& classify SWOT categories};
+        \node (report) [block, fill=green!10] at (3.5, -8.0) {\textbf{Report Generator}\\Export interactive visual dashboards \& styled Excel};
+        
+        % Connections using a clean drop-down split bus
+        \coordinate (ui_split) at ($(ui.south) + (0,-0.4)$);
+        \draw [thick] (ui.south) -- (ui_split);
+        \draw [thick] (-3.5, -0.9) -- (3.5, -0.9);
+        \draw [arrow] (-3.5, -0.9) -- (yfinance.north);
+        \draw [arrow] (3.5, -0.9) -- (ingest.north);
+        
+        \draw [arrow] (yfinance) -- (parser);
+        \draw [arrow] (parser) -- (ratio);
+        \draw [arrow] (ratio) -- (outlier);
+        \draw [arrow] (outlier) -- (core);
+        
+        \draw [arrow] (ingest) -- (tally);
+        \draw [arrow] (tally) -- (comp);
+        \draw [arrow] (comp) -- (swot);
+        \draw [arrow] (swot) -- (report);
+    \end{tikzpicture}
+    \caption{Dual-Phase Platform Architecture and Workflow}
+    \label{fig:workflow_flowchart}
+\end{figure}
+
+\section{Data Flow Diagrams}
+To detail the data movement within the platform, DFD Level 0 (Context Diagram) and DFD Level 1 (Process Diagram) are provided below.
+
+\subsection{DFD Level 0: Context Diagram}
+The Level 0 Data Flow Diagram (Figure~\ref{fig:dfd0}) outlines the primary external entities interacting with the FinMetrics Suite.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2.2cm,
+        entity/.style={rectangle, draw, fill=orange!10, rounded corners, minimum width=2.4cm, minimum height=1.2cm, font=\small\bfseries, text centered, align=center},
+        process/.style={rectangle, draw, fill=blue!10, rounded corners, minimum width=3.8cm, minimum height=1.8cm, font=\small\bfseries, text centered, align=center},
+        arrow/.style={thick,->,>=stealth},
+        label/.style={font=\scriptsize, align=center}
+    ]
+        % Nodes
+        \node (user) [entity] {User};
+        \node (suite) [process, right=of user] {FinMetrics Suite};
+        \node (yfinance) [entity, right=of suite] {yfinance\\API};
+        
+        % Left side arrows (User <-> Suite)
+        \draw [arrow] ($(user.east) + (0, 0.25)$) -- node[above, label]{Ingest /\\Config} ($(suite.west) + (0, 0.25)$);
+        \draw [arrow] ($(suite.west) - (0, 0.25)$) -- node[below, label]{PDF/Excel\\Output} ($(user.east) - (0, 0.25)$);
+        
+        % Right side arrows (Suite <-> yfinance)
+        \draw [arrow] ($(suite.east) + (0, 0.25)$) -- node[above, label]{Ticker\\Query} ($(yfinance.west) + (0, 0.25)$);
+        \draw [arrow] ($(yfinance.west) - (0, 0.25)$) -- node[below, label]{Statements} ($(suite.east) - (0, 0.25)$);
+    \end{tikzpicture}
+    \caption{Data Flow Diagram Level 0: Context Diagram}
+    \label{fig:dfd0}
+\end{figure}
+
+\subsection{DFD Level 1: Process Diagram}
+The Level 1 Data Flow Diagram (Figure~\ref{fig:dfd1}) details the internal processes, data repositories, and transitions.
+
+\begin{figure}[htbp]
+    \centering
+    % Soft pastel colors defined locally inside this figure to prevent global namespace clash
+    \definecolor{peachbg}{RGB}{253, 238, 226}
+    \definecolor{lavenderbg}{RGB}{238, 240, 252}
+    \definecolor{greenbg}{RGB}{228, 248, 232}
+    \definecolor{boxborder}{RGB}{40, 45, 55}
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[
+        % Serif font to maintain the academic/formal aesthetic
+        font=\rmfamily\small,
+        >={Stealth[length=6.5pt, width=4.5pt]},
+        % Unified base styling for all nodes
+        box/.style={
+            draw=boxborder, rounded corners=5pt, align=center,
+            minimum height=1.6cm, inner sep=6pt, thick
+        },
+        % Specific styles inheriting from the base
+        lavender/.style={box, fill=lavenderbg, minimum width=2.8cm},
+        peach/.style={box, fill=peachbg, minimum width=2.2cm},
+        green/.style={box, fill=greenbg, minimum width=2.8cm}
+    ]
+
+        % =========================================================================
+        % 1. NODES (Placed on a strict coordinate grid for perfect alignment)
+        % =========================================================================
+        
+        % Far Left
+        \node[peach] (user) at (-5.5, 0) {
+            \textbf{User}
+        };
+
+        % Center Left
+        \node[lavender, minimum width=3.4cm] (n1) at (0, 0) {
+            \textbf{1.0}\\[1pt]
+            \textbf{Data Ingest}\\[1pt]
+            \textbf{\& Parsing}
+        };
+
+        % Top Center (API & Cache)
+        \node[peach] (yfin) at (0, 4.0) {
+            \textbf{yfinance}\\[1pt]
+            \textbf{API}
+        };
+        \node[green] (d1) at (5.5, 4.0) {
+            \textbf{D1: Raw Cache}
+        };
+
+        % Center Right & Far Right
+        \node[lavender] (n2) at (5.5, 0) {
+            \textbf{2.0}\\[1pt]
+            \textbf{Ratio}\\[1pt]
+            \textbf{Computation}
+        };
+        \node[lavender] (n3) at (10.5, 0) {
+            \textbf{3.0}\\[1pt]
+            \textbf{Outlier}\\[1pt]
+            \textbf{Scrubbing}
+        };
+
+        % Bottom Center
+        \node[lavender] (n4) at (5.5, -3.2) {
+            \textbf{4.0}\\[1pt]
+            \textbf{Scoring \&}\\[1pt]
+            \textbf{Benchmarking}
+        };
+
+
+        % =========================================================================
+        % 2. CONNECTIONS & FLOWS (Orthogonal routing)
+        % =========================================================================
+        \begin{scope}[thick, draw=boxborder!90]
+
+            % Horizontal Main Track
+            \draw[->] (user.east) -- node[midway, below, font=\scriptsize, draw=none, fill=none] {ERP / Manual} (n1.west);
+            \draw[->] (n1.east) -- (n2.west);
+            \draw[->] (n2.east) -- (n3.west);
+
+            % Vertical API Bi-directional Flow 
+            % 'sloped' forces the text to align vertically with the arrow paths.
+            % 'above=2pt' adds a tiny buffer so the text doesn't touch the line itself.
+            
+            \draw[->] ([xshift=-15pt]n1.north) -- 
+                node[midway, sloped, above=2pt, font=\scriptsize, draw=none, fill=none] {Ticker} 
+                ([xshift=-15pt]yfin.south);
+                
+            \draw[->] ([xshift=15pt]yfin.south) -- 
+                node[midway, sloped, above=2pt, font=\scriptsize, draw=none, fill=none] {Raw HTML} 
+                ([xshift=15pt]n1.north);
+
+            % Flow to D1 Cache (Routed to cleanly bypass the API box)
+            % Starts at the far right edge of the top of 1.0, goes up, then right into D1
+            \draw[->, rounded corners=4pt] ([xshift=45pt]n1.north) |- (d1.west);
+
+            % D1 Cache to 2.0 (Perfect vertical drop)
+            \draw[->] (d1.south) -- (n2.north);
+
+            % 3.0 to 4.0 (Orthogonal corner drop)
+            \draw[->, rounded corners=4pt] (n3.south) |- (n4.east);
+
+            % 4.0 Return path back to User
+            % Goes straight left, then straight up into the bottom of the User node
+            \draw[->, rounded corners=4pt] (n4.west) -- 
+                node[midway, below, font=\scriptsize, draw=none, fill=none] {SWOT / Ranks} 
+                (-5.5, -3.2) -- (user.south);
+
+        \end{scope}
+
+    \end{tikzpicture}%
+    }
+    \caption{Data Flow Diagram Level 1: Process Diagram}
+    \label{fig:dfd1}
+\end{figure}
+
+\section{Module Descriptions}
+The system consists of the following modules, each encapsulating specific functional logic:
+\begin{itemize}
+    \item \textbf{sector\_loader.py}: A template mapping utility that lists standard public market tickers under 13 sectors: Automobiles, IT, FMCG, Banking, Pharma, Oil \& Gas, Metals, Cement, Telecom, Power, Realty, Capital Goods, and Infrastructure.
+    \item \textbf{data\_fetcher.py}: Handles secure connections to the `yfinance` Ticker wrapper. Implements asynchronous API requests and caches raw quarterly/annual statements in Parquet format with a 12-hour TTL config.
+    \item \textbf{financial\_parser.py}: Normalizes messy statements into clean, structured DataFrames. Scans the rows, renames matched variants using the alias map \texttt{ALIAS\_MAP}, removes duplicate metrics, and converts all entries to numeric types.
+    \item \textbf{ratio\_engine.py}: Performs financial ratio computations. Reconstructs quarterly time-series, calculates YoY/QoQ percentage changes, and computes CAGR growth trends.
+    \item \textbf{outlier\_engine.py}: The statistical processing module. Calculates Tukey fences, robust Z-scores, and runs K-Means peer clustering to map companies into corporate archetypes.
+    \item \textbf{benchmark\_core.py}: Orchestrates the baseline calculation. Masks outlier cells, computes clean peer statistics (medians, deciles), and ranks firms by their weighted composite health score.
+    \item \textbf{tally\_bridge.py}: The ERP double-entry bridge. Ingests ledger groupings, streams journal transaction CSVs, balances Trial Balances, and maps entries to standard public financial pillars.
+    \item \textbf{client\_comparator.py}: Integrates client records by mapping private ERP journal outputs or manually entered financials/ratios to the public sector distribution and calculating precise percentiles.
+    \item \textbf{benchmark\_classifier.py}: The business logic translator. Assigns health labels and structures the 2x2 SWOT grid.
+    \item \textbf{report\_generator.py}: Generates styled Excel workbooks using custom colors, column auto-fitting, and formatted dashboards.
+    \item \textbf{ai\_handler.py}: Integrates with the Gemini API to search for sector tickers and run the interactive diagnostic chat.
+\end{itemize}

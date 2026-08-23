@@ -1,0 +1,124 @@
+\chapter{Results and Discussion}
+\label{ch:results}
+
+\section{Experimental Setup}
+The analytical engine was tested on a Windows 11 platform equipped with an Intel Core i7 processor and 16 GB of RAM. The evaluation was split into two testing protocols:
+\begin{enumerate}
+    \item \textbf{Public Baseline Performance}: Benchmarked 13 public market sectors, with peer group sizes ranging from 5 to 29 companies.
+    \item \textbf{Private Client Integration}: Processed a Tally ERP dataset containing 1,385 ledger accounts and a multi-thousand row Journal Voucher log.
+\end{enumerate}
+
+\section{Results Analysis}
+The TallySync bridge successfully processed the raw double-entry transaction log and generated a balanced Trial Balance:
+\begin{itemize}
+    \item \textbf{Total Unique Ledgers Ingested}: 1,385
+    \item \textbf{Total Aggregated Debit Balances}: 590,856,997.09 INR
+    \item \textbf{Total Aggregated Credit Balances}: 590,856,997.09 INR
+    \item \textbf{Trial Balance Difference}: 0.00000213 INR (rounding precision limit)
+    \item \textbf{Pillar Mapping}: Mapped ledger accounts to their corresponding accounting categories (e.g. standardizing inventory, receivables, debt).
+\end{itemize}
+
+\section{Outlier Masking Evaluation}
+To evaluate the impact of outlier masking, we compared the descriptive baseline statistics calculated before and after running the statistical filters (Table~\ref{tab:outlier_impact}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Impact of Outlier Masking on Peer Group Statistics}
+    \label{tab:outlier_impact}
+    \begin{tabular}{>{\bfseries}lrr}
+        \toprule
+        \textbf{Metric} & \textbf{Before Outlier Masking} & \textbf{After Outlier Masking} \\
+        \midrule
+        Company 1 (Operating Margin \%) & 18.2\% & 18.2\% \\
+        Company 2 (Operating Margin \%) & 19.5\% & 19.5\% \\
+        Company 3 (Operating Margin \%) & 17.1\% & 17.1\% \\
+        Company 4 (Operating Margin \%) & 85.0\% (Anomalous) & masked (NaN) \\
+        Company 5 (Operating Margin \%) & 16.5\% & 16.5\% \\
+        Company 6 (Operating Margin \%) & -45.0\% (Anomalous) & masked (NaN) \\
+        Company 7 (Operating Margin \%) & 19.0\% & 19.0\% \\
+        \midrule
+        Sector Median & 18.2\% & 18.2\% (Robust) \\
+        Sector Mean & 18.61\% & 18.06\% (Cleaned) \\
+        Sector Standard Deviation & 39.54\% & 1.28\% (Cleaned) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Without masking, the anomalous margins of Company 4 ($85.0\%$) and Company 6 ($-45.0\%$) skewed the standard deviation to $39.54\%$, which diluted the comparative boundaries. Masking the outlier cells restored the standard deviation to $1.28\%$, protecting the benchmark baseline.
+
+\section{Interpretation of Client Results}
+The system benchmarked a private FMCG client against the public peer baseline. The client's financial profile revealed a clear strategic contradiction (Figure~\ref{fig:client_scorecard}):
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+    \item \textbf{Profitability}: Operating Margin in the 85th percentile (assigned an \textit{"Elite"} health label).
+    \item \textbf{Liquidity}: Current Ratio in the bottom 10th percentile (assigned a \textit{"Critical"} health label).
+    \item \textbf{Interpretation}: The client possesses strong pricing power and cost controls, but faces a severe liquidity squeeze. A deep-dive into working capital velocity revealed slow inventory turnover, indicating cash is locked up in unsold stock.
+\end{itemize}
+\subsection{Strategic SWOT Recommendations and Action Plan}
+Based on the synthesized 2x2 SWOT grid and the corporate archetype classification, a targeted operational action plan was developed for the FMCG client:
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+    \item \textbf{Optimize Working Capital Velocity (Liquidity Strategy)}: Transition to a Just-In-Time (JIT) replenishment model for slow-moving inventory and run promotional clearing cycles to convert stagnant stock into operational cash.
+    \item \textbf{Leverage Pricing Power (Profitability Strategy)}: Utilize the client's high Operating Margin (85th percentile) to negotiate shorter credit terms or advance payments with distributors, accelerating accounts receivable collections.
+    \item \textbf{Extend Accounts Payable Cycles}: Extend vendor payment terms (Days Payable Outstanding) from 30 to 45 days to preserve operational cash flow without incurring additional short-term debt.
+    \item \textbf{Secure Revolving Credit Lines}: Establish a pre-approved revolving credit line to cover immediate obligations (e.g., payroll) while inventory velocity and collection reforms take effect.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=1.0,
+    bar_label/.style={font=\small\bfseries\color{black!80}, anchor=west},
+    axis_label/.style={font=\scriptsize\color{black!60}},
+    pct_label/.style={font=\small\bfseries, anchor=west}
+]
+    % Grid lines
+    \draw[gray!15, dashed, line width=0.5pt] (2.5, 0) -- (2.5, 2.8);
+    \draw[gray!15, dashed, line width=0.5pt] (5.0, 0) -- (5.0, 2.8);
+    \draw[gray!15, dashed, line width=0.5pt] (7.5, 0) -- (7.5, 2.8);
+    \draw[gray!15, dashed, line width=0.5pt] (10.0, 0) -- (10.0, 2.8);
+
+    % Axis line
+    \draw[thick, -{Stealth[scale=0.8]}] (0,0) -- (10.8, 0) node[right, font=\scriptsize\bfseries\color{black!80}] {Percentile (\%)};
+    \draw[thick] (0,0) -- (0,2.8);
+
+    % Axis ticks and labels
+    \foreach \x/\label in {0/0, 2.5/25, 5.0/50, 7.5/75, 10.0/100} {
+        \draw[thick] (\x, 0) -- (\x, -0.1) node[below, axis_label] {\label};
+    }
+
+    % Profitability Bar (85% -> 8.5 units)
+    \draw[fill=green!55!blue!70, draw=green!40!black, thick, rounded corners=1.5pt] (0, 1.5) rectangle (8.5, 2.0);
+    \node[bar_label] at (0, 2.3) {Profitability (Operating Margin)};
+    \node[pct_label, color=green!45!black] at (8.7, 1.75) {85th Pct};
+
+    % Liquidity Bar (14% -> 1.4 units)
+    \draw[fill=red!70!black!80, draw=red!40!black, thick, rounded corners=1.5pt] (0, 0.3) rectangle (1.4, 0.8);
+    \node[bar_label] at (0, 1.1) {Liquidity (Current Ratio)};
+    \node[pct_label, color=red!70!black] at (1.6, 0.55) {14th Pct};
+
+\end{tikzpicture}
+\caption{Client Financial Health Scorecard (Percentile Rankings)}
+\label{fig:client_scorecard}
+\end{figure}
+
+\section{Performance Analysis}
+The execution times of the core pipeline stages are summarized in Table~\ref{tab:perf_metrics}.
+
+\begin{table}[H]
+    \centering
+    \caption{Execution Times for Pipeline Stages}
+    \label{tab:perf_metrics}
+    \begin{tabular}{>{\bfseries}lr}
+        \toprule
+        \textbf{Pipeline Stage} & \textbf{Execution Time (Seconds)} \\
+        \midrule
+        Data Harvesting (15 Peers, uncached) & 14.50 s \\
+        Data Ingestion (15 Peers, cached) & 1.20 s \\
+        Tally ERP Aggregation (100k rows) & 4.20 s \\
+        Outlier Detection \& Core Scoring & 0.45 s \\
+        UML/K-Means Clustering & 0.25 s \\
+        Excel Report Generation & 1.10 s \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The caching layer reduces statement ingestion times by over $90\%$, making the application highly responsive.

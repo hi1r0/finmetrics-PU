@@ -1,0 +1,347 @@
+\chapter{Algorithms and Methodology}
+\label{ch:algorithms}
+
+\section{Tukey Fences (IQR Outlier Detection)}
+The Interquartile Range (IQR) represents a robust statistical measure of dispersion. Unlike the standard deviation, the IQR is highly resistant to extreme outliers because it is computed from the middle 50\% of the distribution.
+
+The IQR is defined as the difference between the third quartile ($Q_3$, 75th percentile) and the first quartile ($Q_1$, 25th percentile):
+
+\begin{equation}
+    \text{IQR} = Q_3 - Q_1
+\end{equation}
+
+Tukey Fences establish the lower and upper bounds of the acceptable financial distribution using an outlier multiplier ($k$, typically set to 1.50):
+
+\begin{equation}
+    \text{Lower Bound} = Q_1 - k \times \text{IQR}
+\end{equation}
+\begin{equation}
+    \text{Upper Bound} = Q_3 + k \times \text{IQR}
+\end{equation}
+
+To formalize this outlier screening as a statistical decision process, we define the following hypothesis test for each corporate observation in the peer group:
+\begin{align}
+    \mathbf{H}_0 &: \textbf{The observation is a normal inlier} \\
+    \mathbf{H}_1 &: \textbf{The observation is an outlier}
+\end{align}
+
+Under the null hypothesis, the observation is assumed to lie within the normal statistical boundaries of the peer group. If the observation $x_i$ (representing the financial ratio of company $i$) falls outside the Tukey Fences, we reject $H_0$ in favor of $H_1$, and the cell is flagged as a univariate outlier:
+
+\begin{equation}
+    x_i < \text{Lower Bound} \quad \text{or} \quad x_i > \text{Upper Bound}
+\end{equation}
+
+To provide a quick operational reference, the primary variables utilized in Tukey outlier boundaries are defined in Table~\ref{tab:glossary_tukey}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.85}
+    \caption{Tukey Fences Outlier Detection Variables}
+    \label{tab:glossary_tukey}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
+        \midrule
+        $\mathbf{IQR}$ & Interquartile Range, measuring the dispersion of the middle 50\% of peers. \\
+        $\mathbf{Q_1}, \mathbf{Q_3}$ & The first (25th percentile) and third (75th percentile) peer quartiles. \\
+        $\mathbf{k}$ & Outlier multiplier parameter (default 1.50) governing Tukey fence width. \\
+        $\mathbf{x}_i$ & Evaluated financial ratio value for a specific corporate entity $i$. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\section{Robust Modified Z-Score}
+While standard Z-scores rely on the mean and standard deviation, they are highly sensitive to extreme outliers. To address this, we implement a robust Modified Z-score that uses the median and the Median Absolute Deviation (MAD).
+
+First, the Median Absolute Deviation (MAD) is calculated:
+
+\begin{equation}
+    \text{MAD} = \text{median}\left( |x_i - \tilde{x}| \right)
+\end{equation}
+
+Where $\tilde{x}$ is the median of the peer group. The Modified Z-score ($z_i$) for each company $i$ is defined as:
+
+\begin{equation}
+    z_i = 0.6745 \times \frac{x_i - \tilde{x}}{\text{MAD}}
+\end{equation}
+
+The constant $0.6745$ serves as a scale factor, ensuring that the expected value of the robust Z-score matches standard normal Z-scores for normally distributed datasets. 
+
+To evaluate the standardized deviation of each corporate observation, the outlier screening is formulated as a hypothesis test:
+\begin{align}
+    \mathbf{H}_0 &: \textbf{The deviation from the median is within normal variation} \\
+    \mathbf{H}_1 &: \textbf{The deviation from the median is statistically extreme}
+\end{align}
+
+We fail to reject $H_0$ for normal observations (inliers). If the absolute modified Z-score $|z_i|$ exceeds the critical threshold $\theta_{\text{zscore}}$, the null hypothesis is rejected, and the ratio is flagged as a univariate outlier:
+
+\begin{equation}
+    |z_i| > \theta_{\text{zscore}}
+\end{equation}
+
+Where $\theta_{\text{zscore}}$ is the threshold parameter (default 3.50).
+
+The mathematical symbols and operational parameters for robust Modified Z-score calculation are defined in Table~\ref{tab:glossary_zscore}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.85}
+    \caption{Robust Modified Z-Score Variables}
+    \label{tab:glossary_zscore}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
+        \midrule
+        $\boldsymbol{\tilde{x}}$ & Median of the corporate peer group for the evaluated financial ratio. \\
+        $\mathbf{MAD}$ & Median Absolute Deviation, a robust outlier-resistant dispersion measure. \\
+        $\mathbf{z}_i$ & Robust modified Z-score calculated for company $i$ using median and MAD. \\
+        $\boldsymbol{\theta}_{\mathbf{zscore}}$ & Severity threshold (default 3.50) for robust Z-score outlier flagging. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\section{Isolation Forest (Multivariate Anomaly Detection)}
+Univariate outlier detection methods evaluate each ratio independently. However, financial reporting irregularities often manifest as multi-dimensional structural anomalies across multiple ratios simultaneously. 
+
+The Isolation Forest algorithm isolates anomalies by randomly partitioning high-dimensional feature spaces. Because anomalous points require fewer partitions to isolate, they appear closer to the root of the decision trees.
+
+The anomaly score ($s$) for a sample $x$ is defined as:
+
+\begin{equation}
+    s(x, n) = 2^{-\frac{E(h(x))}{c(n)}}
+\end{equation}
+
+Where $h(x)$ is the path length to isolate sample $x$, $E(h(x))$ is the average path length across all trees, and $c(n)$ is the average path length of an unsuccessful search in a Binary Search Tree:
+
+\begin{equation}
+    c(n) = 2\ln(n - 1) + 0.5772156649 - \frac{2(n - 1)}{n}
+\end{equation}
+
+An anomaly score close to $1.0$ indicates a highly anomalous structural profile across all financial dimensions. 
+
+To classify corporate profiles based on joint financial ratios, we formulate multivariate anomaly detection as a decision-theoretic hypothesis test:
+\begin{align}
+    \mathbf{H}_0 &: \textbf{The sample exhibits a typical joint distribution across features} \\
+    \mathbf{H}_1 &: \textbf{The sample exhibits a structurally anomalous joint distribution}
+\end{align}
+Where $\tau$ is the critical decision threshold (set to $0.5$ by default, which signifies that the expected path length matches the average path length of an unsuccessful search in a binary search tree). Under $H_0$, the sample is classified as a normal corporate profile. If the anomaly score is greater than or equal to $\tau$, the null hypothesis is rejected, and the corporate entity is classified as a multivariate anomaly.
+
+The mathematical parameters governing the tree-isolation metrics are summarized in Table~\ref{tab:glossary_isolation}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.85}
+    \caption{Isolation Forest Anomaly Detection Variables}
+    \label{tab:glossary_isolation}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
+        \midrule
+        $\mathbf{s(x, n)}$ & Anomaly score for sample $x$ across the decision tree ensemble. \\
+        $\mathbf{n}$ & Total number of corporate samples / peer group size for tree partitioning. \\
+        $\mathbf{h(x)}$ & Traversed path length (number of edges) to isolate sample $x$ in a tree. \\
+        $\mathbf{E(h(x))}$ & Expected path length $h(x)$ across the entire Isolation Forest ensemble. \\
+        $\mathbf{c(n)}$ & Average path length of an unsuccessful search in a BST of size $n$. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.0cm and 1.2cm,
+        tree_node/.style={circle, draw, fill=blue!5, minimum size=0.8cm, font=\scriptsize, inner sep=1pt},
+        leaf_node/.style={rectangle, draw, fill=red!10, minimum height=0.6cm, rounded corners, font=\scriptsize, inner sep=3pt, align=center},
+        arrow/.style={thick,->,>=stealth}
+    ]
+        % Left Tree: Outlier (Unusual)
+        \node (r1) [tree_node] {Root};
+        \node (l1) [leaf_node] at ($(r1) + (-1.5, -1.2)$) {\textbf{Isolate Outlier}\\[2pt](Path = 1)};
+        \node (n1) [tree_node] at ($(r1) + (1.5, -1.2)$) {$x_2 < 10$};
+        
+        \draw [arrow] (r1) -- node[above left, font=\tiny] {$x_1 > 10$} (l1);
+        \draw [arrow] (r1) -- node[above right, font=\tiny] {$x_1 \le 10$} (n1);
+        
+        % Label Left Tree
+        \node[above=0.2cm of r1, font=\bfseries\small] {Unusual Company (Outlier)};
+        
+        % Right Tree: Inlier (Normal)
+        \node (r2) [tree_node, right=of r1, xshift=4.2cm] {Root};
+        \node (n2_l) [tree_node, below left=of r2] {$x_2 > 5$};
+        \node (n2_r) [tree_node, below right=of r2] {$x_2 \le 5$};
+        \node (n3_l) [tree_node, below left=of n2_l] {$x_3 < 2$};
+        \node (n3_r) [tree_node, below right=of n2_l] {$x_3 \ge 2$};
+        \node (n4_l) [leaf_node] at ($(n3_l) + (-1.5, -1.2)$) {\textbf{Isolate Inlier}\\[2pt](Path = 4)};
+        \node (n4_r) [tree_node] at ($(n3_l) + (1.5, -1.2)$) {$x_4 > 120$};
+        
+        \draw [arrow] (r2) -- (n2_l);
+        \draw [arrow] (r2) -- (n2_r);
+        \draw [arrow] (n2_l) -- (n3_l);
+        \draw [arrow] (n2_l) -- (n3_r);
+        \draw [arrow] (n3_l) -- (n4_l);
+        \draw [arrow] (n3_l) -- (n4_r);
+        
+        % Label Right Tree
+        \node[above=0.2cm of r2, font=\bfseries\small] {Normal Company (Inlier)};
+    \end{tikzpicture}
+    \caption{Multivariate Anomaly Isolation via Partition Tree Path Lengths}
+    \label{fig:isolation_tree}
+\end{figure}
+
+\section{K-Means Clustering for Peer Archetypes}
+Unsupervised K-Means clustering is deployed to segment the peer set into distinct corporate archetypes based on a three-dimensional feature vector $\mathbf{X}$:
+
+\begin{equation}
+    \mathbf{X} = [\text{Operating Margin}, \text{Debt-to-Equity}, \text{Asset Turnover}]
+\end{equation}
+
+The algorithm groups the scaled feature space into $K=3$ clusters by minimizing the within-cluster sum of squares (WCSS):
+
+\begin{equation}
+    \arg\min_{\mathbf{S}} \sum_{j=1}^{3} \sum_{\mathbf{x}_i \in S_j} \|\mathbf{x}_i - \boldsymbol{\mu}_j\|^2
+\end{equation}
+
+Centroids ($\boldsymbol{\mu}_j$) are mapped back to their original dimensions to determine corporate profiles:
+\begin{itemize}
+    \item High Margins + Low Debt + Stable Turnover $\rightarrow$ \textbf{Elite Market Leader}
+    \item Low Margins + High Debt $\rightarrow$ \textbf{Debt-Strained Underperformer}
+    \item High Turnover + Low Margins $\rightarrow$ \textbf{High-Volume Bootstrapper}
+    \item High Margins + Slower Turnover $\rightarrow$ \textbf{Asset-Heavy Profit Leader}
+    \item Average Margins + Standard Debt + Standard Turnover $\rightarrow$ \textbf{Balanced Sector Participant}
+\end{itemize}
+
+The multidimensional parameters and vector spaces utilized in K-Means clustering are defined in Table~\ref{tab:glossary_kmeans}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.85}
+    \caption{K-Means Clustering Archetype Variables}
+    \label{tab:glossary_kmeans}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
+        \midrule
+        $\mathbf{X}$ & Three-dimensional feature vector of key financial operational dimensions. \\
+        $\mathbf{K}$ & Total number of target corporate cluster archetypes (default set to 3). \\
+        $\mathbf{S}$ & Partition set containing the corporate entities assigned to each cluster. \\
+        $\boldsymbol{\mu}_j$ & Multidimensional centroid vector representing the profile of cluster $j$. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\section{TallySync Double-Entry Bridge Ingestion}
+The \textit{Tally Bridge} converts raw ERP ledger dumps and transaction journals into standard financial ratios.
+To prevent memory issues when processing large-scale journal logs, the engine streams files in chunks of 50,000 records.
+Because accounting entries can have varying sign behaviors depending on their category, the system checks ledger classifications: for credit-nature accounts, the balance is calculated as `credit - debit`, while for debit-nature accounts, it is computed as `debit - credit`.
+
+
+\section{Algorithms Pseudocode}
+To facilitate the practical deployment and computational replication of our analytical framework, this section formalizes the core processes as structured, language-agnostic pseudocode. Specifically, we present the algorithmic logic governing our univariate outlier detection and baseline masking engine, which maintains statistical integrity across noisy peer distributions, followed by the TallySync double-entry journal processing pipeline designed to securely aggregate raw transaction logs. To facilitate cross-referencing and trace the exact operations, the primary variables and notations deployed across the pseudocodes are defined in Table~\ref{tab:glossary_pseudocode}.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.85}
+    \caption{Algorithms Pseudocode Mathematical Symbols}
+    \label{tab:glossary_pseudocode}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
+        \midrule
+        $\mathbf{R}, \mathbf{C}$ & Input ratio matrix ($N \times M$) and output cleaned/masked ratio matrix. \\
+        $\mathbf{O}$ & Outlier database tracking tagged anomalies in $\{(company, ratio, value)\}$. \\
+        $\mathbf{V}, \mathbf{Z}$ & Non-null value vector and computed modified Z-scores for a ratio column. \\
+        $\mathbf{LB}, \mathbf{UB}$ & Calculated Tukey outlier boundaries (Lower Bound and Upper Bound). \\
+        $\text{dr}, \text{cr}$ & Debit and credit ledger transaction amounts from streamed journal lines. \\
+        $\mathbf{P}$ & Hash-map storing aggregated double-entry balances for financial pillars. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Univariate Outlier Detection and Baseline Masking}
+The outlier detection procedure (detailed in Algorithm~\ref{alg:outliers}) robustly identifies and isolates anomalies in financial ratio distributions. 
+The algorithm operates as follows:
+\begin{enumerate}
+    \item \textbf{Data Cleaning}: For each financial ratio column, it drops any missing values to extract a clean vector $V$.
+    \item \textbf{Statistical Thresholding}: It calculates the Tukey IQR fences (Lower Bound $LB$, Upper Bound $UB$) and robust Modified Z-scores based on the Median Absolute Deviation (MAD) of the distribution.
+    \item \textbf{Univariate Anomaly Flagging}: For each company, it checks if its ratio value $v$ falls outside the Tukey fences ($\text{iqr\_flag}$) or if its Modified Z-score exceeds the threshold ($\text{z\_flag}$).
+    \item \textbf{Outlier Masking}: If an anomaly is detected, the company is added to the outlier database $O$, and the clean copy matrix $C$ masks this specific cell as $\text{NaN}$ (Not a Number). This prevents contaminated entries from skewing the peer group median and dispersion baselines.
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{Univariate Outlier Detection and Baselines}
+\label{alg:outliers}
+\footnotesize
+\begin{algorithmic}[1]
+\Procedure{DetectOutliers}{$R, k, \theta$}
+    \State $O \gets \emptyset$; $C \gets R$ \Comment{Initialize outlier set and clean copy}
+    \For{each ratio column $j$ in $R$}
+        \State $V \gets \text{dropna}(R[:, j])$
+        \State \textbf{if} $\text{length}(V) < 3$ \textbf{then} \textbf{continue}
+        \State $Q_1, Q_3 \gets \text{percentile}(V, 25), \text{percentile}(V, 75)$
+        \State $\text{IQR} \gets Q_3 - Q_1$
+        \State $\text{LB}, \text{UB} \gets Q_1 - k \cdot \text{IQR}, Q_3 + k \cdot \text{IQR}$
+        \State $\tilde{v} \gets \text{median}(V)$; $\text{MAD} \gets \text{median}(|V - \tilde{v}|)$
+        \If{$\text{MAD} = 0$}
+            \State $\sigma \gets \text{std}(V)$; $Z \gets (V - \text{mean}(V)) / \sigma$
+        \Else
+            \State $Z \gets 0.6745 \times (V - \tilde{v}) / \text{MAD}$
+        \EndIf
+        \For{each company index $i$ in $R$}
+            \State $v \gets R[i, j]$
+            \State $\text{iqr\_flag} \gets (v < \text{LB}) \lor (v > \text{UB})$; $\text{z\_flag} \gets |Z[i]| > \theta$
+            \If{$\text{iqr\_flag} \lor \text{z\_flag}$}
+                \State $O \gets O \cup \{(i, j, v)\}$; $C[i, j] \gets \text{NaN}$ \Comment{Mask outlier cell}
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \Return $O, C$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{TallySync ERP Double-Entry Journal Aggregator}
+The TallySync ingestion bridge (detailed in Algorithm~\ref{alg:tally}) acts as a high-throughput transaction engine, converting raw double-entry ledger streams into structured, standardized financial statements.
+The pipeline operates as follows:
+\begin{enumerate}
+    \item \textbf{Ledger Mapping}: It maps raw ledger accounts from the ERP database to standard public statement pillars (e.g. \textit{revenue, debt, assets, payables}) using standard category classifications.
+    \item \textbf{Streamed Ingestion}: To prevent memory strain, transaction journals are processed in chunks of 50,000 logs.
+    \item \textbf{Sign-Nature Correction}: Transactions are aggregated according to the double-entry accounting nature of the pillar. For credit-nature categories, balances accumulate as `credit - debit`, while debit-nature categories accumulate as `debit - credit`.
+    \item \textbf{Ratio Ingestion}: Once all transactional journals are aggregated, the Trial Balance is resolved and derived into the standard 30+ canonical financial ratios.
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{TallySync ERP Double-Entry Journal Aggregator}
+\label{alg:tally}
+\footnotesize
+\begin{algorithmic}[1]
+\Procedure{ProcessTally}{$\text{J\_path}, \text{L\_path}$}
+    \State $\text{G} \gets \text{load\_group\_mappings}()$; $\text{M} \gets \emptyset$; $\text{Master} \gets \text{read\_csv}(\text{L\_path})$ \Comment{Init maps}
+    \For{each row in $\text{Master}$}
+        \State $\text{ledger}, \text{group} \gets \text{row}[\text{'NAME'}], \text{row}[\text{'PRIMARYGROUP'}]$
+        \State $\text{M}[\text{ledger}] \gets \text{G}\text{.get}(\text{group}, \text{"EXCLUDE"})$
+    \EndFor
+    
+    \State $\text{P} \gets \text{initialize\_pillars\_to\_zero}()$; $\text{CR\_Nature} \gets \{\text{"revenue", "payables", "liabilities", "debt", "equity"}\}$
+    \State $\text{Stream} \gets \text{stream\_csv}(\text{J\_path}, \text{chunk\_size}=50000)$
+    \For{each chunk in $\text{Stream}$}
+        \For{each row in $\text{chunk}$}
+            \State $\text{ledger} \gets \text{row}[\text{'PARTICULARS'}]$; $\text{pillar} \gets \text{M}\text{.get}(\text{ledger}, \text{"EXCLUDE"})$
+            \State \textbf{if} $\text{pillar} = \text{"EXCLUDE"}$ \textbf{then} \textbf{continue}
+            \State $\text{dr}, \text{cr} \gets \text{float}(\text{row}[\text{'DEBIT'}], 0.0), \text{float}(\text{row}[\text{'CREDIT'}], 0.0)$
+            \If{$\text{pillar} \in \text{CR\_Nature}$}
+                \State $\text{P}[\text{pillar}] \gets \text{P}[\text{pillar}] + (\text{cr} - \text{dr})$
+            \Else
+                \State $\text{P}[\text{pillar}] \gets \text{P}[\text{pillar}] + (\text{dr} - \text{cr})$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State $\text{R} \gets \text{calculate\_ratios\_from\_pillars}(\text{P})$
+    \State \Return $\text{R}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
