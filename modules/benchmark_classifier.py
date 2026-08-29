@@ -119,13 +119,22 @@ class BenchmarkClassifier:
         }
 
     @classmethod
-    def classify_all(cls, clean_matrix: pd.DataFrame, peer_stats_df: pd.DataFrame, is_outlier_df: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    def classify_all(
+        cls,
+        target_matrix: pd.DataFrame,
+        peer_stats_df: pd.DataFrame,
+        is_outlier_df: Optional[pd.DataFrame] = None,
+        peer_pool_matrix: Optional[pd.DataFrame] = None,
+    ) -> pd.DataFrame:
+        if peer_pool_matrix is None:
+            peer_pool_matrix = target_matrix
+
         results = []
-        for ticker in clean_matrix.index:
-            for ratio in clean_matrix.columns:
+        for ticker in target_matrix.index:
+            for ratio in target_matrix.columns:
                 if ratio not in peer_stats_df.index:
                     continue
-                raw_val = clean_matrix.at[ticker, ratio]
+                raw_val = target_matrix.at[ticker, ratio]
                 peer_row = peer_stats_df.loc[ratio]
                 
                 # Check if this cell was excluded as an outlier in the original matrix
@@ -135,8 +144,8 @@ class BenchmarkClassifier:
                     outliers = is_outlier_df[(is_outlier_df["ticker"] == ticker) & (is_outlier_df["ratio"] == ratio)]
                     is_excluded = len(outliers) > 0
                 
-                # For classification, we need the peer values to compute exact percentile
-                peer_vals = clean_matrix[ratio].dropna()
+                # For classification, we need the peer pool values to compute exact percentile
+                peer_vals = peer_pool_matrix[ratio].dropna() if ratio in peer_pool_matrix.columns else target_matrix[ratio].dropna()
                 res = cls.classify_ratio(ratio, raw_val, peer_row, peer_vals)
                 res["ticker"] = ticker
                 res["is_outlier_excluded"] = is_excluded

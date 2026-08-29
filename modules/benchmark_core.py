@@ -98,14 +98,14 @@ class BenchmarkCore:
         """
         logger.info("BenchmarkCore pipeline: starting")
 
-        # 1. Mask outliers
+        # 1. Mask outliers (for peer benchmark calculation only)
         clean = self._mask_outliers(ratio_df, outlier_df)
 
-        # 2. Compute canonical peer benchmark stats
+        # 2. Compute canonical peer benchmark stats (outliers excluded)
         peer_stats = self._compute_peer_stats(clean)
 
-        # 3. Classify raw ratios to create primary scorecard
-        scorecard = self._build_ratio_scorecard(clean, peer_stats, outlier_df)
+        # 3. Classify raw ratios to create primary scorecard (raw values unmasked, peer pool masked)
+        scorecard = self._build_ratio_scorecard(ratio_df, peer_stats, outlier_df, peer_pool_matrix=clean)
 
         # 4. Score pillars using percentiles
         pillar_summary = self._score_pillars(scorecard)
@@ -186,14 +186,27 @@ class BenchmarkCore:
 
     def _build_ratio_scorecard(
         self,
-        clean_matrix: pd.DataFrame,
+        raw_matrix: pd.DataFrame,
         peer_stats_df: pd.DataFrame,
-        outlier_df: pd.DataFrame
+        outlier_df: pd.DataFrame,
+        peer_pool_matrix: Optional[pd.DataFrame] = None,
     ) -> pd.DataFrame:
         """
         Uses BenchmarkClassifier to create the primary scorecard.
         """
-        scorecard = self.classifier.classify_all(clean_matrix, peer_stats_df, outlier_df)
+        if peer_pool_matrix is None:
+            peer_pool_matrix = raw_matrix
+
+        # Filter monetary/raw columns for target matrix
+        ratio_cols = [c for c in raw_matrix.columns if c not in _RAW_VALUE_COLS]
+        target_df = raw_matrix[ratio_cols]
+
+        scorecard = self.classifier.classify_all(
+            target_matrix=target_df,
+            peer_stats_df=peer_stats_df,
+            is_outlier_df=outlier_df,
+            peer_pool_matrix=peer_pool_matrix,
+        )
         if scorecard.empty:
             return scorecard
             

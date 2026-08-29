@@ -13,15 +13,16 @@ logger = logging.getLogger(__name__)
 class BenchmarkStore:
     BENCHMARKS_DIR = PROJECT_ROOT / "data" / "benchmarks"
 
-    def __init__(self):
-        self.BENCHMARKS_DIR.mkdir(parents=True, exist_ok=True)
+    def __init__(self, benchmarks_dir: Optional[Path] = None):
+        self.benchmarks_dir = Path(benchmarks_dir) if benchmarks_dir else self.BENCHMARKS_DIR
+        self.benchmarks_dir.mkdir(parents=True, exist_ok=True)
 
     def _sector_slug(self, sector: str) -> str:
         return "".join(c if c.isalnum() else "_" for c in sector).lower()
 
     def save(self, sector: str, peer_stats_df: pd.DataFrame, clean_matrix: pd.DataFrame, metadata: Optional[Dict] = None):
         slug = self._sector_slug(sector)
-        sector_dir = self.BENCHMARKS_DIR / slug
+        sector_dir = self.benchmarks_dir / slug
         sector_dir.mkdir(parents=True, exist_ok=True)
         
         peer_stats_df.to_parquet(sector_dir / "peer_stats.parquet")
@@ -42,7 +43,7 @@ class BenchmarkStore:
 
     def load(self, sector: str) -> Optional[Tuple[pd.DataFrame, pd.DataFrame, Dict]]:
         slug = self._sector_slug(sector)
-        sector_dir = self.BENCHMARKS_DIR / slug
+        sector_dir = self.benchmarks_dir / slug
         
         if not sector_dir.exists():
             return None
@@ -59,7 +60,7 @@ class BenchmarkStore:
 
     def is_fresh(self, sector: str, max_age_hours: int = 48) -> bool:
         slug = self._sector_slug(sector)
-        meta_path = self.BENCHMARKS_DIR / slug / "metadata.json"
+        meta_path = self.benchmarks_dir / slug / "metadata.json"
         if not meta_path.exists():
             return False
             
@@ -71,7 +72,7 @@ class BenchmarkStore:
 
     def list_available(self) -> List[str]:
         sectors = []
-        for path in self.BENCHMARKS_DIR.iterdir():
+        for path in self.benchmarks_dir.iterdir():
             if path.is_dir() and (path / "metadata.json").exists():
                 with open(path / "metadata.json", "r") as f:
                     meta = json.load(f)

@@ -36,6 +36,13 @@ _GROUP_TO_PILLAR: Dict[str, str] = {
     "Direct Expenses":      "cogs",
     # Operating Expenses
     "Indirect Expenses":    "opex",
+    # Interest / Finance Costs
+    "Interest on Loans":    "interest_expense",
+    "Bank Charges":         "interest_expense",
+    "Finance Costs":        "interest_expense",
+    # Tax Provision
+    "Duties & Taxes":       "tax_provision",
+    "Provision for Tax":    "tax_provision",
     # Cash & Bank
     "Bank Accounts":        "cash",
     "Cash-in-Hand":         "cash",
@@ -57,7 +64,6 @@ _GROUP_TO_PILLAR: Dict[str, str] = {
     "Sundry Creditors":     "payables",
     # Other Current Liabilities
     "Current Liabilities":  "other_current_liabilities",
-    "Duties & Taxes":       "other_current_liabilities",
     "Provisions":           "other_current_liabilities",
     # Debt
     "Secured Loans":        "debt",
@@ -147,28 +153,35 @@ class TallyBridge:
         return mapping
 
     def _aggregate_journal(self, ledger_map: Dict[str, str]) -> Dict[str, float]:
-        """Stream-process the JV CSV and sum net balances per pillar."""
+        """Stream-process the JV CSV and sum net balances per pillar using vectorized chunks."""
         pillars = {p: 0.0 for p in set(_GROUP_TO_PILLAR.values()) if p != "EXCLUDE"}
 
         for chunk in pd.read_csv(
             self.jv_path, encoding="latin1", chunksize=self.chunk_size
         ):
-            for _, row in chunk.iterrows():
-                ledger = str(row.get("PARTICULARS", "")).strip()
-                pillar = ledger_map.get(ledger, "EXCLUDE")
-                if pillar == "EXCLUDE":
-                    continue
+            chunk["pillar"] = chunk["PARTICULARS"].astype(str).str.strip().map(ledger_map).fillna("EXCLUDE")
+            chunk = chunk[chunk["pillar"] != "EXCLUDE"].copy()
+            if chunk.empty:
+                continue
 
-                debit  = float(row["DEBIT"])  if not pd.isna(row.get("DEBIT"))  else 0.0
-                credit = float(row["CREDIT"]) if not pd.isna(row.get("CREDIT")) else 0.0
+            debit = pd.to_numeric(chunk["DEBIT"], errors="coerce").fillna(0.0)
+            credit = pd.to_numeric(chunk["CREDIT"], errors="coerce").fillna(0.0)
 
-                # TallySync export: Debits are negative, Credits are positive
-                if pillar in _CREDIT_NATURE:
-                    balance = credit - debit
-                else:
-                    balance = debit - credit
+            # In TallySync exports: Debits are negative, Credits are positive.
+            # If standard positive debits are provided, abs(debit) handles both.
+            chunk["net_dr"] = np.where(debit < 0, np.abs(debit), debit)
+            chunk["net_cr"] = np.where(credit < 0, np.abs(credit), credit)
 
-                pillars[pillar] += balance
+            credit_mask = chunk["pillar"].isin(_CREDIT_NATURE)
+            chunk["balance"] = np.where(
+                credit_mask,
+                chunk["net_cr"] - chunk["net_dr"],
+                chunk["net_dr"] - chunk["net_cr"],
+            )
+
+            grouped = chunk.groupby("pillar")["balance"].sum()
+            for pillar, val in grouped.items():
+                pillars[pillar] += val
 
         return pillars
 
@@ -197,6 +210,8 @@ class TallyBridge:
         revenue     = p.get("revenue", 0.0)
         cogs        = p.get("cogs", 0.0)
         opex        = p.get("opex", 0.0)
+        interest    = p.get("interest_expense", 0.0)
+        tax         = p.get("tax_provision", 0.0)
         cash        = p.get("cash", 0.0)
         receivables = p.get("receivables", 0.0)
         inventory   = p.get("inventory", 0.0)
@@ -212,8 +227,8 @@ class TallyBridge:
         total_assets   = current_assets + fixed
         total_liab     = current_liab + debt
         gross_profit   = revenue - cogs
-        ebit           = revenue - cogs - opex   # EBIT approximation
-        net_income     = ebit                    # No tax data available
+        ebit           = revenue - cogs - opex
+        net_income     = ebit - interest - tax
         capital_employed = total_assets - current_liab
 
         return {
@@ -233,7 +248,7 @@ class TallyBridge:
             # ── Solvency / Leverage ────────────────────────────────────
             "debt_to_equity":    sd(debt,       equity),
             "debt_ratio":        sd(total_liab, total_assets),
-            "interest_coverage": np.nan,  # Requires interest expense from Indirect Expenses
+            "interest_coverage": sd(ebit, abs(interest)) if interest > 0 else np.nan,
 
             # ── Efficiency ─────────────────────────────────────────────
             "asset_turnover":       sd(revenue, total_assets),

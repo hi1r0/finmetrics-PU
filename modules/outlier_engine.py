@@ -78,7 +78,7 @@ class OutlierEngine:
     def __init__(
         self,
         iqr_multiplier: float = 1.5,
-        zscore_threshold: float = 3.5,
+        zscore_threshold: float = 2.5,
         min_peers: int = 3,
     ) -> None:
         self.iqr_multiplier = iqr_multiplier
