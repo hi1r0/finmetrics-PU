@@ -615,14 +615,7 @@ def render_sidebar() -> Dict:
             else:
                 st.success("API Key loaded securely.")
         else:
-            user_input_key = st.text_input(
-                "Gemini API Key (Optional)",
-                type="password",
-                value=st.session_state.get("gemini_api_key", ""),
-                placeholder="Enter AI Studio Key...",
-                help="Optional: Enables Gemini AI industry peer discovery.",
-            )
-            gemini_key = user_input_key
+            st.caption("AI search disabled (no GEMINI_API_KEY in .env).")
 
         st.session_state.gemini_api_key = gemini_key
 
