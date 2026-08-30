@@ -54,6 +54,7 @@ RATIO_LABELS: Dict[str, str] = {
     "pe_ratio": "P/E Ratio",
     "pb_ratio": "P/B Ratio",
     "ev_ebitda": "EV/EBITDA",
+    "dividend_yield": "Dividend Yield (%)",
     "revenue_growth": "Revenue Growth (%)",
     "net_income_growth": "Net Income Growth (%)",
     "ebitda_growth": "EBITDA Growth (%)",

@@ -31,3 +31,12 @@ def test_outlier_detection_flags_extreme_value():
     assert len(flagged) == 1
     assert flagged.iloc[0]["value"] == 50.0
     assert bool(flagged.iloc[0]["iqr_flag"]) or bool(flagged.iloc[0]["zscore_flag"])
+
+def test_ratio_labels_coverage():
+    """Verify key ratios have human-readable display labels in RATIO_LABELS."""
+    from modules.outlier_engine import RATIO_LABELS
+    assert "dividend_yield" in RATIO_LABELS
+    assert RATIO_LABELS["dividend_yield"] == "Dividend Yield (%)"
+    assert "pe_ratio" in RATIO_LABELS
+    assert "ev_ebitda" in RATIO_LABELS
+
