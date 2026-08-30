@@ -601,16 +601,29 @@ def render_sidebar() -> Dict:
 
         st.markdown("### AI Search")
         # Load from environment variables (or secrets fallback) to prevent exposure
-        gemini_key = os.environ.get("GEMINI_API_KEY")
+        gemini_key = os.environ.get("GEMINI_API_KEY", "")
         if not gemini_key:
-            gemini_key = st.secrets.get("GEMINI_API_KEY", "") if hasattr(st, "secrets") else ""
+            try:
+                gemini_key = st.secrets.get("GEMINI_API_KEY", "")
+            except Exception:
+                gemini_key = ""
             
         if gemini_key:
-            num_keys = len([k.strip() for k in gemini_key.split(",") if k.strip()])
+            num_keys = len([k.strip() for k in str(gemini_key).split(",") if k.strip()])
             if num_keys > 1:
                 st.success(f"API Key pool loaded ({num_keys} keys active).")
             else:
                 st.success("API Key loaded securely.")
+        else:
+            user_input_key = st.text_input(
+                "Gemini API Key (Optional)",
+                type="password",
+                value=st.session_state.get("gemini_api_key", ""),
+                placeholder="Enter AI Studio Key...",
+                help="Optional: Enables Gemini AI industry peer discovery.",
+            )
+            gemini_key = user_input_key
+
         st.session_state.gemini_api_key = gemini_key
 
         st.divider()
