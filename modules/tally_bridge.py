@@ -40,8 +40,7 @@ _GROUP_TO_PILLAR: Dict[str, str] = {
     "Interest on Loans":    "interest_expense",
     "Bank Charges":         "interest_expense",
     "Finance Costs":        "interest_expense",
-    # Tax Provision
-    "Duties & Taxes":       "tax_provision",
+    # Tax Provision (Explicit P&L Provision only)
     "Provision for Tax":    "tax_provision",
     # Cash & Bank
     "Bank Accounts":        "cash",
@@ -62,7 +61,8 @@ _GROUP_TO_PILLAR: Dict[str, str] = {
     "Investments":          "fixed_assets",
     # Creditors / Payables
     "Sundry Creditors":     "payables",
-    # Other Current Liabilities
+    # Other Current Liabilities (GST/TDS Duties & Taxes, Provisions)
+    "Duties & Taxes":       "other_current_liabilities",
     "Current Liabilities":  "other_current_liabilities",
     "Provisions":           "other_current_liabilities",
     # Debt
@@ -186,21 +186,27 @@ class TallyBridge:
         return pillars
 
     def _collect_ledger_stats(self, ledger_map: Dict[str, str]) -> Dict:
-        """Collect per-ledger debit/credit totals (used for Trial Balance)."""
-        stats: Dict[str, Dict] = {}
+        """Collect per-ledger debit/credit totals (used for Trial Balance) using vectorized aggregation."""
+        aggregated_chunks = []
         for chunk in pd.read_csv(
             self.jv_path, encoding="latin1", chunksize=self.chunk_size
         ):
-            for _, row in chunk.iterrows():
-                ledger = str(row.get("PARTICULARS", "")).strip()
-                pillar = ledger_map.get(ledger, "EXCLUDE")
-                debit  = float(row["DEBIT"])  if not pd.isna(row.get("DEBIT"))  else 0.0
-                credit = float(row["CREDIT"]) if not pd.isna(row.get("CREDIT")) else 0.0
+            particulars = chunk["PARTICULARS"].astype(str).str.strip()
+            pillar = particulars.map(ledger_map).fillna("EXCLUDE")
+            debit = pd.to_numeric(chunk["DEBIT"], errors="coerce").fillna(0.0)
+            credit = pd.to_numeric(chunk["CREDIT"], errors="coerce").fillna(0.0)
 
-                if ledger not in stats:
-                    stats[ledger] = {"Debit": 0.0, "Credit": 0.0, "Pillar": pillar}
-                stats[ledger]["Debit"]  += debit
-                stats[ledger]["Credit"] += credit
+            mini_df = pd.DataFrame({"Ledger": particulars, "Pillar": pillar, "Debit": debit, "Credit": credit})
+            agg_chunk = mini_df.groupby(["Ledger", "Pillar"], as_index=False)[["Debit", "Credit"]].sum()
+            aggregated_chunks.append(agg_chunk)
+
+        if not aggregated_chunks:
+            return {}
+
+        full_agg = pd.concat(aggregated_chunks, ignore_index=True).groupby(["Ledger", "Pillar"], as_index=False).sum()
+        stats: Dict[str, Dict] = {}
+        for _, row in full_agg.iterrows():
+            stats[str(row["Ledger"])] = {"Debit": float(row["Debit"]), "Credit": float(row["Credit"]), "Pillar": str(row["Pillar"])}
         return stats
 
     def _compute_ratios(self, p: Dict[str, float]) -> Dict[str, float]:
@@ -231,6 +237,10 @@ class TallyBridge:
         net_income     = ebit - interest - tax
         capital_employed = total_assets - current_liab
 
+        tax_found = "tax_provision" in p and p["tax_provision"] > 0
+        interest_found = "interest_expense" in p and p["interest_expense"] > 0
+        net_income_basis = "tax_and_interest_adjusted" if (tax_found and interest_found) else "ebit_proxy_partial"
+
         return {
             # ── Profitability ──────────────────────────────────────────
             "gross_margin":     sd(gross_profit, revenue) * 100,
@@ -260,10 +270,12 @@ class TallyBridge:
             "fcf_margin":         np.nan,
             "cash_conversion":    np.nan,
 
-            # ── Raw values (used by downstream scorecard) ──────────────
-            "total_revenue":  revenue,
-            "ebitda":         ebit,
-            "total_assets":   total_assets,
-            "total_debt":     debt,
-            "total_equity":   equity,
+            # ── Raw values & Basis Metadata ────────────────────────────
+            "total_revenue":    revenue,
+            "ebit":             ebit,
+            "ebitda":           np.nan,  # Unavailable without fixed asset depreciation schedule
+            "total_assets":     total_assets,
+            "total_debt":       debt,
+            "total_equity":     equity,
+            "net_income_basis": net_income_basis,
         }

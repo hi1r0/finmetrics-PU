@@ -147,6 +147,7 @@ class ClientComparator:
         client_df = pd.DataFrame([client_ratios], index=[client_name])
         client_df.index.name = "ticker"
         
+        is_pretax_proxy = (client_ratios.get("net_income_basis") == "ebit_proxy_partial")
         results = []
         for ratio in client_df.columns:
             if ratio not in peer_stats_df.index:
@@ -158,6 +159,11 @@ class ClientComparator:
             res = self.classifier.classify_ratio(ratio, raw_val, peer_row, peer_vals)
             res["ticker"] = client_name
             res["is_outlier_excluded"] = False
+            
+            if is_pretax_proxy and ratio in {"net_margin", "roa", "roe"} and not pd.isna(raw_val):
+                res["health_label"] = "Approximated (pre-tax/interest basis)"
+                res["signal"] = "warning"
+                
             results.append(res)
             
         scorecard = pd.DataFrame(results)

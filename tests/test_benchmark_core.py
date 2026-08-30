@@ -81,3 +81,36 @@ def test_client_comparator_evaluation(tmp_path):
     assert (client_res.pillar_summary_df["ticker"] == "MyClient").any()
     assert client_res.pillar_summary_df.iloc[0]["composite_score"] > 50.0
 
+def test_client_comparator_proxy_tagging(tmp_path):
+    """Test ClientComparator marks proxy net income metrics with caution label."""
+    from modules.benchmark_store import BenchmarkStore
+    from modules.client_comparator import ClientComparator
+    
+    store = BenchmarkStore(benchmarks_dir=tmp_path)
+    data = {
+        "gross_margin": [40.0, 42.0, 39.0, 41.0, 40.5],
+        "net_margin": [12.0, 13.0, 11.5, 12.5, 12.0],
+        "roe": [15.0, 16.0, 14.5, 15.5, 15.0],
+        "roa": [8.0, 8.5, 7.8, 8.2, 8.0],
+    }
+    index = ["CO_A", "CO_B", "CO_C", "CO_D", "CO_E"]
+    ratio_df = pd.DataFrame(data, index=index)
+    core = BenchmarkCore()
+    result = core.run(ratio_df, pd.DataFrame())
+    store.save("Retail", result.peer_stats_df, result.clean_matrix)
+    
+    comparator = ClientComparator(store=store)
+    client_ratios = {
+        "gross_margin": 45.0,
+        "net_margin": 14.0,
+        "roe": 18.0,
+        "roa": 9.0,
+        "net_income_basis": "ebit_proxy_partial",
+    }
+    client_res = comparator.compare_client(client_ratios, sector="Retail", client_name="TallyClient")
+    scorecard = client_res.ratio_scorecard_df
+    
+    net_margin_row = scorecard[scorecard["ratio"] == "net_margin"].iloc[0]
+    assert net_margin_row["health_label"] == "Approximated (pre-tax/interest basis)"
+    assert net_margin_row["signal"] == "warning"
+
