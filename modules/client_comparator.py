@@ -5,7 +5,14 @@ import numpy as np
 
 from modules.benchmark_store import BenchmarkStore
 from modules.benchmark_classifier import BenchmarkClassifier
-from modules.benchmark_core import BenchmarkCoreResult, PILLARS, PILLAR_WEIGHTS, RISK_CATEGORIES
+from modules.benchmark_core import (
+    BenchmarkCoreResult,
+    PILLARS,
+    PILLAR_WEIGHTS,
+    RISK_CATEGORIES,
+    score_pillars,
+    rank_and_categorize,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -175,49 +182,8 @@ class ClientComparator:
                 
         scorecard["pillar"] = scorecard["ratio"].map(lambda r: ratio_to_pillar.get(r, "Other"))
         
-        pct_df = scorecard.pivot(index="ticker", columns="ratio", values="percentile_rank")
-        pillar_summary = pd.DataFrame(index=pct_df.index)
-        
-        for pillar, metrics in PILLARS.items():
-            col_name = f"{pillar.lower()}_score"
-            available = [(col, w) for col, w, _ in metrics if col in pct_df.columns]
-            if not available:
-                pillar_summary[col_name] = 50.0
-                continue
-                
-            weighted_sum = pd.Series(0.0, index=pct_df.index)
-            total_weight = pd.Series(0.0, index=pct_df.index)
-            
-            for col, weight in available:
-                vals = pct_df[col]
-                mask = vals.notna()
-                weighted_sum += vals.fillna(0) * weight * mask.astype(float)
-                total_weight += mask.astype(float) * weight
-                
-            pillar_summary[col_name] = (weighted_sum / total_weight.replace(0, np.nan)).fillna(50.0).round(2)
-            
-        composite = pd.Series(0.0, index=pillar_summary.index)
-        total_weight_comp = 0.0
-        
-        for pillar, weight in PILLAR_WEIGHTS.items():
-            col_name = f"{pillar.lower()}_score"
-            if col_name in pillar_summary.columns:
-                composite += pillar_summary[col_name] * weight
-                total_weight_comp += weight
-                
-        if total_weight_comp > 0:
-            composite = composite / total_weight_comp
-            
-        pillar_summary["composite_score"] = composite.round(2)
-        
-        def get_risk(score):
-            for threshold, label in RISK_CATEGORIES:
-                if score >= threshold:
-                    return label
-            return "Distressed"
-            
-        pillar_summary["risk_category"] = pillar_summary["composite_score"].apply(get_risk)
-        pillar_summary = pillar_summary.reset_index()
+        pillar_summary = score_pillars(scorecard, PILLARS)
+        pillar_summary = rank_and_categorize(pillar_summary, PILLAR_WEIGHTS)
         
         return BenchmarkCoreResult(
             peer_stats_df=peer_stats_df,

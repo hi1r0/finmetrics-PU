@@ -150,6 +150,7 @@ class BenchmarkCore:
             if ticker in clean.index and ratio in clean.columns:
                 clean.at[ticker, ratio] = np.nan
 
+        clean.attrs = dict(ratio_df.attrs)
         return clean
 
     def _compute_peer_stats(self, clean_matrix: pd.DataFrame) -> pd.DataFrame:
@@ -228,79 +229,98 @@ class BenchmarkCore:
         return scorecard[cols]
 
     def _score_pillars(self, ratio_scorecard_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Aggregate ratio percentile ranks into pillar scores (0-100).
-        """
-        if ratio_scorecard_df.empty:
-            return pd.DataFrame()
-            
-        pct_df = ratio_scorecard_df.pivot(index="ticker", columns="ratio", values="percentile_rank")
-        result = pd.DataFrame(index=pct_df.index)
-        
-        for pillar, metrics in self.pillars.items():
-            col_name = f"{pillar.lower()}_score"
-            
-            available = [(col, w) for col, w, _ in metrics if col in pct_df.columns]
-            if not available:
-                result[col_name] = 50.0
-                continue
-                
-            weighted_sum = pd.Series(0.0, index=pct_df.index)
-            total_weight = pd.Series(0.0, index=pct_df.index)
-            
-            for col, weight in available:
-                vals = pct_df[col]
-                mask = vals.notna()
-                weighted_sum += vals.fillna(0) * weight * mask.astype(float)
-                total_weight += mask.astype(float) * weight
-                
-            result[col_name] = (weighted_sum / total_weight.replace(0, np.nan)).fillna(50.0).round(2)
-            
-        return result
+        """Aggregate ratio percentile ranks into pillar scores (0-100)."""
+        return score_pillars(ratio_scorecard_df, self.pillars)
 
     def _rank_categorize(self, pillar_summary_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Compute composite score, sector rank, percentile and risk category.
-        """
-        if pillar_summary_df.empty:
-            return pillar_summary_df
-            
-        df = pillar_summary_df.copy()
-        
-        composite = pd.Series(0.0, index=df.index)
-        total_weight = 0.0
-        
-        for pillar, weight in self.pillar_weights.items():
-            col_name = f"{pillar.lower()}_score"
-            if col_name in df.columns:
-                composite += df[col_name] * weight
-                total_weight += weight
-                
-        if total_weight > 0:
-            composite = composite / total_weight
-            
-        df["composite_score"] = composite.round(2)
-        
-        df["sector_rank"] = df["composite_score"].rank(ascending=False, method="min").astype(int)
-        
-        n = len(df)
-        df["percentile"] = (((n - df["sector_rank"]) / max(n - 1, 1)) * 100).round(1)
-        
-        def get_risk(score):
-            for threshold, label in RISK_CATEGORIES:
-                if score >= threshold:
-                    return label
-            return "Distressed"
-            
-        df["risk_category"] = df["composite_score"].apply(get_risk)
-        
-        lead_cols = ["composite_score", "sector_rank", "percentile", "risk_category"]
-        pillar_cols = [c for c in df.columns if c.endswith("_score") and c != "composite_score"]
-        
-        df = df[lead_cols + sorted(pillar_cols)]
-        
-        df = df.reset_index()
-        if "index" in df.columns:
-            df = df.rename(columns={"index": "ticker"})
-            
-        return df
+        """Compute composite score, sector rank, percentile and risk category."""
+        return rank_and_categorize(pillar_summary_df, self.pillar_weights)
+
+
+# ---------------------------------------------------------------------------
+# Module-level pure scoring functions (Shared between Core and Comparator)
+# ---------------------------------------------------------------------------
+
+def score_pillars(
+    ratio_scorecard_df: pd.DataFrame,
+    pillars: Optional[Dict] = None,
+) -> pd.DataFrame:
+    """
+    Pure function: Aggregate ratio percentile ranks into pillar scores (0-100).
+    """
+    if ratio_scorecard_df.empty:
+        return pd.DataFrame()
+
+    pillars = pillars or PILLARS
+    pct_df = ratio_scorecard_df.pivot(index="ticker", columns="ratio", values="percentile_rank")
+    result = pd.DataFrame(index=pct_df.index)
+
+    for pillar, metrics in pillars.items():
+        col_name = f"{pillar.lower()}_score"
+        available = [(col, w) for col, w, _ in metrics if col in pct_df.columns]
+        if not available:
+            result[col_name] = 50.0
+            continue
+
+        weighted_sum = pd.Series(0.0, index=pct_df.index)
+        total_weight = pd.Series(0.0, index=pct_df.index)
+
+        for col, weight in available:
+            vals = pct_df[col]
+            mask = vals.notna()
+            weighted_sum += vals.fillna(0) * weight * mask.astype(float)
+            total_weight += mask.astype(float) * weight
+
+        result[col_name] = (weighted_sum / total_weight.replace(0, np.nan)).fillna(50.0).round(2)
+
+    return result
+
+
+def rank_and_categorize(
+    pillar_summary_df: pd.DataFrame,
+    pillar_weights: Optional[Dict[str, float]] = None,
+) -> pd.DataFrame:
+    """
+    Pure function: Compute composite score, sector rank, percentile and risk category.
+    """
+    if pillar_summary_df.empty:
+        return pillar_summary_df
+
+    pillar_weights = pillar_weights or PILLAR_WEIGHTS
+    df = pillar_summary_df.copy()
+
+    composite = pd.Series(0.0, index=df.index)
+    total_weight = 0.0
+
+    for pillar, weight in pillar_weights.items():
+        col_name = f"{pillar.lower()}_score"
+        if col_name in df.columns:
+            composite += df[col_name] * weight
+            total_weight += weight
+
+    if total_weight > 0:
+        composite = composite / total_weight
+
+    df["composite_score"] = composite.round(2)
+    df["sector_rank"] = df["composite_score"].rank(ascending=False, method="min").astype(int)
+
+    n = len(df)
+    df["percentile"] = (((n - df["sector_rank"]) / max(n - 1, 1)) * 100).round(1)
+
+    def get_risk(score):
+        for threshold, label in RISK_CATEGORIES:
+            if score >= threshold:
+                return label
+        return "Distressed"
+
+    df["risk_category"] = df["composite_score"].apply(get_risk)
+
+    lead_cols = ["composite_score", "sector_rank", "percentile", "risk_category"]
+    pillar_cols = [c for c in df.columns if c.endswith("_score") and c != "composite_score"]
+
+    df = df[lead_cols + sorted(pillar_cols)]
+    df = df.reset_index()
+    if "index" in df.columns:
+        df = df.rename(columns={"index": "ticker"})
+
+    return df

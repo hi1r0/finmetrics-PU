@@ -32,6 +32,8 @@ class BenchmarkStore:
             "sector": sector,
             "timestamp": datetime.now().isoformat(),
             "n_peers": len(clean_matrix),
+            "requested_tickers": clean_matrix.attrs.get("requested_tickers", []),
+            "failed_tickers": clean_matrix.attrs.get("failed_tickers", []),
         }
         if metadata:
             meta.update(metadata)

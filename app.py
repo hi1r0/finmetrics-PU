@@ -700,7 +700,7 @@ def run_pipeline(cfg: Dict):
 
     # Step 4 – Ratios
     status.info("Computing financial ratios...")
-    ratio_df = ratio_engine.compute_all(parsed, market_info)
+    ratio_df = ratio_engine.compute_all(parsed, market_info, requested_tickers=tickers)
     growth_df = ratio_engine.compute_growth_metrics(parsed)
     progress.progress(75)
 
@@ -709,12 +709,17 @@ def run_pipeline(cfg: Dict):
         progress.empty(); status.empty()
         return
 
+    failed_tickers = ratio_df.attrs.get("failed_tickers", [])
+
     # Step 5 – Outliers
     status.info("Detecting outliers...")
     if not growth_df.empty:
         merged = ratio_df.join(growth_df, how="left")
     else:
         merged = ratio_df
+    merged.attrs["failed_tickers"] = failed_tickers
+    merged.attrs["requested_tickers"] = tickers
+
     outlier_df = outlier_engine.detect(merged)
     anomaly_scores = outlier_engine.detect_multivariate(merged, contamination=cfg["contamination"])
     progress.progress(85)
@@ -731,13 +736,15 @@ def run_pipeline(cfg: Dict):
     st.session_state.parsed_data = parsed
     st.session_state.market_info = market_info
     st.session_state.selected_sector = cfg["chosen"]
-    st.session_state.tickers_used = list(raw_data.keys())
+    st.session_state.requested_tickers = tickers
+    st.session_state.failed_tickers = failed_tickers
+    st.session_state.tickers_used = list(ratio_df.index)
     st.session_state.growth_df = growth_df
     st.session_state.anomaly_scores = anomaly_scores
     st.session_state.benchmark_result = benchmark_result
     st.session_state.client_result = None # Clear client result
 
-    status.success(f"Benchmark generation complete — {len(raw_data)} companies processed.")
+    status.success(f"Benchmark generation complete — {len(ratio_df)}/{len(tickers)} companies processed.")
     time.sleep(1)
     progress.empty()
     status.empty()
@@ -1685,6 +1692,23 @@ def page_outliers(result: BenchmarkCoreResult):
 
 def page_peer_benchmark(result: BenchmarkCoreResult):
     st.markdown("## Peer Benchmark")
+    
+    # Peer Universe Coverage Badge (F9)
+    req_tickers = st.session_state.get("requested_tickers", [])
+    failed_tickers = st.session_state.get("failed_tickers", [])
+    tickers_used = st.session_state.get("tickers_used", [])
+    
+    total_requested = len(req_tickers) if req_tickers else (len(tickers_used) + len(failed_tickers))
+    included_count = len(tickers_used) if tickers_used else (len(result.clean_matrix) if result.clean_matrix is not None else 0)
+    
+    if total_requested > 0:
+        if failed_tickers:
+            st.info(f"**Peer Universe Coverage:** {included_count}/{total_requested} peers included ({len(failed_tickers)} skipped due to missing statements or data errors).")
+            with st.expander("View Skipped Tickers"):
+                st.write(", ".join(failed_tickers))
+        else:
+            st.success(f"**Peer Universe Coverage:** {included_count}/{total_requested} peers included (100% complete).")
+
     peer_stats = result.peer_stats_df
     if peer_stats is None or peer_stats.empty:
         st.info("No peer statistics available.")

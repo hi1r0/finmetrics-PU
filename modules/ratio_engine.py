@@ -16,6 +16,15 @@ from modules.utils import safe_divide, pct_change
 logger = logging.getLogger(__name__)
 
 
+# Metrics already expressed as percentages or percentage rates.
+# Changes for these are reported in percentage points (.diff()) rather than pct_change().
+PERCENTAGE_METRICS = {
+    "gross_margin", "operating_margin", "net_margin",
+    "roe", "roa", "roce", "fcf_margin", "dividend_yield",
+    "revenue_growth", "net_income_growth", "ebitda_growth", "ocf_growth",
+}
+
+
 class RatioEngine:
     """
     Computes financial ratios for a set of parsed company statements.
@@ -32,6 +41,7 @@ class RatioEngine:
         self,
         parsed: Dict[str, Dict[str, pd.DataFrame]],
         market_info: Optional[Dict[str, Dict]] = None,
+        requested_tickers: Optional[List[str]] = None,
     ) -> pd.DataFrame:
         """
         Compute the latest-quarter ratios for every company.
@@ -41,18 +51,31 @@ class RatioEngine:
         DataFrame  rows = tickers, columns = ratio names
         """
         rows: Dict[str, Dict[str, float]] = {}
-        for ticker, stmts in parsed.items():
+        failed_tickers: List[str] = []
+
+        req = requested_tickers if requested_tickers is not None else list(parsed.keys())
+        for ticker in req:
+            if ticker not in parsed or not parsed[ticker]:
+                failed_tickers.append(ticker)
+                continue
+            stmts = parsed[ticker]
             try:
                 ratios = self._compute_ticker_ratios(ticker, stmts, market_info)
                 rows[ticker] = ratios
             except Exception as exc:
                 logger.error("Ratio calc failed for %s: %s", ticker, exc)
+                failed_tickers.append(ticker)
 
         if not rows:
-            return pd.DataFrame()
+            df = pd.DataFrame()
+            df.attrs["failed_tickers"] = failed_tickers
+            df.attrs["requested_tickers"] = req
+            return df
 
         df = pd.DataFrame(rows).T
         df.index.name = "ticker"
+        df.attrs["failed_tickers"] = failed_tickers
+        df.attrs["requested_tickers"] = req
         return df
 
     def compute_ratio_history(
@@ -90,14 +113,38 @@ class RatioEngine:
 
     def compute_changes(self, ratio_history: pd.DataFrame) -> pd.DataFrame:
         """
-        Compute QoQ and YoY percentage changes for each ratio.
+        Compute QoQ and YoY changes for each ratio.
+        - For percentage metrics (margins, returns, yields), uses percentage point difference (.diff()).
+        - For multiples and turnover metrics, uses safe percentage change (.pct_change()),
+          flagging negative/zero base values as NaN to avoid misleading sign-flip distortions.
         Returns DataFrame with same index, columns suffixed _qoq / _yoy.
         """
-        qoq = ratio_history.pct_change(1) * 100
-        yoy = ratio_history.pct_change(4) * 100   # 4 quarters ≈ 1 year
-        qoq.columns = [f"{c}_qoq" for c in qoq.columns]
-        yoy.columns = [f"{c}_yoy" for c in yoy.columns]
-        return pd.concat([qoq, yoy], axis=1)
+        if ratio_history.empty:
+            return pd.DataFrame()
+
+        qoq_dict = {}
+        yoy_dict = {}
+
+        for col in ratio_history.columns:
+            s = ratio_history[col]
+            if col in PERCENTAGE_METRICS or col.endswith("_margin") or col.endswith("_growth"):
+                # Percentage points difference
+                qoq_dict[f"{col}_qoq"] = s.diff(1)
+                yoy_dict[f"{col}_yoy"] = s.diff(4)
+            else:
+                # Multiples / turnover: safe pct change (valid only when base > 0)
+                prev_1 = s.shift(1)
+                prev_4 = s.shift(4)
+
+                qoq_val = ((s - prev_1) / prev_1 * 100).where(prev_1 > 0, np.nan)
+                yoy_val = ((s - prev_4) / prev_4 * 100).where(prev_4 > 0, np.nan)
+
+                qoq_dict[f"{col}_qoq"] = qoq_val
+                yoy_dict[f"{col}_yoy"] = yoy_val
+
+        qoq_df = pd.DataFrame(qoq_dict, index=ratio_history.index)
+        yoy_df = pd.DataFrame(yoy_dict, index=ratio_history.index)
+        return pd.concat([qoq_df, yoy_df], axis=1)
 
     # ── Private helpers ───────────────────────────────────────────────────────
 
