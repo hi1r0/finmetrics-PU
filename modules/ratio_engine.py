@@ -128,9 +128,13 @@ class RatioEngine:
         for col in ratio_history.columns:
             s = ratio_history[col]
             if col in PERCENTAGE_METRICS or col.endswith("_margin") or col.endswith("_growth"):
-                # Percentage points difference
-                qoq_dict[f"{col}_qoq"] = s.diff(1)
-                yoy_dict[f"{col}_yoy"] = s.diff(4)
+                # Percentage points difference (with explicit _pp aliases)
+                d1 = s.diff(1)
+                d4 = s.diff(4)
+                qoq_dict[f"{col}_qoq"] = d1
+                yoy_dict[f"{col}_yoy"] = d4
+                qoq_dict[f"{col}_qoq_pp"] = d1
+                yoy_dict[f"{col}_yoy_pp"] = d4
             else:
                 # Multiples / turnover: safe pct change (valid only when base > 0)
                 prev_1 = s.shift(1)

@@ -24,11 +24,15 @@ def test_compute_changes_percentage_metrics_use_diff():
     
     assert "net_margin_qoq" in changes.columns
     assert "net_margin_yoy" in changes.columns
+    assert "net_margin_qoq_pp" in changes.columns
+    assert "net_margin_yoy_pp" in changes.columns
     
     # QoQ for Q2: +5.0 percentage points
     assert changes.loc["2025-06-30", "net_margin_qoq"] == pytest.approx(5.0, 0.01)
+    assert changes.loc["2025-06-30", "net_margin_qoq_pp"] == pytest.approx(5.0, 0.01)
     # YoY for Q5 (index 4 vs index 0): 8.0 - (-2.0) = +10.0 percentage points
     assert changes.loc["2026-03-31", "net_margin_yoy"] == pytest.approx(10.0, 0.01)
+    assert changes.loc["2026-03-31", "net_margin_yoy_pp"] == pytest.approx(10.0, 0.01)
     
     # Gross margin QoQ for Q2: 22 - 20 = +2.0 percentage points
     assert changes.loc["2025-06-30", "gross_margin_qoq"] == pytest.approx(2.0, 0.01)

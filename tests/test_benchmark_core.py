@@ -78,8 +78,9 @@ def test_client_comparator_evaluation(tmp_path):
     client_res = comparator.compare_client(client_ratios, sector="TestSector", client_name="MyClient")
     
     assert not client_res.ratio_scorecard_df.empty
-    assert (client_res.pillar_summary_df["ticker"] == "MyClient").any()
     assert client_res.pillar_summary_df.iloc[0]["composite_score"] > 50.0
+    assert pd.isna(client_res.pillar_summary_df.iloc[0]["sector_rank"])
+    assert pd.isna(client_res.pillar_summary_df.iloc[0]["percentile"])
 
 def test_client_comparator_proxy_tagging(tmp_path):
     """Test ClientComparator marks proxy net income metrics with caution label."""

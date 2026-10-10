@@ -183,7 +183,7 @@ class ClientComparator:
         scorecard["pillar"] = scorecard["ratio"].map(lambda r: ratio_to_pillar.get(r, "Other"))
         
         pillar_summary = score_pillars(scorecard, PILLARS)
-        pillar_summary = rank_and_categorize(pillar_summary, PILLAR_WEIGHTS)
+        pillar_summary = rank_and_categorize(pillar_summary, PILLAR_WEIGHTS, compute_rank=False)
         
         return BenchmarkCoreResult(
             peer_stats_df=peer_stats_df,

@@ -279,6 +279,7 @@ def score_pillars(
 def rank_and_categorize(
     pillar_summary_df: pd.DataFrame,
     pillar_weights: Optional[Dict[str, float]] = None,
+    compute_rank: bool = True,
 ) -> pd.DataFrame:
     """
     Pure function: Compute composite score, sector rank, percentile and risk category.
@@ -302,10 +303,14 @@ def rank_and_categorize(
         composite = composite / total_weight
 
     df["composite_score"] = composite.round(2)
-    df["sector_rank"] = df["composite_score"].rank(ascending=False, method="min").astype(int)
 
-    n = len(df)
-    df["percentile"] = (((n - df["sector_rank"]) / max(n - 1, 1)) * 100).round(1)
+    if compute_rank and len(df) > 1:
+        df["sector_rank"] = df["composite_score"].rank(ascending=False, method="min").astype(int)
+        n = len(df)
+        df["percentile"] = (((n - df["sector_rank"]) / max(n - 1, 1)) * 100).round(1)
+    else:
+        df["sector_rank"] = np.nan
+        df["percentile"] = np.nan
 
     def get_risk(score):
         for threshold, label in RISK_CATEGORIES:
