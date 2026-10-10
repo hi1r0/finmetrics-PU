@@ -40,6 +40,22 @@ from modules.ai_handler import AIHandler
 from modules.tally_bridge import TallyBridge
 from modules.utils import setup_logging, severity_label, format_pct, safe_divide
 
+# Reconciliation Modules (Track 04)
+from modules.reconciliation_config import ReconciliationConfig
+from modules.reconciliation_engine import (
+    ReconciliationEngine,
+    MatchTier,
+    MatchStatus,
+    ExceptionSeverity,
+    ReconciliationResult,
+)
+from modules.reconciliation_benchmark import (
+    generate_synthetic_benchmark_batch,
+    evaluate_reconciliation_benchmark,
+)
+from modules.reconciliation_report import ReconciliationReporter
+from modules.bank_statement_loader import BankStatementLoader
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env if present
@@ -2593,6 +2609,120 @@ def combine_client_and_peer_results(client_res: BenchmarkCoreResult, peer_res: B
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# RECONCILIATION PAGE (Track 04 Deliverable)
+# ──────────────────────────────────────────────────────────────────────────────
+def page_reconciliation():
+    st.markdown("## Multi-Source Financial Reconciliation")
+    st.caption("Automated 3-tier cascade matching (Exact, Fuzzy, Split) across independent record sets with measured accuracy, confidence scoring, and exception triage.")
+
+    c_mode1, c_mode2 = st.columns([1, 1])
+    with c_mode1:
+        st.markdown("### 1. Ground Truth Benchmark (Track 04)")
+        st.write("Run the verified 60-record synthetic ground-truth test batch (40 Exact, 10 Fuzzy, 5 Split, 5 Exceptions) to measure precision, recall, and confusion matrix.")
+        run_benchmark_btn = st.button("Run 60-Record Ground Truth Benchmark", use_container_width=True, type="primary")
+
+    with c_mode2:
+        st.markdown("### 2. Live File Ingestion")
+        st.write("Upload a Bank Statement CSV/Excel to reconcile against client Tally JV records.")
+        bank_file = st.file_uploader("Upload Bank Statement (CSV/XLSX)", type=["csv", "xlsx", "xls"], key="recon_bank_file")
+        run_live_btn = st.button("Reconcile with Bundled Client Data", use_container_width=True, disabled=(bank_file is None))
+
+    if run_benchmark_btn:
+        with st.spinner("Executing 3-tier cascade matching over ground-truth batch..."):
+            engine = ReconciliationEngine()
+            eval_res = evaluate_reconciliation_benchmark(engine)
+            st.session_state.recon_eval_result = eval_res
+            st.session_state.recon_result = eval_res["result"]
+
+    if run_live_btn and bank_file is not None:
+        with st.spinner("Ingesting and reconciling bank feed with Tally JV..."):
+            bank_records = BankStatementLoader.load_bank_statement(bank_file)
+            jv_path = Path("client/PRIME RETAIL VENTURES - JV - 2025-26.csv")
+            if jv_path.exists():
+                tally_records = BankStatementLoader.load_tally_jv(jv_path)
+                engine = ReconciliationEngine()
+                res = engine.reconcile(tally_records, bank_records)
+                st.session_state.recon_result = res
+                st.session_state.recon_eval_result = None
+            else:
+                st.error("Bundled client JV file not found.")
+
+    res: Optional[ReconciliationResult] = st.session_state.get("recon_result")
+    if res is None:
+        st.info("Select an option above to run the multi-source reconciliation pipeline.")
+        return
+
+    # Decomposed Match Metrics
+    st.markdown("---")
+    st.markdown("### Reconciled Metrics Breakdown")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Overall Match Rate", f"{res.match_rate:.1f}%", help="Tier 1 + Tier 2 + Tier 3 resolved matches / Total records")
+    m2.metric("Auto-Resolved Rate", f"{res.auto_resolved_rate:.1f}%", help="Tier 1 exact + high-confidence Tier 2 matches")
+    m3.metric("Review-Required Rate", f"{res.review_required_rate:.1f}%", help="Partial fuzzy matches flagged for human sign-off")
+    m4.metric("Exception Rate", f"{res.exception_rate:.1f}%", help="Unresolved records requiring investigation", delta=f"{res.exception_rate:.1f}%", delta_color="inverse")
+
+    # If benchmark mode, show Ground Truth Accuracy & Confusion Matrix
+    eval_res = st.session_state.get("recon_eval_result")
+    if eval_res is not None:
+        st.markdown("### Ground-Truth Accuracy & Confusion Matrix")
+        met = eval_res["metrics"]
+        g1, g2, g3, g4 = st.columns(4)
+        g1.metric("Precision", f"{met['precision']*100:.1f}%")
+        g2.metric("Recall", f"{met['recall']*100:.1f}%")
+        g3.metric("F1 Score", f"{met['f1_score']*100:.1f}%")
+        g4.metric("Overall Accuracy", f"{met['accuracy']*100:.1f}%")
+
+        st.markdown("#### Confusion Matrix (Actual vs Predicted)")
+        st.dataframe(eval_res["confusion_matrix"], use_container_width=True, hide_index=True)
+
+    # Tabs for Matches and Exceptions
+    m_tab, e_tab = st.tabs(["Matched Records", "Audit Exceptions & Review"])
+
+    with m_tab:
+        st.markdown(f"**Matched Records ({len(res.matches_df)} pairs)**")
+        if not res.matches_df.empty:
+            st.dataframe(res.matches_df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No matched pairs.")
+
+    with e_tab:
+        st.markdown(f"**Exception Items ({len(res.exceptions_df)} records)**")
+        if not res.exceptions_df.empty:
+            sev_filter = st.multiselect("Filter by Severity", ["HIGH", "MEDIUM", "LOW"], default=["HIGH", "MEDIUM", "LOW"])
+            filtered_exc = res.exceptions_df[res.exceptions_df["severity"].isin(sev_filter)]
+            st.dataframe(filtered_exc, use_container_width=True, hide_index=True)
+        else:
+            st.success("Zero exceptions found.")
+
+    # Export Section
+    st.markdown("---")
+    st.markdown("### Export Reconciliation Deliverables")
+    exp1, exp2 = st.columns(2)
+    with exp1:
+        if st.button("Export Excel Exception Report", use_container_width=True):
+            excel_path = ReconciliationReporter.export_excel(res)
+            with open(excel_path, "rb") as f:
+                st.download_button(
+                    "Download Excel Report",
+                    f.read(),
+                    file_name="Reconciliation_Exception_Report.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
+    with exp2:
+        if st.button("Export JSON Audit Trail", use_container_width=True):
+            json_path = ReconciliationReporter.export_json(res)
+            with open(json_path, "rb") as f:
+                st.download_button(
+                    "Download Audit JSON",
+                    f.read(),
+                    file_name="reconciliation_result.json",
+                    mime="application/json",
+                    use_container_width=True,
+                )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # MAIN ROUTER
 # ──────────────────────────────────────────────────────────────────────────────
 def main():
@@ -2606,6 +2736,7 @@ def main():
         "Peer Benchmark",
         "Composite Score",
         "Client Comparison",
+        "Reconciliation",
         "Export",
     ])
 
@@ -2648,10 +2779,14 @@ def main():
     with tabs[5]:
         page_tally_client(result)
 
+    # Reconciliation Tab (index 6 - Self contained)
+    with tabs[6]:
+        page_reconciliation()
+
     if result is not None:
-        with tabs[6]: page_export(result)
+        with tabs[7]: page_export(result)
     else:
-        for i in [1, 2, 3, 4, 6]:
+        for i in [1, 2, 3, 4, 7]:
             with tabs[i]:
                 st.info("Run an analysis first.")
 
