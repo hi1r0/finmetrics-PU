@@ -46,13 +46,9 @@ def test_outlier_value_survives_in_own_scorecard():
     # Median of [0.5, 0.6, 0.7, 0.8, 0.9] is 0.7
     assert de_median == pytest.approx(0.7, 0.01)
 
-def test_client_comparator_evaluation(tmp_path):
-    """Test ClientComparator correctly compares client against benchmark store."""
-    from modules.benchmark_store import BenchmarkStore
-    from modules.client_comparator import ClientComparator
-    
-    store = BenchmarkStore(benchmarks_dir=tmp_path)
-    
+def test_score_pillars_and_rank_and_categorize():
+    """Verify extracted pure functions score_pillars and rank_and_categorize compute composite metrics."""
+    from modules.benchmark_core import score_pillars, rank_and_categorize
     data = {
         "debt_to_equity": [0.5, 0.6, 0.7, 0.8, 0.9],
         "gross_margin": [40.0, 42.0, 39.0, 41.0, 40.5],
@@ -62,56 +58,12 @@ def test_client_comparator_evaluation(tmp_path):
     }
     index = ["CO_A", "CO_B", "CO_C", "CO_D", "CO_E"]
     ratio_df = pd.DataFrame(data, index=index)
-    
     core = BenchmarkCore()
-    result = core.run(ratio_df, pd.DataFrame())
-    store.save("TestSector", result.peer_stats_df, result.clean_matrix)
-    
-    comparator = ClientComparator(store=store)
-    client_ratios = {
-        "debt_to_equity": 0.6,
-        "gross_margin": 45.0,
-        "net_margin": 14.0,
-        "roe": 18.0,
-        "roa": 9.0,
-    }
-    client_res = comparator.compare_client(client_ratios, sector="TestSector", client_name="MyClient")
-    
-    assert not client_res.ratio_scorecard_df.empty
-    assert client_res.pillar_summary_df.iloc[0]["composite_score"] > 50.0
-    assert pd.isna(client_res.pillar_summary_df.iloc[0]["sector_rank"])
-    assert pd.isna(client_res.pillar_summary_df.iloc[0]["percentile"])
-
-def test_client_comparator_proxy_tagging(tmp_path):
-    """Test ClientComparator marks proxy net income metrics with caution label."""
-    from modules.benchmark_store import BenchmarkStore
-    from modules.client_comparator import ClientComparator
-    
-    store = BenchmarkStore(benchmarks_dir=tmp_path)
-    data = {
-        "gross_margin": [40.0, 42.0, 39.0, 41.0, 40.5],
-        "net_margin": [12.0, 13.0, 11.5, 12.5, 12.0],
-        "roe": [15.0, 16.0, 14.5, 15.5, 15.0],
-        "roa": [8.0, 8.5, 7.8, 8.2, 8.0],
-    }
-    index = ["CO_A", "CO_B", "CO_C", "CO_D", "CO_E"]
-    ratio_df = pd.DataFrame(data, index=index)
-    core = BenchmarkCore()
-    result = core.run(ratio_df, pd.DataFrame())
-    store.save("Retail", result.peer_stats_df, result.clean_matrix)
-    
-    comparator = ClientComparator(store=store)
-    client_ratios = {
-        "gross_margin": 45.0,
-        "net_margin": 14.0,
-        "roe": 18.0,
-        "roa": 9.0,
-        "net_income_basis": "ebit_proxy_partial",
-    }
-    client_res = comparator.compare_client(client_ratios, sector="Retail", client_name="TallyClient")
-    scorecard = client_res.ratio_scorecard_df
-    
-    net_margin_row = scorecard[scorecard["ratio"] == "net_margin"].iloc[0]
-    assert net_margin_row["health_label"] == "Approximated (pre-tax/interest basis)"
-    assert net_margin_row["signal"] == "warning"
+    res = core.run(ratio_df, pd.DataFrame())
+    pillar_summary = score_pillars(res.ratio_scorecard_df, core.pillars)
+    ranked = rank_and_categorize(pillar_summary, core.pillar_weights, compute_rank=True)
+    assert not ranked.empty
+    assert "composite_score" in ranked.columns
+    assert "sector_rank" in ranked.columns
+    assert len(ranked) == 5
 

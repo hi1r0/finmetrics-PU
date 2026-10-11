@@ -1,6 +1,8 @@
-# FinMetrics Suite Pvt: Cross-Sectional Financial Outlier Detection and Client Benchmarking System
+# FinMetrics Suite: Institutional Investment Choice & Financial Health Diagnostics
 
-An enterprise-grade cross-sectional financial intelligence platform for National Stock Exchange (NSE) listed equities and private client corporate entities. The system integrates automated financial statement acquisition, multi-method anomaly detection, 5-pillar composite solvency scoring, Tally ERP 9/Prime trial balance parsing, and automated executive PowerPoint/PDF briefing synthesis.
+An enterprise-grade financial intelligence platform for National Stock Exchange (NSE) listed equities. The system integrates automated financial statement acquisition, specialized sector operating archetypes (IT, FMCG, Pharma, Auto, Metals), Joseph Piotroski's 9-point fundamental accounting quality test, Edward Altman's Z''-Score distress model, DuPont 3-stage ROE decomposition, valuation overlays vs. sector medians, and the Macro Sector Compass.
+
+> **Note on Archival:** Private Tally ERP reconciliation and single-client comparison modules have been safely archived under git tag `archive/tally-reconciliation`.
 
 ---
 
@@ -8,31 +10,32 @@ An enterprise-grade cross-sectional financial intelligence platform for National
 
 ```mermaid
 graph TD
-    subgraph Data Acquisition & Ingestion
+    subgraph Data Acquisition & Sector Catalog
         A1[NSE Sector Mapping] --> B1[Data Fetcher - yfinance API]
-        A2[Client Financial Records] --> B2[Tally Bridge - XML/CSV Parser]
         B1 --> C1[Local Parquet/JSON Cache]
     end
 
-    subgraph Normalization & Ratio Computation
+    subgraph Normalization & Statement Parsing
         B1 --> D1[Financial Parser - Alias Mapping]
-        B2 --> D1
         D1 --> E1[Ratio Engine - 30+ Financial Metrics]
+        D1 --> E2[Canonical Statements - Balance, Income, Cash Flow]
     end
 
-    subgraph Analytical Core
+    subgraph Institutional Diagnostic Core
         E1 --> F1[Outlier Engine - IQR, Z-Score, Isolation Forest]
-        E1 --> F2[Benchmark Core - Sector Statistics & Matrix]
-        F2 --> G1[Client Comparator - Peer Deviation & Percentiles]
-        F1 --> H1[Composite Financial Health Scorer]
+        E1 --> F2[Benchmark Core - Sector Statistics Matrix]
+        E2 --> G1[Piotroski F-Score - 9-Point Accounting Test]
+        E2 --> G2[Altman Z''-Score - Emerging Market Distress Model]
+        E2 --> G3[DuPont 3-Stage - Margin vs Velocity vs Leverage]
+        E1 --> G4[Valuation Overlay - Multiples vs Sector Median]
+        G1 & G2 & G3 & G4 --> H1[Company Health Check - PASS / WATCH / RED_FLAG]
     end
 
-    subgraph Intelligence & Reporting
-        G1 --> I1[AI Handler - Gemini Key Pool & SWOT Engine]
-        H1 --> I1
-        I1 --> J1[Interactive Streamlit Dashboard]
-        I1 --> J2[PPTX Generator - 12-Slide Executive Deck]
-        I1 --> J3[Report Generator - Multi-Sheet Excel & PDF]
+    subgraph Macro Intelligence & Synthesis
+        H1 --> I1[Sector Compass Engine - Attractiveness Leaderboard]
+        H1 --> I2[AI Handler - Gemini Key Pool & Executive Briefing]
+        I1 & I2 --> J1[Interactive Streamlit Dashboard]
+        I1 --> J2[Report Generator - Multi-Sheet Excel & CSV Summary]
     end
 ```
 
@@ -41,48 +44,44 @@ graph TD
 ## 2. Directory Structure and Component Mapping
 
 ```
-finmetrics-suite-pvt/
-|-- app.py                         # Streamlit multi-tab enterprise dashboard entry point
-|-- generate_pdf.py                # Standalone technical & executive PDF compiler
+finmetrics-suite/
+|-- app.py                         # Streamlit multi-tab institutional dashboard entry point
 |-- requirements.txt               # Production Python dependency specification
 |-- .env.example                   # Environment configuration template
 |-- .gitignore                     # Git security and cache exclusion rules
 |-- README.md                      # Primary architectural blueprint and specification
-|-- SYSTEM_LOGICS_AND_BLUEPRINT.md # Mathematical and algorithmic blueprint
-|-- USER_MANUAL.md                 # End-user operational guide
-|-- USER_MANUAL.docx               # Formatted Word manual documentation
-|-- NSE_Outlier_Detective_Overview.pdf # Executive slide deck overview
 |
-|-- modules/                       # Core analytical and presentation engines
+|-- blueprints/                    # Design blueprints and audit roadmaps
+|   |-- 1. CODE_AUDIT_BLUEPRINT.md # Code audit and test coverage tracking
+|   `-- 2. INVESTMENT_HEALTH_BLUEPRINT.md # Institutional investment health architecture
+|
+|-- modules/                       # Core analytical and diagnostic engines
 |   |-- __init__.py                # Package initialization
 |   |-- ai_handler.py              # Multi-key Gemini API management & narrative synthesis
-|   |-- benchmark_classifier.py    # Company size, lifecycle, and model classification
+|   |-- benchmark_classifier.py    # Company percentile position & health labeling
 |   |-- benchmark_core.py          # Sector statistical matrix & distribution modeling
 |   |-- benchmark_store.py         # Disk persistence and caching for benchmark runs
-|   |-- client_comparator.py       # Client-vs-peer deviation, gap, and percentile engine
 |   |-- data_fetcher.py            # yfinance API pipeline with TTL caching & retry logic
-|   |-- financial_parser.py        # Statement standardization, schema aliasing, sign handling
+|   |-- financial_parser.py        # Statement standardization & canonical series mapping
+|   |-- health_models.py           # Piotroski F-Score, Altman Z'', DuPont, and Valuation Overlays
 |   |-- outlier_engine.py          # IQR, Modified Z-Score, and Isolation Forest algorithms
-|   |-- pptx_charts.py             # Native python-pptx vector charting implementations
-|   |-- pptx_components.py         # UI cards, callout containers, scorecards, tables
-|   |-- pptx_design_tokens.py      # Typography, palette, padding, and layout geometries
-|   |-- pptx_generator.py          # Master PowerPoint presentation compiler
-|   |-- pptx_slides.py             # 12 standardized slide layout templates
 |   |-- ratio_engine.py            # 30+ cross-sectional financial ratio calculators
 |   |-- report_generator.py        # Multi-tab styled openpyxl Excel & insight generation
-|   |-- sector_loader.py           # NSE sector and industry ticker catalogs
-|   |-- tally_bridge.py            # Tally XML/CSV parser, account mapping, and trial balance
+|   |-- sector_compass.py          # Cross-sector attractiveness leaderboard & macro breadth
+|   |-- sector_loader.py           # Curated NSE sector and industry ticker catalogs
+|   |-- sector_profiles.py         # Specialized sector recipes (IT, FMCG, Pharma, Auto, Metals)
 |   |-- utils.py                   # Math routines, logging framework, and formatting
 |   `-- visualization.py           # Plotly interactive figures & Abyss Teal styling
 |
-|-- client/                        # Client-specific sample data and trial balances
+|-- tests/                         # Full automated test suite (Pytest)
+|   |-- test_benchmark_core.py     # Pure scoring, outlier survival, and matrix testing
+|   |-- test_health_models.py      # Piotroski, Altman Z'', DuPont, and health verdicts
+|   |-- test_outlier_engine.py     # Outlier detection mathematics
+|   |-- test_ratio_engine.py       # Ratio computation, percentage points, and bounds
+|   `-- test_sector_compass.py     # Macro sector ranking and profile registries
+|
 |-- data/                          # Benchmark cache storage and database targets
-|-- docs/                          # In-depth architectural and mathematical manuals
-|   |-- 01_overview_architecture.md
-|   |-- 02_ratios_and_outliers.md
-|   |-- 03_benchmarking_and_scoring.md
-|   `-- 04_visuals_and_conclusion.md
-`-- Report/                        # Academic & technical LaTeX report source and PDF
+`-- docs/                          # In-depth architectural and mathematical manuals
 ```
 
 ---
