@@ -72,15 +72,32 @@ load_dotenv()
 setup_logging()
 logger = logging.getLogger(__name__)
 
+# Must be the very first Streamlit execution call
+st.set_page_config(
+    page_title="FinMetrics Suite — Institutional Investment Diagnostics",
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 
 # ──────────────────────────────────────────────────────────────────────────────
-# GLOBAL CSS — Abyss Teal Institutional Palette
+# GLOBAL CSS — Abyss Teal Institutional Palette (Widescreen 96%)
 # ──────────────────────────────────────────────────────────────────────────────
 def inject_custom_css():
     st.markdown(
         """
         <style>
         @import url('https://fonts.googleapis.com/css?family=Google+Sans:400,500,700');
+
+        /* ── Full Widescreen Layout ────────────────────────────── */
+        .main .block-container {
+            max-width: 96% !important;
+            padding-top: 1.25rem !important;
+            padding-right: 1.75rem !important;
+            padding-left: 1.75rem !important;
+            padding-bottom: 2rem !important;
+        }
 
         html, body, [class*="css"], .stMarkdown, .stButton, .stTextInput,
         .stSelectbox, .stRadio, .stSlider, .stNumberInput, .stTextArea {
@@ -138,19 +155,108 @@ def inject_custom_css():
             margin-bottom: 10px;
         }
 
-        .signal-pass {
+        /* ── Institutional Text Badges & Status Dots ───────────── */
+        .badge-pass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             color: #00c4a7;
-            font-weight: 600;
+            background: rgba(0, 196, 167, 0.12);
+            border: 1px solid rgba(0, 196, 167, 0.35);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        .signal-fail {
+        .badge-fail {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             color: #f85149;
-            font-weight: 600;
+            background: rgba(248, 81, 73, 0.12);
+            border: 1px solid rgba(248, 81, 73, 0.35);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-watch {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #d29922;
+            background: rgba(210, 153, 34, 0.12);
+            border: 1px solid rgba(210, 153, 34, 0.35);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot-pass {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #00c4a7;
+        }
+
+        .status-dot-fail {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #f85149;
+        }
+
+        .status-dot-watch {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #d29922;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
+
+
+def clean_sector_display_name(raw_name: str) -> str:
+    """Normalizes raw sector names or cache directory slugs to clean institutional labels."""
+    if not raw_name:
+        return ""
+    mapping = {
+        "ai: minerals": "Minerals & Mining",
+        "ai__minerals": "Minerals & Mining",
+        "minerals": "Minerals & Mining",
+        "ai: fmcg": "FMCG",
+        "ai__fmcg": "FMCG",
+        "ai: power": "Power & Energy",
+        "ai: power_": "Power & Energy",
+        "ai__power_": "Power & Energy",
+        "power": "Power & Energy",
+        "ai: electronics": "Electronics & Hardware",
+        "ai__electronics": "Electronics & Hardware",
+        "electronics": "Electronics & Hardware",
+        "ai: banking": "Banking & Finance",
+        "ai__banking": "Banking & Finance",
+        "banking": "Banking & Finance",
+        "automobile": "Automobile",
+        "it": "Information Technology",
+        "information technology": "Information Technology",
+        "pharmaceuticals": "Pharmaceuticals",
+        "pharma": "Pharmaceuticals",
+        "metals & mining": "Metals & Mining",
+        "metals": "Metals & Mining",
+    }
+    cleaned = raw_name.strip()
+    return mapping.get(cleaned.lower(), cleaned)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -547,7 +653,7 @@ def render_sidebar() -> Dict[str, Any]:
 # TAB 1: SECTOR COMPASS (Macro View & Cross-Sector Ranking)
 # ──────────────────────────────────────────────────────────────────────────────
 def page_sector_compass():
-    st.markdown("## 🧭 Macro Sector Compass")
+    st.markdown("## Macro Sector Compass")
     st.caption("Cross-sector fundamental health, balance sheet resilience, and valuation buffers across NSE sectors.")
 
     store = get_benchmark_store()
@@ -577,8 +683,9 @@ def page_sector_compass():
                 st.session_state.sector_checks[sec_name] = checks
 
         if checks:
+            display_name = clean_sector_display_name(sec_name)
             prof = get_sector_profile(sec_name)
-            summary = SectorCompassEngine.evaluate_sector(sec_name, prof.archetype, checks)
+            summary = SectorCompassEngine.evaluate_sector(display_name, prof.archetype, checks)
             if summary:
                 summaries.append(summary)
 
@@ -593,10 +700,10 @@ def page_sector_compass():
     top_score = leaderboard.iloc[0]["Attractiveness Score"] if not leaderboard.empty else 0.0
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Highest Attractiveness Sector", top_sector)
+    c1.metric("Highest Attractiveness Sector", clean_sector_display_name(top_sector))
     c2.metric("Top Sector Score", f"{top_score}/100")
     c3.metric("Evaluated Sectors", len(summaries))
-    c4.metric("Active Benchmark", curr_sector)
+    c4.metric("Active Benchmark", clean_sector_display_name(curr_sector))
 
     st.markdown("### Cross-Sector Attractiveness Leaderboard")
     st.dataframe(leaderboard, use_container_width=True)
@@ -673,7 +780,7 @@ def page_sector_compass():
 # TAB 2: COMPANY HEALTH DIAGNOSTICS (Micro View)
 # ──────────────────────────────────────────────────────────────────────────────
 def page_company_health(result: BenchmarkCoreResult):
-    st.markdown("## 🩺 Company Financial Health Checkup")
+    st.markdown("## Company Financial Health Checkup")
     st.caption("Comprehensive fundamental quality diagnostics: Piotroski 9-Point Score, Altman Z''-Score, DuPont ROE, and Valuation Multiples.")
 
     sector = st.session_state.selected_sector
@@ -747,13 +854,19 @@ def page_company_health(result: BenchmarkCoreResult):
             with c_p1:
                 st.markdown(f"#### Profitability ({p.profitability_score}/4)")
                 for sig in p.signals[:4]:
-                    icon = "✅" if sig.passed else "❌"
-                    color_cls = "signal-pass" if sig.passed else "signal-fail"
+                    badge_html = (
+                        '<span class="badge-pass"><span class="status-dot-pass"></span>PASS</span>'
+                        if sig.passed
+                        else '<span class="badge-fail"><span class="status-dot-fail"></span>FAIL</span>'
+                    )
                     st.markdown(
                         f"""
                         <div class="diagnostic-card">
-                            <div class="{color_cls}">{icon} {sig.name}</div>
-                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:4px;">{sig.description}</div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div style="font-weight:600;font-size:0.85rem;color:#d4f0ec;">{sig.name}</div>
+                                <div>{badge_html}</div>
+                            </div>
+                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:6px;">{sig.description}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -762,13 +875,19 @@ def page_company_health(result: BenchmarkCoreResult):
             with c_p2:
                 st.markdown(f"#### Leverage & Liquidity ({p.leverage_liquidity_score}/3)")
                 for sig in p.signals[4:7]:
-                    icon = "✅" if sig.passed else "❌"
-                    color_cls = "signal-pass" if sig.passed else "signal-fail"
+                    badge_html = (
+                        '<span class="badge-pass"><span class="status-dot-pass"></span>PASS</span>'
+                        if sig.passed
+                        else '<span class="badge-fail"><span class="status-dot-fail"></span>FAIL</span>'
+                    )
                     st.markdown(
                         f"""
                         <div class="diagnostic-card">
-                            <div class="{color_cls}">{icon} {sig.name}</div>
-                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:4px;">{sig.description}</div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div style="font-weight:600;font-size:0.85rem;color:#d4f0ec;">{sig.name}</div>
+                                <div>{badge_html}</div>
+                            </div>
+                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:6px;">{sig.description}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -777,13 +896,19 @@ def page_company_health(result: BenchmarkCoreResult):
             with c_p3:
                 st.markdown(f"#### Operating Efficiency ({p.operating_efficiency_score}/2)")
                 for sig in p.signals[7:]:
-                    icon = "✅" if sig.passed else "❌"
-                    color_cls = "signal-pass" if sig.passed else "signal-fail"
+                    badge_html = (
+                        '<span class="badge-pass"><span class="status-dot-pass"></span>PASS</span>'
+                        if sig.passed
+                        else '<span class="badge-fail"><span class="status-dot-fail"></span>FAIL</span>'
+                    )
                     st.markdown(
                         f"""
                         <div class="diagnostic-card">
-                            <div class="{color_cls}">{icon} {sig.name}</div>
-                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:4px;">{sig.description}</div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div style="font-weight:600;font-size:0.85rem;color:#d4f0ec;">{sig.name}</div>
+                                <div>{badge_html}</div>
+                            </div>
+                            <div style="font-size:0.80rem;color:#7ab8b2;margin-top:6px;">{sig.description}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -910,7 +1035,7 @@ def page_company_health(result: BenchmarkCoreResult):
 # TAB 3: SECTOR LEADERBOARD & SCREENER
 # ──────────────────────────────────────────────────────────────────────────────
 def page_sector_screener(result: BenchmarkCoreResult):
-    st.markdown("## 🏆 Sector Fundamental Screener & AI Synthesis")
+    st.markdown("## Sector Fundamental Screener & AI Synthesis")
     st.caption("Filter and screen companies across fundamental health, Piotroski scores, Altman distress, and valuation multiples.")
 
     sector = st.session_state.selected_sector
@@ -964,7 +1089,7 @@ def page_sector_screener(result: BenchmarkCoreResult):
     st.divider()
 
     # AI Sector Synthesis
-    st.markdown("### 🤖 AI Executive Sector Synthesis")
+    st.markdown("### AI Executive Sector Synthesis")
     st.caption("Generate an institutional-grade fundamental brief synthesizing top quality picks, solvency cushions, and valuation dispersion.")
 
     keys = get_rotational_api_keys()
@@ -1003,7 +1128,7 @@ def page_sector_screener(result: BenchmarkCoreResult):
 # TAB 4: PEER BENCHMARKING & DISTRIBUTIONS
 # ──────────────────────────────────────────────────────────────────────────────
 def page_peer_benchmarking(result: BenchmarkCoreResult):
-    st.markdown("## 📊 Peer Benchmarking & Outlier Analysis")
+    st.markdown("## Peer Benchmarking & Outlier Analysis")
     st.caption("Statistical distributions, percentile curves, and outlier detection across peer companies.")
 
     peer_stats = result.peer_stats_df
@@ -1036,7 +1161,7 @@ def page_peer_benchmarking(result: BenchmarkCoreResult):
 # TAB 5: AUDIT & EXPORT
 # ──────────────────────────────────────────────────────────────────────────────
 def page_audit_export(result: BenchmarkCoreResult):
-    st.markdown("## 📥 Audit & Export Reports")
+    st.markdown("## Audit & Export Reports")
     st.caption("Download institutional Excel workbooks and audit data packages.")
 
     sector = st.session_state.selected_sector
@@ -1110,11 +1235,11 @@ def main():
     sidebar_cfg = render_sidebar()
 
     tabs = st.tabs([
-        "🧭 Sector Compass",
-        "🩺 Company Health Diagnostics",
-        "🏆 Sector Leaderboard & Screener",
-        "📊 Peer Benchmarking & Outliers",
-        "📥 Audit & Export",
+        "Sector Compass",
+        "Company Health Diagnostics",
+        "Sector Leaderboard & Screener",
+        "Peer Benchmarking & Outliers",
+        "Audit & Export",
     ])
 
     result = st.session_state.get("benchmark_result")
