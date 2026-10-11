@@ -37,4 +37,8 @@ class ReconciliationConfig:
     high_amount_discrepancy_pct: float = 0.05  # >5% discrepancy -> HIGH severity
     timing_discrepancy_days: int = 7           # >7 days delay -> MEDIUM severity
 
+    # Accounting direction inversion (Ledger Dr == Bank Cr; Ledger Cr == Bank Dr)
+    # Default is True when reconciling client ledger against bank statements.
+    invert_comparator_direction: bool = True
+
 DEFAULT_RECON_CONFIG = ReconciliationConfig()

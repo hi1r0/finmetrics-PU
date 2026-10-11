@@ -133,6 +133,18 @@ class ReconciliationEngine:
         """Returns max(epsilon_abs, base_amount * epsilon_pct)."""
         return max(self.cfg.epsilon_abs, base_amount * self.cfg.epsilon_pct)
 
+    def _dir_ok(self, dir_a: Direction, dir_b: Direction) -> bool:
+        """Checks direction compatibility according to double-entry bookkeeping convention."""
+        if self.cfg.invert_comparator_direction:
+            return dir_a != dir_b
+        return dir_a == dir_b
+
+    def _expected_b_dir(self, dir_a: Direction) -> Direction:
+        """Determines expected comparator direction for a given source_a direction."""
+        if self.cfg.invert_comparator_direction:
+            return Direction.CREDIT if dir_a == Direction.DEBIT else Direction.DEBIT
+        return dir_a
+
     # ── Main Reconciliation Entry Point ───────────────────────────────────────
 
     def reconcile(
@@ -164,26 +176,45 @@ class ReconciliationEngine:
             lookup_b.setdefault(key, []).append((idx_b, b))
 
         for idx_a, a in enumerate(source_a):
-            key = (str(a.direction.value), round(a.amount, 2), a.date)
-            if key in lookup_b and lookup_b[key]:
-                idx_b, b = lookup_b[key].pop(0)
+            target_b_dir = self._expected_b_dir(a.direction)
+            key = (str(target_b_dir.value), round(a.amount, 2), a.date)
+            bucket = lookup_b.get(key)
+            if bucket:
+                # If multiple records share same amount, date & direction, disambiguate by narration
+                k = max(
+                    range(len(bucket)),
+                    key=lambda i: self.jaccard_similarity(a.description, bucket[i][1].description),
+                )
+                ambiguous = len(bucket) > 1
+                idx_b, b = bucket.pop(k)
                 matched_a_indices.add(idx_a)
                 matched_b_indices.add(idx_b)
+
+                jac = self.jaccard_similarity(a.description, b.description)
+                is_partial = ambiguous and (jac < 0.15)
+                status = MatchStatus.PARTIAL_MATCH if is_partial else MatchStatus.MATCHED
+                reason = "AMBIGUOUS_MULTI_MATCH" if is_partial else None
+                severity = ExceptionSeverity.LOW if is_partial else ExceptionSeverity.NONE
+                notes = (
+                    f"Ambiguous multi-match ({len(bucket)+1} candidates on date/amount with weak description similarity; flagged for review)"
+                    if is_partial
+                    else "Exact match on date, amount, and direction."
+                )
 
                 matches.append(
                     ReconciliationMatch(
                         match_id=f"MCH-{match_counter:05d}",
                         tier=MatchTier.TIER_1_EXACT,
-                        status=MatchStatus.MATCHED,
-                        confidence=1.0,
+                        status=status,
+                        confidence=0.70 if is_partial else 1.0,
                         record_a=a,
                         records_b=[b],
                         amount_diff=0.0,
                         date_diff_days=0,
-                        jaccard_similarity=self.jaccard_similarity(a.description, b.description),
-                        severity=ExceptionSeverity.NONE,
-                        reason_code=None,
-                        notes="Exact match on date, amount, and direction.",
+                        jaccard_similarity=jac,
+                        severity=severity,
+                        reason_code=reason,
+                        notes=notes,
                     )
                 )
                 match_counter += 1
@@ -206,7 +237,7 @@ class ReconciliationEngine:
 
                 for j, idx_b in enumerate(unresolved_b_indices):
                     rec_b = source_b[idx_b]
-                    if rec_a.direction != rec_b.direction:
+                    if not self._dir_ok(rec_a.direction, rec_b.direction):
                         continue
 
                     amt_diff = abs(rec_a.amount - rec_b.amount)
@@ -282,10 +313,13 @@ class ReconciliationEngine:
             # Restrict candidates in B within date window and matching direction
             candidates_b = [
                 i for i in still_unresolved_b
-                if source_b[i].direction == rec_a.direction
+                if self._dir_ok(rec_a.direction, source_b[i].direction)
                 and abs((source_b[i].date - rec_a.date).days) <= self.cfg.date_window_days * 2
                 and source_b[i].amount < rec_a.amount + eps
             ]
+            # Cap candidates by date proximity to at most 20 to prevent combinatorial explosion
+            candidates_b.sort(key=lambda i: abs((source_b[i].date - rec_a.date).days))
+            candidates_b = candidates_b[:20]
 
             found_split = False
             for k in range(2, min(self.cfg.max_split_k + 1, len(candidates_b) + 1)):
@@ -300,6 +334,8 @@ class ReconciliationEngine:
                             still_unresolved_b.remove(i)
 
                         max_date_diff = max(abs((b.date - rec_a.date).days) for b in matched_recs_b)
+                        max_jac = max((self.jaccard_similarity(rec_a.description, b.description) for b in matched_recs_b), default=0.5)
+
                         matches.append(
                             ReconciliationMatch(
                                 match_id=f"MCH-{match_counter:05d}",
@@ -310,7 +346,7 @@ class ReconciliationEngine:
                                 records_b=matched_recs_b,
                                 amount_diff=abs(total_split - rec_a.amount),
                                 date_diff_days=max_date_diff,
-                                jaccard_similarity=0.5,
+                                jaccard_similarity=max_jac,
                                 severity=ExceptionSeverity.LOW,
                                 reason_code=None,
                                 notes=f"Split match: 1 entry in A matched to {len(combo)} entries in B.",
@@ -377,16 +413,18 @@ class ReconciliationEngine:
         total_b = len(source_b)
         n_total = max(total_a, 1)
 
-        tier_1_count = sum(1 for m in matches if m.tier == MatchTier.TIER_1_EXACT)
+        tier_1_count = sum(1 for m in matches if m.tier == MatchTier.TIER_1_EXACT and m.status == MatchStatus.MATCHED)
         tier_2_count = sum(1 for m in matches if m.tier == MatchTier.TIER_2_FUZZY and m.status == MatchStatus.MATCHED)
-        tier_3_count = sum(1 for m in matches if m.tier == MatchTier.TIER_3_SPLIT)
+        tier_3_count = sum(1 for m in matches if m.tier == MatchTier.TIER_3_SPLIT and m.status == MatchStatus.MATCHED)
         partial_count = sum(1 for m in matches if m.status == MatchStatus.PARTIAL_MATCH)
         unmatched_a_count = len(final_unresolved_a)
 
-        # Total matches resolved across Tiers 1-3 (including partial review matches)
-        match_count = tier_1_count + tier_2_count + tier_3_count + partial_count
+        # Decomposed rates: auto_resolved (Tiers 1-3 fully matched) + review_required (partial matches) == match_rate
+        auto_resolved_count = tier_1_count + tier_2_count + tier_3_count
+        match_count = auto_resolved_count + partial_count
+
         match_rate = round((match_count / n_total) * 100, 2)
-        auto_resolved_rate = round(((tier_1_count + tier_2_count) / n_total) * 100, 2)
+        auto_resolved_rate = round((auto_resolved_count / n_total) * 100, 2)
         review_required_rate = round((partial_count / n_total) * 100, 2)
         exception_rate = round((unmatched_a_count / n_total) * 100, 2)
 
@@ -431,15 +469,17 @@ class ReconciliationEngine:
         candidates_b: List[StandardizedRecord],
     ) -> Tuple[ExceptionSeverity, str, str]:
         """Classifies exception severity and reason per Blueprint 2."""
-        if not candidates_b:
+        # Filter candidates_b to those compatible in direction
+        valid_b = [b for b in candidates_b if self._dir_ok(rec_a.direction, b.direction)]
+        if not valid_b:
             return (
                 ExceptionSeverity.HIGH,
                 "MISSING_CORRESPONDING_RECORD",
-                "No transaction found in comparator record set.",
+                "No transaction with corresponding accounting direction found in comparator record set.",
             )
 
         # Check for near amount match with large date gap
-        for b in candidates_b:
+        for b in valid_b:
             if abs(rec_a.amount - b.amount) <= self._amount_tolerance(rec_a.amount):
                 days = abs((rec_a.date - b.date).days)
                 if days > self.cfg.timing_discrepancy_days:
@@ -450,7 +490,7 @@ class ReconciliationEngine:
                     )
 
         # Check for matching date/description with large amount gap
-        for b in candidates_b:
+        for b in valid_b:
             if abs((rec_a.date - b.date).days) <= self.cfg.date_window_days:
                 amt_pct = abs(rec_a.amount - b.amount) / max(rec_a.amount, 1.0)
                 if amt_pct > self.cfg.high_amount_discrepancy_pct:

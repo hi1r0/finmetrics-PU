@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Set, Tuple
 import logging
 import pandas as pd
 
@@ -82,6 +82,28 @@ class BankStatementLoader:
         except Exception:
             return date.today()
 
+    @staticmethod
+    def _find_col(cols: Any, exact_matches: Set[str], contains_keywords: Tuple[str, ...] = ()) -> Optional[str]:
+        """Finds matching column giving strict priority to exact matches before substring checks."""
+        for c in cols:
+            if c in exact_matches:
+                return c
+        for c in cols:
+            if any(k in c for k in contains_keywords):
+                return c
+        return None
+
+    @staticmethod
+    def _clean_numeric(val: Any) -> float:
+        """Safely parses float numeric, replacing NaNs and non-numerics with 0.0."""
+        if val is None or pd.isna(val):
+            return 0.0
+        try:
+            num = float(pd.to_numeric(val, errors="coerce"))
+            return 0.0 if pd.isna(num) else num
+        except Exception:
+            return 0.0
+
     @classmethod
     def load_bank_statement(
         cls,
@@ -112,13 +134,37 @@ class BankStatementLoader:
         # Normalize column names
         df.columns = [str(c).strip().upper() for c in df.columns]
 
-        # Detect columns
-        date_col = next((c for c in df.columns if any(k in c for k in ["DATE", "TXN DATE", "VALUE DATE"])), None)
-        desc_col = next((c for c in df.columns if any(k in c for k in ["NARRATION", "DESCRIPTION", "PARTICULARS", "REMARKS"])), None)
-        ref_col = next((c for c in df.columns if any(k in c for k in ["CHQ", "REF", "UTR", "TRANSACTION ID", "TXN NO"])), None)
-        debit_col = next((c for c in df.columns if any(k in c for k in ["WITHDRAWAL", "DEBIT", "DR"])), None)
-        credit_col = next((c for c in df.columns if any(k in c for k in ["DEPOSIT", "CREDIT", "CR"])), None)
-        amt_col = next((c for c in df.columns if any(k in c for k in ["AMOUNT", "TXN AMOUNT"])), None)
+        # Detect columns with exact match priority (prevents 'CR' matching in 'DESCRIPTION')
+        date_col = cls._find_col(
+            df.columns,
+            {"DATE", "TXN DATE", "TXN_DATE", "VALUE DATE", "VALUE_DATE", "POSTING DATE"},
+            ("DATE",),
+        )
+        desc_col = cls._find_col(
+            df.columns,
+            {"DESCRIPTION", "NARRATION", "PARTICULARS", "REMARKS", "TXN DETAILS", "TRANSACTION DETAILS"},
+            ("NARRATION", "DESCRIPTION", "PARTICULARS", "REMARKS"),
+        )
+        ref_col = cls._find_col(
+            df.columns,
+            {"REF", "REFERENCE", "REF NO", "REF_NO", "CHQ", "CHEQUE", "UTR", "TRANSACTION ID", "TXN NO", "TXN_NO"},
+            ("CHQ", "REF", "UTR", "TRANSACTION ID", "TXN NO"),
+        )
+        debit_col = cls._find_col(
+            df.columns,
+            {"DEBIT", "DR", "WITHDRAWAL", "WITHDRAWAL AMT.", "WITHDRAWAL AMOUNT", "DR AMOUNT", "DEBIT AMOUNT"},
+            ("WITHDRAWAL", "DEBIT"),
+        )
+        credit_col = cls._find_col(
+            df.columns,
+            {"CREDIT", "CR", "DEPOSIT", "DEPOSIT AMT.", "DEPOSIT AMOUNT", "CR AMOUNT", "CREDIT AMOUNT"},
+            ("DEPOSIT", "CREDIT"),
+        )
+        amt_col = cls._find_col(
+            df.columns,
+            {"AMOUNT", "TXN AMOUNT", "TRANSACTION AMOUNT", "NET AMOUNT"},
+            ("AMOUNT",),
+        )
 
         records: List[StandardizedRecord] = []
         for idx, row in df.iterrows():
@@ -126,19 +172,25 @@ class BankStatementLoader:
             desc = str(row[desc_col]).strip() if desc_col and pd.notna(row[desc_col]) else ""
             ref = str(row[ref_col]).strip() if ref_col and pd.notna(row[ref_col]) else f"BNK-{idx+1:05d}"
 
-            dr_val = pd.to_numeric(row.get(debit_col, 0.0), errors="coerce") or 0.0
-            cr_val = pd.to_numeric(row.get(credit_col, 0.0), errors="coerce") or 0.0
+            dr_val = cls._clean_numeric(row.get(debit_col)) if debit_col else 0.0
+            cr_val = cls._clean_numeric(row.get(credit_col)) if credit_col else 0.0
 
-            if dr_val > 0 or dr_val < 0:
-                amt = abs(float(dr_val))
+            if dr_val > 0.0 or dr_val < 0.0:
+                amt = abs(dr_val)
                 direction = Direction.DEBIT
-            elif cr_val > 0 or cr_val < 0:
-                amt = abs(float(cr_val))
+            elif cr_val > 0.0 or cr_val < 0.0:
+                amt = abs(cr_val)
                 direction = Direction.CREDIT
             elif amt_col and pd.notna(row[amt_col]):
-                raw_amt = float(pd.to_numeric(row[amt_col], errors="coerce") or 0.0)
-                direction = Direction.DEBIT if raw_amt < 0 else Direction.CREDIT
-                amt = abs(raw_amt)
+                raw_amt = cls._clean_numeric(row[amt_col])
+                if raw_amt < 0.0:
+                    direction = Direction.DEBIT
+                    amt = abs(raw_amt)
+                elif raw_amt > 0.0:
+                    direction = Direction.CREDIT
+                    amt = raw_amt
+                else:
+                    continue
             else:
                 continue
 
@@ -186,13 +238,13 @@ class BankStatementLoader:
             vch_no = str(row.get("VCHNO", f"TLY-JV-{idx+1:05d}")).strip()
             narration = str(row.get("NARRATION", "")).strip()
 
-            debit = float(pd.to_numeric(row.get("DEBIT", 0.0), errors="coerce") or 0.0)
-            credit = float(pd.to_numeric(row.get("CREDIT", 0.0), errors="coerce") or 0.0)
+            debit = cls._clean_numeric(row.get("DEBIT"))
+            credit = cls._clean_numeric(row.get("CREDIT"))
 
-            if debit != 0.0:
+            if debit > 0.0 or debit < 0.0:
                 amt = abs(debit)
                 direction = Direction.DEBIT
-            elif credit != 0.0:
+            elif credit > 0.0 or credit < 0.0:
                 amt = abs(credit)
                 direction = Direction.CREDIT
             else:

@@ -2615,11 +2615,25 @@ def page_reconciliation():
     st.markdown("## Multi-Source Financial Reconciliation")
     st.caption("Automated 3-tier cascade matching (Exact, Fuzzy, Split) across independent record sets with measured accuracy, confidence scoring, and exception triage.")
 
+    with st.expander("Reconciliation Engine Configuration & Tolerances", expanded=False):
+        ec1, ec2, ec3 = st.columns(3)
+        invert_dir = ec1.checkbox("Invert Direction (Ledger Dr ↔ Bank Cr)", value=True, help="Standard double-entry rule: company ledger Debit equals bank statement Credit.")
+        date_win = ec2.number_input("Date Window (Days)", min_value=1, max_value=30, value=3)
+        eps_abs = ec3.number_input("Absolute Tolerance (₹)", min_value=0.0, max_value=100.0, value=1.0)
+        recon_cfg = ReconciliationConfig(invert_comparator_direction=invert_dir, date_window_days=date_win, epsilon_abs=eps_abs)
+
     c_mode1, c_mode2 = st.columns([1, 1])
     with c_mode1:
         st.markdown("### 1. Ground Truth Benchmark (Track 04)")
-        st.write("Run the verified 60-record synthetic ground-truth test batch (40 Exact, 10 Fuzzy, 5 Split, 5 Exceptions) to measure precision, recall, and confusion matrix.")
-        run_benchmark_btn = st.button("Run 60-Record Ground Truth Benchmark", use_container_width=True, type="primary")
+        benchmark_choice = st.radio(
+            "Select Benchmark Batch:",
+            [
+                "Standard 60-Record Ground Truth Batch (Clean)",
+                "Adversarial Stress-Test Batch (Decoys, Duplicates, Lags & Orphans)",
+            ],
+            key="recon_benchmark_choice"
+        )
+        run_benchmark_btn = st.button("Run Benchmark Evaluation", use_container_width=True, type="primary")
 
     with c_mode2:
         st.markdown("### 2. Live File Ingestion")
@@ -2628,9 +2642,10 @@ def page_reconciliation():
         run_live_btn = st.button("Reconcile with Bundled Client Data", use_container_width=True, disabled=(bank_file is None))
 
     if run_benchmark_btn:
-        with st.spinner("Executing 3-tier cascade matching over ground-truth batch..."):
-            engine = ReconciliationEngine()
-            eval_res = evaluate_reconciliation_benchmark(engine)
+        batch_type = "adversarial" if "Adversarial" in benchmark_choice else "standard"
+        with st.spinner(f"Executing 3-tier cascade matching over {batch_type} ground-truth batch..."):
+            engine = ReconciliationEngine(config=recon_cfg)
+            eval_res = evaluate_reconciliation_benchmark(engine, batch_type=batch_type)
             st.session_state.recon_eval_result = eval_res
             st.session_state.recon_result = eval_res["result"]
 
@@ -2640,7 +2655,7 @@ def page_reconciliation():
             jv_path = Path("client/PRIME RETAIL VENTURES - JV - 2025-26.csv")
             if jv_path.exists():
                 tally_records = BankStatementLoader.load_tally_jv(jv_path)
-                engine = ReconciliationEngine()
+                engine = ReconciliationEngine(config=recon_cfg)
                 res = engine.reconcile(tally_records, bank_records)
                 st.session_state.recon_result = res
                 st.session_state.recon_eval_result = None
@@ -2652,25 +2667,27 @@ def page_reconciliation():
         st.info("Select an option above to run the multi-source reconciliation pipeline.")
         return
 
-    # Decomposed Match Metrics
+    # Decomposed Match Metrics (Lead with Auto-Resolved Rate)
     st.markdown("---")
     st.markdown("### Reconciled Metrics Breakdown")
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Overall Match Rate", f"{res.match_rate:.1f}%", help="Tier 1 + Tier 2 + Tier 3 resolved matches / Total records")
-    m2.metric("Auto-Resolved Rate", f"{res.auto_resolved_rate:.1f}%", help="Tier 1 exact + high-confidence Tier 2 matches")
-    m3.metric("Review-Required Rate", f"{res.review_required_rate:.1f}%", help="Partial fuzzy matches flagged for human sign-off")
-    m4.metric("Exception Rate", f"{res.exception_rate:.1f}%", help="Unresolved records requiring investigation", delta=f"{res.exception_rate:.1f}%", delta_color="inverse")
+    m1.metric("Auto-Resolved Rate", f"{res.auto_resolved_rate:.1f}%", help="Tier 1 exact + high-confidence Tier 2/3 matches cleared automatically")
+    m2.metric("Review-Required Rate", f"{res.review_required_rate:.1f}%", help="Partial fuzzy matches flagged for human accountant sign-off")
+    m3.metric("Exception Rate", f"{res.exception_rate:.1f}%", help="Unresolved records requiring investigation", delta=f"{res.exception_rate:.1f}%", delta_color="inverse")
+    m4.metric("Overall Match Rate", f"{res.match_rate:.1f}%", help="Auto-Resolved + Review-Required / Total records")
 
     # If benchmark mode, show Ground Truth Accuracy & Confusion Matrix
     eval_res = st.session_state.get("recon_eval_result")
     if eval_res is not None:
-        st.markdown("### Ground-Truth Accuracy & Confusion Matrix")
+        batch_label = "Adversarial Stress-Test" if eval_res.get("batch_type") == "adversarial" else "Standard Clean Batch"
+        st.markdown(f"### Ground-Truth Evaluation: {batch_label}")
         met = eval_res["metrics"]
-        g1, g2, g3, g4 = st.columns(4)
+        g1, g2, g3, g4, g5 = st.columns(5)
         g1.metric("Precision", f"{met['precision']*100:.1f}%")
         g2.metric("Recall", f"{met['recall']*100:.1f}%")
-        g3.metric("F1 Score", f"{met['f1_score']*100:.1f}%")
-        g4.metric("Overall Accuracy", f"{met['accuracy']*100:.1f}%")
+        g3.metric("Pair Accuracy", f"{met.get('pair_accuracy', 0.0)*100:.1f}%", help="Verified pairing accuracy: % of true matches mapped to the exact intended counterpart record.")
+        g4.metric("F1 Score", f"{met['f1_score']*100:.1f}%")
+        g5.metric("Overall Accuracy", f"{met['accuracy']*100:.1f}%")
 
         st.markdown("#### Confusion Matrix (Actual vs Predicted)")
         st.dataframe(eval_res["confusion_matrix"], use_container_width=True, hide_index=True)
