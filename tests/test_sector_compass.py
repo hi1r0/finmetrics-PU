@@ -82,3 +82,22 @@ def test_sector_compass_evaluation_and_ranking():
     assert len(leaderboard) == 2
     assert leaderboard.iloc[0]["Sector"] == "Sector A"
     assert leaderboard.iloc[1]["Sector"] == "Sector B"
+
+
+def test_sector_loader_methods():
+    """Verify SectorLoader method signatures and aliases."""
+    from modules.sector_loader import SectorLoader
+    loader = SectorLoader()
+    sectors = loader.get_sectors()
+    assert len(sectors) > 0
+    assert "Automobile" in sectors
+
+    all_sec = loader.get_all_sectors()
+    assert isinstance(all_sec, dict)
+    assert "Automobile" in all_sec
+
+    auto_tickers = loader.get_tickers("Automobile")
+    assert isinstance(auto_tickers, list)
+    assert len(auto_tickers) > 0
+    assert loader.get_companies_by_sector("Automobile") == auto_tickers
+

@@ -468,7 +468,7 @@ def render_sidebar() -> Dict[str, Any]:
 
         # Primary non-financial sector list
         supported_sectors = list_supported_sectors()
-        all_sectors = list(get_sector_loader().get_all_sectors().keys())
+        all_sectors = get_sector_loader().get_sectors()
         combined_sector_choices = supported_sectors + [s for s in all_sectors if s not in supported_sectors]
 
         current_sector = st.session_state.get("selected_sector", "Automobile")

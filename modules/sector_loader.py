@@ -135,6 +135,14 @@ class SectorLoader:
     def get_sector_map(self) -> Dict[str, List[str]]:
         return dict(self._sector_map)
 
+    def get_all_sectors(self) -> Dict[str, List[str]]:
+        """Return dict of {sector_name: tickers}."""
+        return dict(self._sector_map)
+
+    def get_tickers(self, sector: str) -> List[str]:
+        """Convenience alias for get_companies_by_sector."""
+        return self.get_companies_by_sector(sector)
+
     def get_industry_map(self) -> Dict[str, List[str]]:
         return dict(self._industry_map)
 
