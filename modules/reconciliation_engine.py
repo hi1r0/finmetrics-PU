@@ -9,6 +9,7 @@ confidence scoring, exception classification, and transparent match-rate decompo
 from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
+from collections import Counter
 import itertools
 import logging
 import re
@@ -98,7 +99,14 @@ class ReconciliationResult:
 
 class ReconciliationEngine:
     """
-    Executes 3-tier cascade matching across two transaction record streams.
+    Executes the multi-tier cascade matching across two transaction record streams.
+
+    Order of operations (each stage only sees records earlier stages left unresolved):
+      Tier 1   exact hash join, disambiguated by reference / narration
+      Tier 2a  fuzzy assignment, auto-accept only (score >= tau_high)
+      Tier 3   split detection (1 ledger entry -> N bank entries), evidence-gated
+      Tier 2b  fuzzy assignment, review band (tau_low <= score < tau_high)
+      Exceptions with bounded, evidence-based reason codes
     """
 
     def __init__(self, config: Optional[ReconciliationConfig] = None):
@@ -145,6 +153,130 @@ class ReconciliationEngine:
             return Direction.CREDIT if dir_a == Direction.DEBIT else Direction.DEBIT
         return dir_a
 
+    # ── Reference Evidence ─────────────────────────────────────────────────────
+
+    _GENERIC_REFS = {"NAN", "NA", "NIL", "NONE", "NULL", "N/A"}
+
+    @classmethod
+    def _norm_ref(cls, value: Optional[str]) -> str:
+        ref = (value or "").strip().upper()
+        return "" if (len(ref) < 3 or ref in cls._GENERIC_REFS) else ref
+
+    @classmethod
+    def _ref_match(cls, a: StandardizedRecord, b: StandardizedRecord) -> bool:
+        """
+        True when the two records carry the same business reference (invoice no., UTR,
+        cheque no.), either as equal reference fields or one reference quoted inside the
+        other record's narration. Positive evidence only: differing references never
+        veto a match, because ledger voucher numbers and bank UTRs rarely coincide.
+        """
+        ra, rb = cls._norm_ref(a.account_code), cls._norm_ref(b.account_code)
+        if ra and ra == rb:
+            return True
+        da, db = (a.description or "").upper(), (b.description or "").upper()
+        return (bool(ra) and ra in db) or (bool(rb) and rb in da)
+
+    # ── Neighborhood gate shared by Tier 1 and Tier 2 ─────────────────────────
+
+    def _compat_matrix(
+        self,
+        source_a: List[StandardizedRecord],
+        source_b: List[StandardizedRecord],
+    ) -> np.ndarray:
+        """Boolean (n_a x n_b): direction-compatible, amount within 5x tolerance, date within window."""
+        if not source_a or not source_b:
+            return np.zeros((len(source_a), len(source_b)), dtype=bool)
+        amt_a = np.array([a.amount for a in source_a], dtype=float)
+        amt_b = np.array([b.amount for b in source_b], dtype=float)
+        ord_a = np.array([a.date.toordinal() for a in source_a])
+        ord_b = np.array([b.date.toordinal() for b in source_b])
+        exp_a = np.array([self._expected_b_dir(a.direction) == Direction.DEBIT for a in source_a])
+        dir_b = np.array([b.direction == Direction.DEBIT for b in source_b])
+        eps_a = np.maximum(self.cfg.epsilon_abs, amt_a * self.cfg.epsilon_pct)
+        return (
+            (exp_a[:, None] == dir_b[None, :])
+            & (np.abs(amt_a[:, None] - amt_b[None, :]) <= 5.0 * eps_a[:, None])
+            & (np.abs(ord_a[:, None] - ord_b[None, :]) <= self.cfg.date_window_days)
+        )
+
+    # ── Tier 2 assignment pass ─────────────────────────────────────────────────
+
+    def _fuzzy_pass(
+        self,
+        source_a: List[StandardizedRecord],
+        source_b: List[StandardizedRecord],
+        a_indices: List[int],
+        b_indices: List[int],
+        min_score: float,
+    ) -> List[Tuple[int, int, float, bool]]:
+        """
+        Optimal one-to-one assignment (Hungarian) over pairs whose composite similarity is
+        >= min_score. Returns (idx_a, idx_b, score, decisive) where `decisive` means the pair
+        is reference-linked or beats the best competing candidate (any gate-compatible pair
+        sharing either record) by at least cfg.decisive_margin.
+        """
+        if not a_indices or not b_indices:
+            return []
+
+        n, m = len(a_indices), len(b_indices)
+        cost = np.full((n, m), 1e6)
+        score_m = np.zeros((n, m))
+        cand = np.zeros((n, m), dtype=bool)
+        ref_m = np.zeros((n, m), dtype=bool)
+
+        for i, ia in enumerate(a_indices):
+            rec_a = source_a[ia]
+            eps = self._amount_tolerance(rec_a.amount)
+            for j, ib in enumerate(b_indices):
+                rec_b = source_b[ib]
+                if not self._dir_ok(rec_a.direction, rec_b.direction):
+                    continue
+                amt_diff = abs(rec_a.amount - rec_b.amount)
+                date_diff = abs((rec_a.date - rec_b.date).days)
+                if amt_diff <= eps * 5 and date_diff <= self.cfg.date_window_days:
+                    s_amt = 1.0 if amt_diff <= eps else max(0.0, 1.0 - (amt_diff / (eps * 5)))
+                    s_date = max(0.0, 1.0 - (date_diff / max(self.cfg.date_window_days, 1)))
+                    s_desc = self.jaccard_similarity(rec_a.description, rec_b.description)
+                    composite = (
+                        self.cfg.w_amount * s_amt
+                        + self.cfg.w_date * s_date
+                        + self.cfg.w_desc * s_desc
+                    )
+                    is_ref = self._ref_match(rec_a, rec_b)
+                    if is_ref:
+                        floor = (
+                            self.cfg.ref_match_floor
+                            if amt_diff <= eps
+                            else self.cfg.ref_match_floor_out_of_tol
+                        )
+                        composite = max(composite, floor)
+                    cand[i, j] = True
+                    ref_m[i, j] = is_ref
+                    score_m[i, j] = composite
+                    if composite >= min_score:
+                        # Reference-linked pairs win assignment ties against look-alike decoys;
+                        # the reported confidence stays the composite score.
+                        cost[i, j] = 1.0 - composite - (self.cfg.ref_assignment_preference if is_ref else 0.0)
+
+        if not (cost < 1e5).any():
+            return []
+
+        rows, cols = linear_sum_assignment(cost)
+        out: List[Tuple[int, int, float, bool]] = []
+        for r, c in zip(rows, cols):
+            if cost[r, c] >= 1e5:
+                continue
+            row_alt = max([score_m[r, j] for j in range(m) if j != c and cand[r, j]] + [0.0])
+            col_alt = max([score_m[i, c] for i in range(n) if i != r and cand[i, c]] + [0.0])
+            alt = max(row_alt, col_alt)
+            alt_ref = any(ref_m[r, j] for j in range(m) if j != c) or any(ref_m[i, c] for i in range(n) if i != r)
+            if ref_m[r, c]:
+                decisive = not alt_ref
+            else:
+                decisive = (not alt_ref) and (score_m[r, c] - alt) >= self.cfg.decisive_margin
+            out.append((a_indices[r], b_indices[c], float(score_m[r, c]), bool(decisive)))
+        return out
+
     # ── Main Reconciliation Entry Point ───────────────────────────────────────
 
     def reconcile(
@@ -153,155 +285,144 @@ class ReconciliationEngine:
         source_b: List[StandardizedRecord],
     ) -> ReconciliationResult:
         """
-        Executes the three-tier matching pipeline:
-        Tier 1: Exact Hash Join
-        Tier 2: Fuzzy Matching with Optimal Bipartite Assignment
-        Tier 3: Subset-Sum Split Detection
-        Unresolved: Exception Classification
+        Executes the matching pipeline:
+        Tier 1 exact join -> Tier 2a auto fuzzy -> Tier 3 splits -> Tier 2b review fuzzy
+        -> bounded exception diagnosis.
         """
         logger.info(f"Starting reconciliation: Source A={len(source_a)}, Source B={len(source_b)}")
-        
+
         matches: List[ReconciliationMatch] = []
         matched_a_indices: Set[int] = set()
         matched_b_indices: Set[int] = set()
         match_counter = 1
 
         # ----------------------------------------------------------------------
-        # Tier 1: Deterministic Exact Match
+        # Tier 1: Deterministic Exact Match (disambiguated by reference, then narration)
         # ----------------------------------------------------------------------
-        # Build lookup table on Source B: (direction, round(amount, 2), date) -> list of (idx, record)
         lookup_b: Dict[Tuple[str, float, date], List[Tuple[int, StandardizedRecord]]] = {}
         for idx_b, b in enumerate(source_b):
             key = (str(b.direction.value), round(b.amount, 2), b.date)
             lookup_b.setdefault(key, []).append((idx_b, b))
 
+        # Neighborhood compatibility (same gate as Tier 2). An exact (amount, date) hit is only
+        # auto-accepted in Tier 1 when it is decisive: reference-linked, or isolated, meaning
+        # neither record has any other plausible candidate in the date/amount neighborhood.
+        compat = self._compat_matrix(source_a, source_b)
+        a_deg = compat.sum(axis=1)
+        b_deg = compat.sum(axis=0)
+
+        a_groups: Dict[Tuple[str, float, date], List[int]] = {}
         for idx_a, a in enumerate(source_a):
-            target_b_dir = self._expected_b_dir(a.direction)
-            key = (str(target_b_dir.value), round(a.amount, 2), a.date)
-            bucket = lookup_b.get(key)
-            if bucket:
-                # If multiple records share same amount, date & direction, disambiguate by narration
-                k = max(
-                    range(len(bucket)),
-                    key=lambda i: self.jaccard_similarity(a.description, bucket[i][1].description),
+            key = (str(self._expected_b_dir(a.direction).value), round(a.amount, 2), a.date)
+            a_groups.setdefault(key, []).append(idx_a)
+
+        for key, a_idxs in a_groups.items():
+            b_items = lookup_b.get(key)
+            if not b_items:
+                continue
+            n_a, n_b = len(a_idxs), len(b_items)
+
+            ref = np.zeros((n_a, n_b))
+            jac = np.zeros((n_a, n_b))
+            for i, ia in enumerate(a_idxs):
+                for j, (_, b_rec) in enumerate(b_items):
+                    ref[i, j] = 1.0 if self._ref_match(source_a[ia], b_rec) else 0.0
+                    jac[i, j] = self.jaccard_similarity(source_a[ia].description, b_rec.description)
+
+            rows, cols = linear_sum_assignment(-(ref * 2.0 + jac))
+            for r, c in zip(rows, cols):
+                idx_a = a_idxs[r]
+                idx_b, b = b_items[c]
+                a = source_a[idx_a]
+
+                comp_ref = max(
+                    [ref[r, j] for j in range(n_b) if j != c] + [ref[i, c] for i in range(n_a) if i != r] + [0.0]
                 )
-                ambiguous = len(bucket) > 1
-                idx_b, b = bucket.pop(k)
+                ref_decisive = ref[r, c] == 1.0 and comp_ref < 1.0
+                isolated = a_deg[idx_a] == 1 and b_deg[idx_b] == 1
+                if not (ref_decisive or isolated):
+                    continue   # deferred: Tier 2 weighs it against every competing candidate
+
                 matched_a_indices.add(idx_a)
                 matched_b_indices.add(idx_b)
-
-                jac = self.jaccard_similarity(a.description, b.description)
-                is_partial = ambiguous and (jac < 0.15)
-                status = MatchStatus.PARTIAL_MATCH if is_partial else MatchStatus.MATCHED
-                reason = "AMBIGUOUS_MULTI_MATCH" if is_partial else None
-                severity = ExceptionSeverity.LOW if is_partial else ExceptionSeverity.NONE
-                notes = (
-                    f"Ambiguous multi-match ({len(bucket)+1} candidates on date/amount with weak description similarity; flagged for review)"
-                    if is_partial
-                    else "Exact match on date, amount, and direction."
-                )
-
                 matches.append(
                     ReconciliationMatch(
                         match_id=f"MCH-{match_counter:05d}",
                         tier=MatchTier.TIER_1_EXACT,
-                        status=status,
-                        confidence=0.70 if is_partial else 1.0,
+                        status=MatchStatus.MATCHED,
+                        confidence=1.0,
                         record_a=a,
                         records_b=[b],
                         amount_diff=0.0,
                         date_diff_days=0,
-                        jaccard_similarity=jac,
-                        severity=severity,
-                        reason_code=reason,
-                        notes=notes,
+                        jaccard_similarity=float(jac[r, c]),
+                        severity=ExceptionSeverity.NONE,
+                        reason_code=None,
+                        notes=(
+                            "Exact match on date, amount and direction; reference-linked."
+                            if ref_decisive
+                            else "Exact match on date, amount and direction; no competing candidate in the date/amount neighborhood."
+                        ),
                     )
                 )
                 match_counter += 1
 
-        logger.info(f"Tier 1 Exact Matches resolved: {len(matches)}")
+        logger.info(f"Tier 1 resolved: {len(matches)}")
+
+        def _apply_fuzzy(pairs: List[Tuple[int, int, float, bool]]) -> None:
+            nonlocal match_counter
+            for idx_a, idx_b, score, decisive in pairs:
+                rec_a, rec_b = source_a[idx_a], source_b[idx_b]
+                is_auto = score >= self.cfg.tau_high and decisive
+                matched_a_indices.add(idx_a)
+                matched_b_indices.add(idx_b)
+                amt_diff = abs(rec_a.amount - rec_b.amount)
+                date_diff = abs((rec_a.date - rec_b.date).days)
+                ref_note = ", reference-linked" if self._ref_match(rec_a, rec_b) else ""
+                if is_auto:
+                    reason = None
+                elif score >= self.cfg.tau_high:
+                    reason = "AMBIGUOUS_MULTI_MATCH"
+                else:
+                    reason = "BELOW_AUTO_THRESHOLD"
+                matches.append(
+                    ReconciliationMatch(
+                        match_id=f"MCH-{match_counter:05d}",
+                        tier=MatchTier.TIER_2_FUZZY,
+                        status=MatchStatus.MATCHED if is_auto else MatchStatus.PARTIAL_MATCH,
+                        confidence=round(score, 4) if is_auto else round(min(score, self.cfg.tau_high - 0.01), 4),
+                        record_a=rec_a,
+                        records_b=[rec_b],
+                        amount_diff=amt_diff,
+                        date_diff_days=date_diff,
+                        jaccard_similarity=self.jaccard_similarity(rec_a.description, rec_b.description),
+                        severity=ExceptionSeverity.NONE if is_auto else ExceptionSeverity.LOW,
+                        reason_code=reason,
+                        notes=(
+                            f"Fuzzy match (Score={score:.2f}, amt_diff=₹{amt_diff:.2f}, "
+                            f"date_diff={date_diff}d{ref_note}"
+                            + ("" if (is_auto or score < self.cfg.tau_high) else "; competing candidates, no decisive evidence")
+                            + ")"
+                        ),
+                    )
+                )
+                match_counter += 1
 
         # ----------------------------------------------------------------------
-        # Tier 2: Fuzzy Matching with Hungarian Bipartite Assignment
+        # Tier 2a: auto-accept fuzzy pass (score >= tau_high only)
         # ----------------------------------------------------------------------
-        unresolved_a_indices = [i for i in range(len(source_a)) if i not in matched_a_indices]
-        unresolved_b_indices = [i for i in range(len(source_b)) if i not in matched_b_indices]
-
-        if unresolved_a_indices and unresolved_b_indices:
-            cost_matrix = np.full((len(unresolved_a_indices), len(unresolved_b_indices)), 1e6)
-            score_matrix = np.zeros((len(unresolved_a_indices), len(unresolved_b_indices)))
-
-            for i, idx_a in enumerate(unresolved_a_indices):
-                rec_a = source_a[idx_a]
-                eps = self._amount_tolerance(rec_a.amount)
-
-                for j, idx_b in enumerate(unresolved_b_indices):
-                    rec_b = source_b[idx_b]
-                    if not self._dir_ok(rec_a.direction, rec_b.direction):
-                        continue
-
-                    amt_diff = abs(rec_a.amount - rec_b.amount)
-                    date_diff = abs((rec_a.date - rec_b.date).days)
-
-                    if amt_diff <= eps * 5 and date_diff <= self.cfg.date_window_days:
-                        # Compute components
-                        s_amt = 1.0 if amt_diff <= eps else max(0.0, 1.0 - (amt_diff / (eps * 5)))
-                        s_date = max(0.0, 1.0 - (date_diff / max(self.cfg.date_window_days, 1)))
-                        s_desc = self.jaccard_similarity(rec_a.description, rec_b.description)
-
-                        composite = (
-                            self.cfg.w_amount * s_amt
-                            + self.cfg.w_date * s_date
-                            + self.cfg.w_desc * s_desc
-                        )
-                        score_matrix[i, j] = composite
-                        if composite >= self.cfg.tau_low:
-                            cost_matrix[i, j] = 1.0 - composite
-
-            # Solve optimal matching if any candidate pairs exist
-            valid_pairs = np.where(cost_matrix < 1e5)
-            if len(valid_pairs[0]) > 0:
-                row_ind, col_ind = linear_sum_assignment(cost_matrix)
-                for r, c in zip(row_ind, col_ind):
-                    if cost_matrix[r, c] < 1.0:
-                        idx_a = unresolved_a_indices[r]
-                        idx_b = unresolved_b_indices[c]
-                        rec_a = source_a[idx_a]
-                        rec_b = source_b[idx_b]
-                        score = score_matrix[r, c]
-
-                        is_auto = score >= self.cfg.tau_high
-                        status = MatchStatus.MATCHED if is_auto else MatchStatus.PARTIAL_MATCH
-                        severity = ExceptionSeverity.NONE if is_auto else ExceptionSeverity.LOW
-
-                        matched_a_indices.add(idx_a)
-                        matched_b_indices.add(idx_b)
-
-                        amt_diff = abs(rec_a.amount - rec_b.amount)
-                        date_diff = abs((rec_a.date - rec_b.date).days)
-
-                        matches.append(
-                            ReconciliationMatch(
-                                match_id=f"MCH-{match_counter:05d}",
-                                tier=MatchTier.TIER_2_FUZZY,
-                                status=status,
-                                confidence=round(score, 4),
-                                record_a=rec_a,
-                                records_b=[rec_b],
-                                amount_diff=amt_diff,
-                                date_diff_days=date_diff,
-                                jaccard_similarity=self.jaccard_similarity(rec_a.description, rec_b.description),
-                                severity=severity,
-                                reason_code=None if is_auto else "BELOW_AUTO_THRESHOLD",
-                                notes=f"Fuzzy match (Score={score:.2f}, amt_diff=₹{amt_diff:.2f}, date_diff={date_diff}d)",
-                            )
-                        )
-                        match_counter += 1
-
-        logger.info(f"After Tier 2, total matches: {len(matches)}")
+        ua = [i for i in range(len(source_a)) if i not in matched_a_indices]
+        ub = [i for i in range(len(source_b)) if i not in matched_b_indices]
+        _apply_fuzzy([
+            p for p in self._fuzzy_pass(source_a, source_b, ua, ub, self.cfg.tau_high)
+            if p[2] >= self.cfg.tau_high and p[3]
+        ])
+        logger.info(f"After Tier 2a, total matches: {len(matches)}")
 
         # ----------------------------------------------------------------------
-        # Tier 3: Subset-Sum Split Matching (1-to-Many)
+        # Tier 3: Subset-Sum Split Matching (1 ledger entry -> many comparator entries)
+        # Runs BEFORE the review-band fuzzy pass so a weak 1:1 candidate cannot consume
+        # one part of a split.
         # ----------------------------------------------------------------------
         still_unresolved_a = [i for i in range(len(source_a)) if i not in matched_a_indices]
         still_unresolved_b = [i for i in range(len(source_b)) if i not in matched_b_indices]
@@ -310,55 +431,81 @@ class ReconciliationEngine:
             rec_a = source_a[idx_a]
             eps = self._amount_tolerance(rec_a.amount)
 
-            # Restrict candidates in B within date window and matching direction
             candidates_b = [
                 i for i in still_unresolved_b
                 if self._dir_ok(rec_a.direction, source_b[i].direction)
                 and abs((source_b[i].date - rec_a.date).days) <= self.cfg.date_window_days * 2
                 and source_b[i].amount < rec_a.amount + eps
             ]
-            # Cap candidates by date proximity to at most 20 to prevent combinatorial explosion
-            candidates_b.sort(key=lambda i: abs((source_b[i].date - rec_a.date).days))
+            # Reference-linked candidates first, then date proximity; cap to bound the search.
+            candidates_b.sort(
+                key=lambda i: (
+                    not self._ref_match(rec_a, source_b[i]),
+                    abs((source_b[i].date - rec_a.date).days),
+                )
+            )
             candidates_b = candidates_b[:20]
 
-            found_split = False
+            best = None
             for k in range(2, min(self.cfg.max_split_k + 1, len(candidates_b) + 1)):
+                # Tight per-part tolerance: a split must add up almost exactly.
+                split_eps = min(eps, self.cfg.split_eps_per_part * k)
                 for combo in itertools.combinations(candidates_b, k):
                     total_split = sum(source_b[i].amount for i in combo)
-                    if abs(total_split - rec_a.amount) <= eps:
-                        # Found valid split
-                        matched_recs_b = [source_b[i] for i in combo]
-                        matched_a_indices.add(idx_a)
-                        for i in combo:
-                            matched_b_indices.add(i)
-                            still_unresolved_b.remove(i)
+                    diff = abs(total_split - rec_a.amount)
+                    if diff > split_eps:
+                        continue
+                    parts = [source_b[i] for i in combo]
+                    ref_hits = sum(1 for b in parts if self._ref_match(rec_a, b))
+                    mean_jac = sum(self.jaccard_similarity(rec_a.description, b.description) for b in parts) / k
+                    max_gap = max(abs((b.date - rec_a.date).days) for b in parts)
+                    rank = (ref_hits, mean_jac, -max_gap, -diff)
+                    if best is None or rank > best[0]:
+                        best = (rank, combo, diff, ref_hits, mean_jac, max_gap)
+                if best is not None:
+                    break  # prefer the split with the fewest parts
 
-                        max_date_diff = max(abs((b.date - rec_a.date).days) for b in matched_recs_b)
-                        max_jac = max((self.jaccard_similarity(rec_a.description, b.description) for b in matched_recs_b), default=0.5)
+            if best is None:
+                continue
 
-                        matches.append(
-                            ReconciliationMatch(
-                                match_id=f"MCH-{match_counter:05d}",
-                                tier=MatchTier.TIER_3_SPLIT,
-                                status=MatchStatus.MATCHED,
-                                confidence=self.cfg.split_confidence,
-                                record_a=rec_a,
-                                records_b=matched_recs_b,
-                                amount_diff=abs(total_split - rec_a.amount),
-                                date_diff_days=max_date_diff,
-                                jaccard_similarity=max_jac,
-                                severity=ExceptionSeverity.LOW,
-                                reason_code=None,
-                                notes=f"Split match: 1 entry in A matched to {len(combo)} entries in B.",
-                            )
-                        )
-                        match_counter += 1
-                        found_split = True
-                        break
-                if found_split:
-                    break
+            _, combo, diff, ref_hits, mean_jac, max_gap = best
+            strong = ref_hits == len(combo)   # every part carries the ledger entry's reference
+            matched_a_indices.add(idx_a)
+            for i in combo:
+                matched_b_indices.add(i)
+                still_unresolved_b.remove(i)
+
+            matches.append(
+                ReconciliationMatch(
+                    match_id=f"MCH-{match_counter:05d}",
+                    tier=MatchTier.TIER_3_SPLIT,
+                    status=MatchStatus.MATCHED if strong else MatchStatus.PARTIAL_MATCH,
+                    confidence=self.cfg.split_confidence if strong else self.cfg.split_partial_confidence,
+                    record_a=rec_a,
+                    records_b=[source_b[i] for i in combo],
+                    amount_diff=diff,
+                    date_diff_days=max_gap,
+                    jaccard_similarity=mean_jac,
+                    severity=ExceptionSeverity.LOW,
+                    reason_code=None if strong else "SPLIT_WEAK_EVIDENCE",
+                    notes=(
+                        f"Split match: 1 entry in A = {len(combo)} entries in B "
+                        + ("(all parts reference-linked)." if strong
+                           else "(amounts reconcile but no shared reference; flagged for review).")
+                    ),
+                )
+            )
+            match_counter += 1
 
         logger.info(f"After Tier 3, total matches: {len(matches)}")
+
+        # ----------------------------------------------------------------------
+        # Tier 2b: review-band fuzzy pass (tau_low <= score < tau_high) on what remains
+        # ----------------------------------------------------------------------
+        ua = [i for i in range(len(source_a)) if i not in matched_a_indices]
+        ub = [i for i in range(len(source_b)) if i not in matched_b_indices]
+        _apply_fuzzy(self._fuzzy_pass(source_a, source_b, ua, ub, self.cfg.tau_low))
+        logger.info(f"After Tier 2b, total matches: {len(matches)}")
 
         # ----------------------------------------------------------------------
         # Exceptions: Unmatched Records in Source A & Source B
@@ -468,8 +615,13 @@ class ReconciliationEngine:
         rec_a: StandardizedRecord,
         candidates_b: List[StandardizedRecord],
     ) -> Tuple[ExceptionSeverity, str, str]:
-        """Classifies exception severity and reason per Blueprint 2."""
-        # Filter candidates_b to those compatible in direction
+        """
+        Diagnoses an unmatched ledger record. A variance diagnosis (timing delay or amount
+        discrepancy) requires evidence that a specific comparator record is the counterpart:
+        a shared reference, or corroborating narration/date within bounded limits. Anything
+        else is reported as a missing counterpart rather than a misleading variance.
+        """
+        cfg = self.cfg
         valid_b = [b for b in candidates_b if self._dir_ok(rec_a.direction, b.direction)]
         if not valid_b:
             return (
@@ -478,30 +630,56 @@ class ReconciliationEngine:
                 "No transaction with corresponding accounting direction found in comparator record set.",
             )
 
-        # Check for near amount match with large date gap
-        for b in valid_b:
-            if abs(rec_a.amount - b.amount) <= self._amount_tolerance(rec_a.amount):
-                days = abs((rec_a.date - b.date).days)
-                if days > self.cfg.timing_discrepancy_days:
-                    return (
-                        ExceptionSeverity.MEDIUM,
-                        "TIMING_DELAY",
-                        f"Amount matches candidate {b.record_id}, but date discrepancy is {days} days.",
-                    )
+        tol = self._amount_tolerance(rec_a.amount)
+        ref_linked = [b for b in valid_b if self._ref_match(rec_a, b)]
+        others = [b for b in valid_b if b not in ref_linked]
 
-        # Check for matching date/description with large amount gap
-        for b in valid_b:
-            if abs((rec_a.date - b.date).days) <= self.cfg.date_window_days:
-                amt_pct = abs(rec_a.amount - b.amount) / max(rec_a.amount, 1.0)
-                if amt_pct > self.cfg.high_amount_discrepancy_pct:
-                    return (
-                        ExceptionSeverity.HIGH,
-                        "AMOUNT_DISCREPANCY",
-                        f"Date aligns with candidate {b.record_id}, but amount differs by {amt_pct*100:.1f}%.",
-                    )
+        # 1) A reference-linked counterpart exists: diagnose the variance against it.
+        for b in ref_linked:
+            amt_diff = abs(rec_a.amount - b.amount)
+            days = abs((rec_a.date - b.date).days)
+            if amt_diff <= tol and days > cfg.timing_discrepancy_days:
+                return (
+                    ExceptionSeverity.MEDIUM,
+                    "TIMING_DELAY",
+                    f"Reference-linked candidate {b.record_id} matches in amount, but dated {days} days apart.",
+                )
+            pct = amt_diff / max(rec_a.amount, 1.0)
+            if amt_diff > tol and pct > cfg.high_amount_discrepancy_pct:
+                return (
+                    ExceptionSeverity.HIGH,
+                    "AMOUNT_DISCREPANCY",
+                    f"Reference-linked candidate {b.record_id} differs in amount by {pct*100:.1f}%.",
+                )
+
+        # 2) No reference link: require corroborating, bounded evidence.
+        for b in others:
+            amt_diff = abs(rec_a.amount - b.amount)
+            days = abs((rec_a.date - b.date).days)
+            if amt_diff <= tol and cfg.timing_discrepancy_days < days <= cfg.timing_max_days:
+                return (
+                    ExceptionSeverity.MEDIUM,
+                    "TIMING_DELAY",
+                    f"Amount matches candidate {b.record_id}, but date discrepancy is {days} days.",
+                )
+
+        for b in others:
+            days = abs((rec_a.date - b.date).days)
+            if days > cfg.date_window_days:
+                continue
+            pct = abs(rec_a.amount - b.amount) / max(rec_a.amount, 1.0)
+            if (
+                cfg.high_amount_discrepancy_pct < pct <= cfg.amount_discrepancy_max_pct
+                and self.jaccard_similarity(rec_a.description, b.description) >= cfg.discrepancy_min_jaccard
+            ):
+                return (
+                    ExceptionSeverity.HIGH,
+                    "AMOUNT_DISCREPANCY",
+                    f"Date and narration align with candidate {b.record_id}, but amount differs by {pct*100:.1f}%.",
+                )
 
         return (
-            ExceptionSeverity.MEDIUM,
-            "NO_AMOUNT_CANDIDATE",
-            "No plausible matching amount or timing candidate found in comparator set.",
+            ExceptionSeverity.HIGH,
+            "MISSING_CORRESPONDING_RECORD",
+            "No plausible counterpart (no shared reference, matching amount, or corroborated variance) in comparator set.",
         )

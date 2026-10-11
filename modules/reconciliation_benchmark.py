@@ -555,9 +555,26 @@ def generate_adversarial_benchmark_batch(
     return source_a, source_b, ground_truth_labels
 
 
+_EXPECTED_REASON_BY_PREFIX = {
+    "TLY-ERR-AMT": "AMOUNT_DISCREPANCY",
+    "TLY-ERR-LAG": "TIMING_DELAY",
+    "TLY-ORP": "MISSING_CORRESPONDING_RECORD",
+    "TLY-EXC": "MISSING_CORRESPONDING_RECORD",
+}
+
+
+def _expected_reason_code(record_id: str):
+    """Ground-truth exception reason implied by the generator's record-id prefix."""
+    for prefix, code in _EXPECTED_REASON_BY_PREFIX.items():
+        if record_id.startswith(prefix):
+            return code
+    return None
+
+
 def evaluate_reconciliation_benchmark(
     engine: ReconciliationEngine,
     batch_type: str = "standard",
+    reference_mode: str = "linked",
 ) -> Dict[str, Any]:
     """
     Executes benchmark over the synthetic or adversarial ground-truth dataset.
@@ -574,6 +591,13 @@ def evaluate_reconciliation_benchmark(
             return_pairs=True,
         )
 
+    if reference_mode == "none":
+        # Stress variant: strip every reference field so the engine must rely on amount,
+        # date and narration alone (typical when ledger voucher numbers never appear on
+        # the bank statement).
+        for rec in list(source_a) + list(source_b):
+            rec.account_code = None
+
     result = engine.reconcile(source_a, source_b)
 
     # Map matched record pairings
@@ -582,12 +606,21 @@ def evaluate_reconciliation_benchmark(
 
     tp, fp, fn, tn = 0, 0, 0, 0
     correctly_paired_count = 0
+    silent_wrong_auto = 0        # wrong pair (or false match) auto-approved with status MATCHED
+    wrong_in_review = 0          # wrong pair routed to the PARTIAL_MATCH review queue
+    auto_total = 0               # A records auto-approved (status MATCHED)
+    auto_correct = 0             # ... of which paired with the correct counterpart(s)
 
     # Build match lookup: record_a_id -> list of record_b_ids
     pred_pairs: Dict[str, List[str]] = {}
+    pred_status: Dict[str, MatchStatus] = {}
+    pred_reason: Dict[str, str] = {}
     for m in result.matches:
         if m.record_a and m.status in [MatchStatus.MATCHED, MatchStatus.PARTIAL_MATCH]:
             pred_pairs[m.record_a.record_id] = [b.record_id for b in m.records_b]
+            pred_status[m.record_a.record_id] = m.status
+        elif m.record_a and m.status == MatchStatus.UNMATCHED:
+            pred_reason[m.record_a.record_id] = m.reason_code or ""
 
     for rec_a in source_a:
         actual_is_match = (ground_truth_labels.get(rec_a.record_id) == "MATCH")
@@ -606,6 +639,32 @@ def evaluate_reconciliation_benchmark(
             fn += 1
         else:
             tn += 1
+
+    # Pair-level accounting (is the pairing itself right, and was the error contained?)
+    for rec_a in source_a:
+        rid = rec_a.record_id
+        if rid not in pred_pairs:
+            continue
+        expected = set(ground_truth_pairs.get(rid, []))
+        correct = bool(expected) and set(pred_pairs[rid]) == expected
+        if pred_status[rid] == MatchStatus.MATCHED:
+            auto_total += 1
+            if correct:
+                auto_correct += 1
+            else:
+                silent_wrong_auto += 1
+        elif not correct:
+            wrong_in_review += 1
+
+    # Exception reason-code accuracy (expected code derived from the generator's record-id prefix)
+    reason_total, reason_correct = 0, 0
+    for rec_a in source_a:
+        exp = _expected_reason_code(rec_a.record_id)
+        if exp is None:
+            continue
+        reason_total += 1
+        if pred_reason.get(rec_a.record_id) == exp:
+            reason_correct += 1
 
     precision = round(tp / max(tp + fp, 1), 4)
     recall = round(tp / max(tp + fn, 1), 4)
@@ -629,6 +688,7 @@ def evaluate_reconciliation_benchmark(
     return {
         "result": result,
         "batch_type": batch_type,
+        "reference_mode": reference_mode,
         "metrics": {
             "total_records": len(source_a),
             "actual_matches": actual_matches_count,
@@ -643,6 +703,12 @@ def evaluate_reconciliation_benchmark(
             "accuracy": accuracy,
             "pair_accuracy": pair_accuracy,
             "correctly_paired_records": correctly_paired_count,
+            "auto_resolved_total": auto_total,
+            "auto_resolved_precision": round(auto_correct / max(auto_total, 1), 4),
+            "silent_wrong_auto_matches": silent_wrong_auto,
+            "wrong_pairs_in_review": wrong_in_review,
+            "reason_code_accuracy": round(reason_correct / max(reason_total, 1), 4),
+            "reason_codes_scored": reason_total,
         },
         "confusion_matrix": confusion_matrix,
     }

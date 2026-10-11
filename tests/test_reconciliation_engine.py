@@ -223,8 +223,26 @@ def test_tier_3_split_match():
     m = result.matches[0]
     assert m.tier == MatchTier.TIER_3_SPLIT
     assert len(m.records_b) == 2
-    assert m.status == MatchStatus.MATCHED
+    # No shared reference on the parts: amounts reconcile exactly, but the split is not
+    # auto-approved; it is routed to the review queue.
+    assert m.status == MatchStatus.PARTIAL_MATCH
+    assert m.reason_code == "SPLIT_WEAK_EVIDENCE"
     assert m.amount_diff == 0.0
+
+
+def test_tier_3_split_match_auto_approved_with_shared_reference():
+    d = date(2026, 4, 20)
+    rec_a = StandardizedRecord("TLY-INV-100", RecordSource.TALLY, d, "Apex", 60000.0,
+                               Direction.CREDIT, "Settlement invoice 100", account_code="INV-100")
+    parts = [
+        StandardizedRecord("BNK-PART-1", RecordSource.BANK, d, "Apex", 35000.0, Direction.DEBIT,
+                           "Apex tranche 1", account_code="INV-100"),
+        StandardizedRecord("BNK-PART-2", RecordSource.BANK, d + timedelta(days=1), "Apex", 25000.0,
+                           Direction.DEBIT, "Apex tranche 2", account_code="INV-100"),
+    ]
+    m = ReconciliationEngine().reconcile([rec_a], parts).matches[0]
+    assert m.tier == MatchTier.TIER_3_SPLIT
+    assert m.status == MatchStatus.MATCHED
 
 
 def test_direction_inversion_config_toggle():
@@ -341,3 +359,137 @@ def test_reconciliation_reporter_exports():
 
         assert excel_file.exists() and excel_file.stat().st_size > 1000
         assert json_file.exists() and json_file.stat().st_size > 1000
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Audit round 3: reference evidence, order-independent ambiguity, evidence-gated
+# splits, bounded reason codes, and silent-error containment
+# ──────────────────────────────────────────────────────────────────────────────
+
+D0 = date(2026, 4, 1)
+
+
+def _rec(rid, src, desc, amt, dt=D0, direction=Direction.DEBIT, ref=None):
+    return StandardizedRecord(
+        record_id=rid, source=src, date=dt, account_label=desc[:20],
+        amount=amt, direction=direction, description=desc, account_code=ref,
+    )
+
+
+def test_reference_resolves_decoy_over_better_dated_lookalike():
+    """A shared reference must beat a same-day, near-amount decoy with a different reference."""
+    a = _rec("A1", RecordSource.TALLY, "Remittance to Distributor K invoice 4000", 50000.00, ref="INV-4000")
+    b_true = _rec("B-TRUE", RecordSource.BANK, "CMS vendor payout charges adjusted", 50000.60,
+                  dt=D0 + timedelta(days=1), direction=Direction.CREDIT, ref="INV-4000")
+    b_decoy = _rec("B-DECOY", RecordSource.BANK, "Remittance to Distributor invoice", 50000.50,
+                   direction=Direction.CREDIT, ref="DCY-1")
+    res = ReconciliationEngine().reconcile([a], [b_true, b_decoy])
+    pair = next(m for m in res.matches if m.record_a and m.record_a.record_id == "A1")
+    assert [b.record_id for b in pair.records_b] == ["B-TRUE"]
+    assert pair.status == MatchStatus.MATCHED
+
+
+def test_reference_inside_narration_counts_as_link():
+    a = _rec("A1", RecordSource.TALLY, "Payment", 12000.0, ref="CHQ778812")
+    b = _rec("B1", RecordSource.BANK, "CHQ778812 clearing", 12000.0,
+             dt=D0 + timedelta(days=2), direction=Direction.CREDIT, ref=None)
+    assert ReconciliationEngine._ref_match(a, b) is True
+
+
+def test_generic_reference_values_never_link():
+    a = _rec("A1", RecordSource.TALLY, "x", 1.0, ref="NIL")
+    b = _rec("B1", RecordSource.BANK, "y", 1.0, ref="NIL")
+    assert ReconciliationEngine._ref_match(a, b) is False
+
+
+def test_ambiguity_flag_is_order_independent():
+    """Two identical ledger entries vs two uninformative bank lines: BOTH must go to review."""
+    a = [_rec(f"A{i}", RecordSource.TALLY, "Payment", 10000.0) for i in (1, 2)]
+    b = [_rec("B1", RecordSource.BANK, "NEFT 8841", 10000.0, direction=Direction.CREDIT),
+         _rec("B2", RecordSource.BANK, "NEFT 9920", 10000.0, direction=Direction.CREDIT)]
+    res = ReconciliationEngine().reconcile(a, b)
+    statuses = [m.status for m in res.matches if m.record_a]
+    assert statuses == [MatchStatus.PARTIAL_MATCH, MatchStatus.PARTIAL_MATCH]
+
+
+def test_split_without_shared_reference_goes_to_review():
+    a = _rec("A1", RecordSource.TALLY, "Consolidated settlement", 60000.0, direction=Direction.CREDIT)
+    b = [_rec("B1", RecordSource.BANK, "Part one", 33000.0, direction=Direction.DEBIT),
+         _rec("B2", RecordSource.BANK, "Part two", 27000.0, dt=D0 + timedelta(days=1), direction=Direction.DEBIT)]
+    res = ReconciliationEngine().reconcile([a], b)
+    m = next(m for m in res.matches if m.record_a)
+    assert m.tier == MatchTier.TIER_3_SPLIT
+    assert m.status == MatchStatus.PARTIAL_MATCH
+    assert m.reason_code == "SPLIT_WEAK_EVIDENCE"
+
+
+def test_split_cross_pairing_is_prevented():
+    """Two splits whose totals differ by <0.1% must not swap bank parts."""
+    a1 = _rec("A1", RecordSource.TALLY, "Client one settlement", 60000.00, direction=Direction.CREDIT, ref="SPL-1")
+    a2 = _rec("A2", RecordSource.TALLY, "Client two settlement", 60020.00, direction=Direction.CREDIT, ref="SPL-2")
+    b = [
+        _rec("B1a", RecordSource.BANK, "installment 1", 36000.00, direction=Direction.DEBIT, ref="SPL-1"),
+        _rec("B1b", RecordSource.BANK, "installment 2", 24000.00, dt=D0 + timedelta(days=1), direction=Direction.DEBIT, ref="SPL-1"),
+        _rec("B2a", RecordSource.BANK, "installment 1", 36020.00, direction=Direction.DEBIT, ref="SPL-2"),
+        _rec("B2b", RecordSource.BANK, "installment 2", 24000.00, dt=D0 + timedelta(days=1), direction=Direction.DEBIT, ref="SPL-2"),
+    ]
+    res = ReconciliationEngine().reconcile([a1, a2], b)
+    pairs = {m.record_a.record_id: {x.record_id for x in m.records_b} for m in res.matches if m.record_a}
+    assert pairs["A1"] == {"B1a", "B1b"}
+    assert pairs["A2"] == {"B2a", "B2b"}
+
+
+def test_unreferenced_far_amount_is_missing_not_discrepancy():
+    """A leftover bank line 3x the amount is a different transaction, not an 'amount discrepancy'."""
+    a = _rec("A1", RecordSource.TALLY, "Phantom ledger disbursement", 20000.0)
+    b = _rec("B1", RecordSource.BANK, "Unrelated supplier payout", 60000.0, direction=Direction.CREDIT)
+    res = ReconciliationEngine().reconcile([a], [b])
+    exc = next(m for m in res.matches if m.record_a and m.status == MatchStatus.UNMATCHED)
+    assert exc.reason_code == "MISSING_CORRESPONDING_RECORD"
+
+
+def test_referenced_amount_variance_is_discrepancy():
+    a = _rec("A1", RecordSource.TALLY, "Vendor payment", 50000.0, ref="MIS-9")
+    b = _rec("B1", RecordSource.BANK, "Vendor payment", 54500.0, direction=Direction.CREDIT, ref="MIS-9")
+    res = ReconciliationEngine().reconcile([a], [b])
+    exc = next(m for m in res.matches if m.record_a and m.status == MatchStatus.UNMATCHED)
+    assert exc.reason_code == "AMOUNT_DISCREPANCY"
+
+
+def test_referenced_timing_gap_is_timing_delay():
+    a = _rec("A1", RecordSource.TALLY, "Cheque issue", 30000.0, ref="LAG-3")
+    b = _rec("B1", RecordSource.BANK, "Cheque clearing", 30000.0, dt=D0 + timedelta(days=16),
+             direction=Direction.CREDIT, ref="LAG-3")
+    res = ReconciliationEngine().reconcile([a], [b])
+    exc = next(m for m in res.matches if m.record_a and m.status == MatchStatus.UNMATCHED)
+    assert exc.reason_code == "TIMING_DELAY"
+
+
+@pytest.mark.parametrize("batch_type", ["standard", "adversarial"])
+@pytest.mark.parametrize("reference_mode", ["linked", "none"])
+def test_no_silent_wrong_auto_matches(batch_type, reference_mode):
+    """
+    The key safety property: a wrong pairing may exist, but it must never be auto-approved.
+    Holds with and without reference evidence.
+    """
+    out = evaluate_reconciliation_benchmark(
+        ReconciliationEngine(), batch_type=batch_type, reference_mode=reference_mode
+    )
+    m = out["metrics"]
+    assert m["silent_wrong_auto_matches"] == 0
+    assert m["auto_resolved_precision"] == 1.0
+    assert m["reason_code_accuracy"] == 1.0
+
+
+@pytest.mark.parametrize("batch_type", ["standard", "adversarial"])
+def test_linked_benchmark_pair_accuracy_perfect(batch_type):
+    out = evaluate_reconciliation_benchmark(ReconciliationEngine(), batch_type=batch_type, reference_mode="linked")
+    assert out["metrics"]["pair_accuracy"] == 1.0
+
+
+def test_unreferenced_adversarial_errors_are_contained_in_review():
+    """Without references, decoys can win a pairing, but every such error must sit in the review queue."""
+    out = evaluate_reconciliation_benchmark(ReconciliationEngine(), batch_type="adversarial", reference_mode="none")
+    m = out["metrics"]
+    wrong = m["actual_matches"] - m["correctly_paired_records"]
+    assert wrong == m["wrong_pairs_in_review"]

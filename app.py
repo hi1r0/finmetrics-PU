@@ -2625,14 +2625,25 @@ def page_reconciliation():
     c_mode1, c_mode2 = st.columns([1, 1])
     with c_mode1:
         st.markdown("### 1. Ground Truth Benchmark (Track 04)")
-        benchmark_choice = st.radio(
-            "Select Benchmark Batch:",
-            [
-                "Standard 60-Record Ground Truth Batch (Clean)",
-                "Adversarial Stress-Test Batch (Decoys, Duplicates, Lags & Orphans)",
-            ],
-            key="recon_benchmark_choice"
-        )
+        bc1, bc2 = st.columns([1, 1])
+        with bc1:
+            benchmark_choice = st.radio(
+                "Select Benchmark Batch:",
+                [
+                    "Standard Clean Batch (60 records)",
+                    "Adversarial Stress-Test (Decoys & Lags)",
+                ],
+                key="recon_benchmark_choice"
+            )
+        with bc2:
+            ref_mode_choice = st.radio(
+                "Reference Linkage Mode:",
+                [
+                    "Linked References (Invoice/UTR present)",
+                    "Stripped References (Stress: Narration Only)",
+                ],
+                key="recon_ref_mode_choice"
+            )
         run_benchmark_btn = st.button("Run Benchmark Evaluation", use_container_width=True, type="primary")
 
     with c_mode2:
@@ -2643,9 +2654,10 @@ def page_reconciliation():
 
     if run_benchmark_btn:
         batch_type = "adversarial" if "Adversarial" in benchmark_choice else "standard"
-        with st.spinner(f"Executing 3-tier cascade matching over {batch_type} ground-truth batch..."):
+        ref_mode = "none" if "Stripped" in ref_mode_choice else "linked"
+        with st.spinner(f"Executing 3-tier cascade matching over {batch_type} batch (ref_mode={ref_mode})..."):
             engine = ReconciliationEngine(config=recon_cfg)
-            eval_res = evaluate_reconciliation_benchmark(engine, batch_type=batch_type)
+            eval_res = evaluate_reconciliation_benchmark(engine, batch_type=batch_type, reference_mode=ref_mode)
             st.session_state.recon_eval_result = eval_res
             st.session_state.recon_result = eval_res["result"]
 
@@ -2680,14 +2692,29 @@ def page_reconciliation():
     eval_res = st.session_state.get("recon_eval_result")
     if eval_res is not None:
         batch_label = "Adversarial Stress-Test" if eval_res.get("batch_type") == "adversarial" else "Standard Clean Batch"
-        st.markdown(f"### Ground-Truth Evaluation: {batch_label}")
+        ref_label = "Stripped References" if eval_res.get("reference_mode") == "none" else "Linked References"
+        st.markdown(f"### Ground-Truth Evaluation: {batch_label} ({ref_label})")
         met = eval_res["metrics"]
-        g1, g2, g3, g4, g5 = st.columns(5)
-        g1.metric("Precision", f"{met['precision']*100:.1f}%")
-        g2.metric("Recall", f"{met['recall']*100:.1f}%")
-        g3.metric("Pair Accuracy", f"{met.get('pair_accuracy', 0.0)*100:.1f}%", help="Verified pairing accuracy: % of true matches mapped to the exact intended counterpart record.")
-        g4.metric("F1 Score", f"{met['f1_score']*100:.1f}%")
-        g5.metric("Overall Accuracy", f"{met['accuracy']*100:.1f}%")
+
+        # Primary Audit & Verification Metrics
+        g1, g2, g3, g4 = st.columns(4)
+        g1.metric("Pair Accuracy", f"{met.get('pair_accuracy', 0.0)*100:.1f}%", help="True matches paired with exact intended counterpart records")
+        g2.metric("Auto-Resolved Precision", f"{met.get('auto_resolved_precision', 0.0)*100:.1f}%", help="Accuracy of automatically approved matches without review")
+        silent_errs = met.get('silent_wrong_auto_matches', 0)
+        g3.metric(
+            "Silent Wrong Auto-Matches",
+            f"{silent_errs}",
+            delta="-0" if silent_errs == 0 else f"+{silent_errs}",
+            delta_color="normal" if silent_errs == 0 else "inverse",
+            help="Wrong pairings mistakenly auto-approved (Target: 0)"
+        )
+        g4.metric("Reason-Code Accuracy", f"{met.get('reason_code_accuracy', 1.0)*100:.1f}%", help="Correctness of exception diagnostic codes")
+
+        g5, g6, g7, g8 = st.columns(4)
+        g5.metric("Precision", f"{met['precision']*100:.1f}%")
+        g6.metric("Recall", f"{met['recall']*100:.1f}%")
+        g7.metric("Wrong Pairs In Review", f"{met.get('wrong_pairs_in_review', 0)}", help="Ambiguous or uncertain pairings safely routed to human review")
+        g8.metric("Overall Classification Accuracy", f"{met['accuracy']*100:.1f}%")
 
         st.markdown("#### Confusion Matrix (Actual vs Predicted)")
         st.dataframe(eval_res["confusion_matrix"], use_container_width=True, hide_index=True)

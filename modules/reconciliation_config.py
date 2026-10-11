@@ -37,6 +37,26 @@ class ReconciliationConfig:
     high_amount_discrepancy_pct: float = 0.05  # >5% discrepancy -> HIGH severity
     timing_discrepancy_days: int = 7           # >7 days delay -> MEDIUM severity
 
+    # Reference evidence (invoice no., UTR, cheque no.): composite-score floors when the
+    # two records share a reference (in tolerance / outside tolerance but inside the 5x gate)
+    ref_match_floor: float = 0.95
+    ref_match_floor_out_of_tol: float = 0.75
+    ref_assignment_preference: float = 0.05    # cost bonus so referenced pairs beat equal-score decoys
+
+    # Auto-approval needs decisive evidence: a reference link, or a composite score that beats
+    # the best competing candidate in the date/amount neighborhood by at least this margin
+    decisive_margin: float = 0.12
+
+    # Tier 3 split evidence: tolerance is per part (not a % of the total); without a shared
+    # reference on every part the split is routed to review instead of auto-matched
+    split_eps_per_part: float = 1.0
+    split_partial_confidence: float = 0.60
+
+    # Exception diagnosis bounds (variance diagnoses need evidence, not just proximity)
+    amount_discrepancy_max_pct: float = 0.30   # unreferenced candidates beyond this are not "the same txn"
+    discrepancy_min_jaccard: float = 0.10      # minimum narration overlap for unreferenced discrepancy
+    timing_max_days: int = 45                  # unreferenced same-amount candidates further apart are not timing
+
     # Accounting direction inversion (Ledger Dr == Bank Cr; Ledger Cr == Bank Dr)
     # Default is True when reconciling client ledger against bank statements.
     invert_comparator_direction: bool = True
