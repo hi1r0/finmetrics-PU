@@ -156,7 +156,7 @@ class BenchmarkCore:
     def _compute_peer_stats(self, clean_matrix: pd.DataFrame) -> pd.DataFrame:
         """
         For each ratio column, compute canonical stats.
-        This represents the frozen benchmark for client ingestion.
+        This represents the frozen benchmark for sector peer statistics.
         """
         stats_list = []
         for col in clean_matrix.columns:

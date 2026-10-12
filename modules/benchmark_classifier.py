@@ -85,7 +85,7 @@ class BenchmarkClassifier:
         if peer_values is not None and len(peer_values.dropna()) > 0:
             pct = cls.compute_percentile_rank(raw_value, peer_values, higher_is_better)
         else:
-            # Approximate percentile if no raw values (client-only scenario fallback)
+            # Approximate percentile if no raw peer values available
             med = peer_stats_row.get("median", raw_value)
             if pd.isna(med):
                 pct = np.nan

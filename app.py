@@ -635,6 +635,37 @@ def page_home(global_cfg: Dict) -> Dict:
     st.markdown("### 3. Build Benchmark")
     run = st.button("Build Sector Benchmark", type="primary", use_container_width=True)
 
+    saved_benchmarks = store.list_available()
+    if saved_benchmarks:
+        st.markdown("---")
+        st.markdown("### Or Load Pre-Calculated Benchmark")
+        c_sel, c_load = st.columns([3, 1])
+        with c_sel:
+            selected_saved = st.selectbox(
+                "Select Saved Benchmark", 
+                saved_benchmarks, 
+                label_visibility="collapsed",
+                help="Load a previously generated sector benchmark directly from local storage without refetching from yfinance."
+            )
+        with c_load:
+            if st.button("Load Benchmark", use_container_width=True):
+                loaded = store.load(selected_saved)
+                if loaded:
+                    p_df, c_mat, meta = loaded
+                    oe = OutlierEngine(iqr_multiplier=iqr_mult, zscore_threshold=z_thresh)
+                    out_df = oe.detect(c_mat)
+                    bc = BenchmarkCore()
+                    benchmark_result = bc.run(c_mat, out_df)
+                    st.session_state.benchmark_result = benchmark_result
+                    st.session_state.selected_sector = selected_saved
+                    st.session_state.tickers_used = list(c_mat.index)
+                    st.session_state.requested_tickers = list(c_mat.index)
+                    st.session_state.failed_tickers = []
+                    st.session_state.outlier_df = out_df
+                    st.success(f"Benchmark loaded for '{selected_saved}' ({len(c_mat)} companies).")
+                    time.sleep(0.5)
+                    st.rerun()
+
     return {
         "chosen": chosen,
         "tickers": tickers,

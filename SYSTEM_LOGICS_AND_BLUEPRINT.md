@@ -9,8 +9,7 @@
 5. [Statistical Outlier Detection Engine](#5-statistical-outlier-detection-engine)
 6. [Benchmarking Scoring Pipeline](#6-benchmarking-scoring-pipeline)
 7. [Reporting & Explanation Engine](#7-reporting--explanation-engine)
-8. [PowerPoint (PPTX) Executive Briefing Engine (Temporarily Disabled)](#8-powerpoint-pptx-executive-briefing-engine-temporarily-disabled)
-9. [Operational Boundaries, Error Handling & Limitations](#9-operational-boundaries-error-handling--limitations)
+8. [Operational Boundaries, Error Handling & Limitations](#8-operational-boundaries-error-handling--limitations)
 
 ---
 
@@ -117,11 +116,6 @@ The codebase consists of the following components:
 *   [modules/benchmark_classifier.py](file:///D:/Python/PYCHARM/PANDAS/modules/benchmark_classifier.py) — Determines percentile positions, health categorization labels, and signal classes for individual ratios.
 *   [modules/benchmark_store.py](file:///D:/Python/PYCHARM/PANDAS/modules/benchmark_store.py) — Handles file persistence (Parquet/JSON) for finalized sector benchmarks.
 *   [modules/ai_handler.py](file:///D:/Python/PYCHARM/PANDAS/modules/ai_handler.py) — Connects to the Google Gemini API, manages key rotation, and discovers target tickers for AI Search.
-*   [modules/pptx_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_generator.py) — The orchestrating client for generating widescreen PowerPoint briefings from analysis data.
-*   [modules/pptx_slides.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_slides.py) — Renders the individual slide layout structures (Cover, Executive Summary, Scorecards, SWOT, Appendix, etc.).
-*   [modules/pptx_charts.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_charts.py) — Matplotlib-based slide-compatible chart generators (Radar, Scatter, bars) with a transparent dark canvas.
-*   [modules/pptx_components.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_components.py) — Renders shape-based widgets (Cards, KPI blocks, progress bars, tables) with exact coordinates.
-*   [modules/pptx_design_tokens.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_design_tokens.py) — Declares design colors, dimensions, font sizes, margins, and brand guidelines for the slides deck.
 *   [modules/visualization.py](file:///D:/Python/PYCHARM/PANDAS/modules/visualization.py) — Renders interactive charts (radar, sunburst, stacked contribution bars, scatter plots, heatmaps) in Plotly and Seaborn.
 *   [modules/report_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/report_generator.py) — Compiles outputs into multi-sheet Excel workbooks with proper styling and exports statistical explanations.
 *   [modules/utils.py](file:///D:/Python/PYCHARM/PANDAS/modules/utils.py) — Implements helpers like `safe_divide()`, exponential backoff decorators, logging config, and numeric converters.
@@ -435,74 +429,17 @@ The report generator compiles an institutional workbook containing:
 
 ---
 
-## 8. PowerPoint (PPTX) Executive Briefing Engine [Temporarily Disabled]
+## 8. Operational Boundaries, Error Handling & Limitations
 
-> [!NOTE]
-> PowerPoint export is **temporarily disabled** in the frontend dashboard layout ([app.py](file:///D:/Python/PYCHARM/PANDAS/app.py#L1746-L1911)), as requested by the user, by assigning the execution code to a triple-quoted string variable (`_disabled_pptx_code`). To restore, remove the variable assignment and the triple-quotes in `app.py`. The underlying backend generation library ([modules/pptx_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_generator.py)) and its supporting modules remain fully functional.
-
-The PowerPoint export system generates high-resolution, widescreen (16:9) presentation slides that align with the Abyss Teal dark theme used in the dashboard. The system utilizes `python-pptx` to build shape matrices, text frames, and tabular shapes, and embeds high-resolution charts generated in Matplotlib.
-
-### 8.1 Modular Generation Architecture
-```mermaid
-graph TD
-    A[app.py Streamlit Export Trigger] --> B[pptx_generator.py Orchestrator]
-    B --> C[pptx_design_tokens.py Register]
-    B --> D[pptx_components.py Shape Builders]
-    B --> E[pptx_charts.py Matplotlib Renderers]
-    B --> F[pptx_slides.py Slide Builders]
-    
-    F --> G[Slide 1: Title & Cover]
-    F --> H[Slide 2: Executive Summary]
-    F --> I[Slide 3: Pillar Performance]
-    F --> J[Slide 4: Competitive Positioning]
-    F --> K[Slide 5: Outlier Scan]
-    F --> L[Slide 6: 2x2 SWOT Matrix]
-    F --> M[Slide 7: AI Action Plan]
-    F --> N[Slide 8: Ratio Appendix]
-    
-    E --> O[Matplotlib Radar Chart]
-    E --> P[Matplotlib Outlier Scatter]
-    O & P --> |Save Temp PNG| F
-```
-
-### 8.2 Design Tokens & Canvas Properties
-*   **Dimensions**: Widescreen 16:9 canvas layout ($\text{Width} = 13.333 \text{ inches}$, $\text{Height} = 7.5 \text{ inches}$).
-*   **Color Registry**:
-    *   Canvas Background (`COLOR_BG`): Dark Teal `RGBColor(0, 31, 30)`
-    *   Container Cards (`COLOR_CARD`): `RGBColor(0, 38, 35)`
-    *   Primary Accent (`COLOR_TEAL`): Bright Teal `RGBColor(0, 196, 167)`
-    *   Standard Text (`COLOR_WHITE`): Soft Off-White `RGBColor(212, 240, 236)`
-    *   Muted Labels (`COLOR_MUTED`): Grey-Teal `RGBColor(122, 184, 178)`
-*   **Typography**: Calibri font family is enforced across all text runs. Title sizing is set to $28\text{pt}$, cards use $16\text{pt}$, body is $10.5\text{pt}$, and tables use $9\text{pt}$.
-
-### 8.3 Slide-by-Slide Core Logic
-1.  **Title Slide**: Renders the client name, sector category, and date of report generation over a large decorative left teal stripe.
-2.  **Executive Summary Slide**: Displays the composite rating score card, the assigned risk category, and key text summaries.
-3.  **Pillar Scorecard Slide**: Draws five horizontal stacked cards representing each financial pillar. A coordinate-calculated progress bar is drawn on each card, mapping the 0–100 pillar score to physical width dimensions.
-4.  **Competitive Positioning Slide**: Embeds a transparent Matplotlib spider-web radar chart mapping the five pillars, comparing the client's metrics directly to the sector medians.
-5.  **Outlier Analysis Slide**: Integrates the multivariate Isolation Forest anomaly score alongside a structured table showing the most extreme univariate outlier ratios.
-6.  **SWOT Matrix Slide**: Constructs a balanced $2\times2$ layout grid. Each quadrant (Strengths, Weaknesses, Opportunities, Threats) is colored using its semantic color token and contains bulleted narrative explanations.
-7.  **AI Action Plan Slide**: Formulates four distinct action blocks with colored numbers ($01$, $02$, $03$, $04$) pointing to recommended strategic interventions.
-8.  **Ratio Appendix Slide**: Renders a clean data table containing peer statistics (quantiles, medians, means) to provide a complete audit trail for the presentation.
-
-### 8.4 Matplotlib Rendering Pipeline
-Charts embedded in slides are rendered via `pptx_charts.py` using Matplotlib's `Agg` non-interactive backend.
-*   **Aesthetics**: Backgrounds are set to transparent to blend with slide canvas colors. Custom gridlines are drawn in `COLOR_BORDER` (`#1A3A37`).
-*   **File Handling**: Charts are saved to temporary PNG files at $200\text{ DPI}$. After `python-pptx` imports the charts, the temporary files are deleted to clean up storage.
-
----
-
-## 9. Operational Boundaries, Error Handling & Limitations
-
-### 9.1 Error Handling & Pipeline Resiliency
+### 8.1 Error Handling & Pipeline Resiliency
 *   **Missing Financial Fields**: If a company has incomplete filings, the `safe_divide()` wrapper prevents crashes, and the benchmarking engine adjusts weights accordingly.
 *   **Delisted Tickers**: Invalid tickers are skipped during data fetching, and the sector baseline is built using the remaining peers.
 
-### 9.2 Caching Policies
+### 8.2 Caching Policies
 *   **Volatile In-Memory Storage**: Session-level calculations are stored in `st.session_state` to avoid redundant computations.
 *   **Persistent Cache Storage**: Financial statements are saved as Parquet files under `data/cache/`. To clear outdated data and free storage, users can trigger a purge via the **Clear All Cache** button in the sidebar.
 
-### 9.3 System & Analytical Limitations
+### 8.3 System & Analytical Limitations
 1.  **Dependency on API Quality**: The accuracy of the ratios depends on how consistently Yahoo Finance standardizes raw financial reports.
 2.  **Sector Homogeneity Assumption**: The benchmarking logic assumes that companies within a sector are comparable. If a sector contains both asset-heavy manufacturers and asset-light software developers, efficiency comparisons can be skewed.
 3.  **Relative Benchmark Scores**: A high composite score indicates strong performance relative to peers. If the entire sector is in decline, a high score does not guarantee absolute financial health.
