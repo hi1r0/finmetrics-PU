@@ -73,11 +73,8 @@ def ratio_boxplot(
     ratio_df: pd.DataFrame,
     ratios: Optional[List[str]] = None,
     outlier_tickers: Optional[List[str]] = None,
-    client_ratios: Optional[Dict[str, float]] = None,
-    client_name: str = "Client",
 ) -> go.Figure:
-    """Box plots for ratio distributions across the peer group.
-    Optionally overlays a client data point as a red diamond marker."""
+    """Box plots for ratio distributions across the peer group."""
     if ratios is None:
         ratios = [c for c in ratio_df.columns if c in RATIO_LABELS][:8]
 
@@ -128,188 +125,11 @@ def ratio_boxplot(
                     row=row, col=col,
                 )
 
-        # Overlay client marker
-        if client_ratios and ratio in client_ratios:
-            client_val = client_ratios[ratio]
-            if client_val is not None and not (isinstance(client_val, float) and np.isnan(client_val)):
-                fig.add_trace(
-                    go.Scatter(
-                        y=[client_val],
-                        x=[0],
-                        mode="markers+text",
-                        text=[client_name],
-                        textposition="top center",
-                        textfont=dict(color=ACCENT, size=9),
-                        marker=dict(
-                            color=ACCENT,
-                            size=13,
-                            symbol="diamond",
-                            line=dict(color="white", width=1.5),
-                        ),
-                        name=client_name,
-                        showlegend=(i == 0),  # show in legend only once
-                    ),
-                    row=row, col=col,
-                )
-
     fig.update_layout(
         title="Ratio Distribution — Peer Group",
         height=550,
     )
     return _apply_theme(fig)
-
-
-def plot_client_peer_scatter(
-    peer_df: pd.DataFrame,
-    client_ratios: Dict[str, float],
-    client_name: str = "Client",
-) -> go.Figure:
-    """Scatter plot with custom red-to-green colorscale, no jitter, matching user mockup."""
-    from modules.outlier_engine import HIGH_IS_BAD
-    
-    ratios = [c for c in peer_df.columns if c in RATIO_LABELS][:12]
-    if not ratios:
-        return go.Figure()
-        
-    fig = go.Figure()
-    
-    x_peers, y_peers, color_peers, text_peers = [], [], [], []
-    x_client, y_client, color_client, text_client = [], [], [], []
-    
-    labels = [RATIO_LABELS.get(r, r) for r in ratios]
-    
-    colorscale = [
-        [0.0,  "#c0392b"],
-        [0.25, "#e67e22"],
-        [0.5,  "#f1c40f"],
-        [0.75, "#8fc93a"],
-        [1.0,  "#1a7a3c"],
-    ]
-    
-    for i, ratio in enumerate(ratios):
-        peer_vals = peer_df[ratio].dropna()
-        if peer_vals.empty: continue
-            
-        peer_pcts = peer_vals.rank(pct=True) * 100
-        
-        # Y value = Health Score (100 = Best, 0 = Worst)
-        if ratio in HIGH_IS_BAD:
-            y_vals = 100 - peer_pcts.values
-        else:
-            y_vals = peer_pcts.values
-            
-        x_peers.extend([i] * len(peer_pcts))
-        y_peers.extend(y_vals)
-        color_peers.extend(y_vals) # Color directly follows Y position
-        text_peers.extend(peer_vals.index + "<br>Raw: " + peer_vals.round(2).astype(str))
-        
-        # Client Point
-        client_val = client_ratios.get(ratio, np.nan)
-        if pd.notna(client_val):
-            client_pct = float((peer_vals < client_val).sum()) / len(peer_vals) * 100
-            
-            if ratio in HIGH_IS_BAD:
-                client_y_val = 100 - client_pct
-            else:
-                client_y_val = client_pct
-                
-            x_client.append(i)
-            y_client.append(client_y_val)
-            color_client.append(client_y_val)
-            text_client.append(f"<b>{client_name}</b><br>Raw: {client_val:.2f}")
-
-    # Plot Peers
-    if y_peers:
-        fig.add_trace(go.Scatter(
-            x=x_peers,
-            y=y_peers,
-            mode="markers",
-            name="Peers",
-            text=text_peers,
-            hovertemplate="%{text}<br>Pct: %{y:.1f}th<extra></extra>",
-            marker=dict(
-                color=color_peers,
-                colorscale=colorscale,
-                cmin=0, cmax=100,
-                size=12,
-                opacity=0.85,
-                line=dict(width=0), # No border for peers
-                showscale=True,
-                colorbar=dict(
-                    title=None,
-                    orientation="h",
-                    yanchor="top", y=-0.25,
-                    xanchor="center", x=0.5,
-                    len=0.9,
-                    thickness=12,
-                    tickfont=dict(color=TEXT),
-                )
-            ),
-            showlegend=False
-        ))
-
-    # Plot Client
-    if y_client:
-        fig.add_trace(go.Scatter(
-            x=x_client,
-            y=y_client,
-            mode="markers",
-            name=client_name,
-            text=text_client,
-            hovertemplate="%{text}<br>Pct: %{y:.1f}th<extra></extra>",
-            marker=dict(
-                color=color_client,
-                colorscale=colorscale,
-                cmin=0, cmax=100,
-                size=12,  # Identical to peers
-                line=dict(color="white", width=2.5), # White border
-                showscale=False
-            ),
-            showlegend=False
-        ))
-
-    # Legend traces at the very bottom
-    fig.add_trace(go.Scatter(x=[None], y=[None], mode="markers", marker=dict(color="#1a7a3c", size=10), name="Peer companies"))
-    fig.add_trace(go.Scatter(x=[None], y=[None], mode="markers", marker=dict(color="#f1c40f", size=10, line=dict(color="white", width=2.5)), name="Your client (color = percentile rank)"))
-
-    fig = _apply_theme(fig)
-
-    fig.update_layout(
-        title="Peer Competitive Mapping (Latest Quarter Percentile)",
-        yaxis=dict(
-            title="", # Removing Y-axis title as per mockup
-            range=[-5, 105], 
-            showgrid=False,
-            zeroline=False,
-            tickvals=[0, 20, 40, 60, 80, 100],
-        ),
-        xaxis=dict(
-            title="", 
-            tickvals=list(range(len(labels))),
-            ticktext=labels,
-            tickangle=-35, 
-            showgrid=False
-        ),
-        showlegend=True,
-        legend=dict(
-            orientation="h", 
-            yanchor="top", y=-0.40, # Push below colorbar
-            xanchor="left", x=0, 
-            bgcolor="rgba(0,0,0,0)", 
-            bordercolor="rgba(0,0,0,0)"
-        ),
-        height=600,
-        margin=dict(b=180, l=40, r=40, t=60) # Extra bottom margin for legend + colorbar
-    )
-    
-    # Add subtle horizontal grid lines every 20%
-    for y_val in [20, 40, 60, 80]:
-        fig.add_hline(y=y_val, line_dash="solid", line_color="rgba(255, 255, 255, 0.05)", layer="below")
-        
-    # Add dashed median
-    fig.add_hline(y=50, line_dash="dash", line_color="rgba(255, 255, 255, 0.1)", layer="below")
-    
-    return fig
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -369,11 +189,8 @@ def radar_chart(
     ratio_df: pd.DataFrame,
     tickers: List[str],
     ratios: Optional[List[str]] = None,
-    client_ratios: Optional[Dict[str, float]] = None,
-    client_name: str = "Client",
 ) -> go.Figure:
-    """Radar/spider chart comparing selected companies.
-    Optionally overlays a client data point as a distinct filled polygon."""
+    """Radar/spider chart comparing selected companies."""
     if ratios is None:
         ratios = [
             "gross_margin", "operating_margin", "net_margin",
@@ -406,39 +223,6 @@ def radar_chart(
                 line=dict(color=colors[i % len(colors)], width=2),
                 fillcolor=colors[i % len(colors)],
                 opacity=0.25,
-            )
-        )
-
-    # Overlay client as a distinct orange polygon
-    if client_ratios:
-        # Compute client percentile rank against the peer group
-        client_pct = []
-        for r in ratios:
-            if r not in client_ratios or client_ratios[r] is None:
-                client_pct.append(50.0)  # default to median if missing
-                continue
-            val = client_ratios[r]
-            if isinstance(val, float) and np.isnan(val):
-                client_pct.append(50.0)
-                continue
-            col_vals = ratio_df[r].dropna()
-            if col_vals.empty:
-                client_pct.append(50.0)
-                continue
-            pct = float((col_vals < val).sum()) / len(col_vals) * 100
-            client_pct.append(pct)
-
-        client_vals = client_pct + client_pct[:1]
-        client_lbl  = labels + labels[:1]
-        fig.add_trace(
-            go.Scatterpolar(
-                r=client_vals,
-                theta=client_lbl,
-                fill="toself",
-                name=client_name,
-                line=dict(color=YELLOW, width=2.5, dash="dot"),
-                fillcolor=YELLOW,
-                opacity=0.3,
             )
         )
 
@@ -598,116 +382,7 @@ def health_score_bars(score_df: pd.DataFrame) -> go.Figure:
     return _apply_theme(fig)
 
 
-def health_score_bars_with_client(
-    peer_summary_df: pd.DataFrame,
-    client_summary_df: pd.DataFrame,
-    client_name: str = "Client",
-) -> go.Figure:
-    """
-    Renders the peer health score bar chart with the Tally client
-    inserted as a highlighted orange bar, so the client stands out visually.
 
-    Parameters
-    ----------
-    peer_summary_df  : pillar_summary_df from the BenchmarkCoreResult
-    client_summary_df: pillar_summary_df from the Tally ClientComparator result
-    client_name      : display name for the client
-    """
-    if peer_summary_df is None or peer_summary_df.empty:
-        return go.Figure()
-
-    # Normalise peer df to have "ticker" and "overall_score" columns
-    peer = peer_summary_df.copy()
-    if "composite_score" in peer.columns and "overall_score" not in peer.columns:
-        peer = peer.rename(columns={"composite_score": "overall_score"})
-    ticker_col = "ticker" if "ticker" in peer.columns else peer.index.name or "index"
-
-    # Filter out client from peers to avoid duplicate bars
-    if ticker_col in peer.columns:
-        peer = peer[peer[ticker_col].astype(str).str.replace(" ★", "", regex=False) != str(client_name).replace(" ★", "")]
-
-    # Extract client score
-    client_score = None
-    if client_summary_df is not None and not client_summary_df.empty:
-        if "composite_score" in client_summary_df.columns:
-            client_score = float(client_summary_df["composite_score"].values[0])
-        elif "overall_score" in client_summary_df.columns:
-            client_score = float(client_summary_df["overall_score"].values[0])
-
-    # Sort peers ascending so chart reads low -> high
-    peer_sorted = peer.sort_values("overall_score", ascending=True)
-
-    # Calculate height and dynamic colorbar offset BEFORE building traces
-    n_bars   = len(peer_sorted) + (1 if client_score is not None else 0)
-    height   = max(420, 30 * n_bars)
-    y_offset = -110 / height  # Constant pixel gap regardless of chart height
-
-    # Build two traces: Peer (Plasma gradient) + Client (teal highlight)
-    fig = go.Figure()
-
-    # --- Peer bars ---
-    fig.add_trace(go.Bar(
-        x=peer_sorted["overall_score"],
-        y=peer_sorted[ticker_col] if ticker_col in peer_sorted.columns else peer_sorted.index,
-        orientation="h",
-        name="Peers",
-        marker=dict(
-            color=peer_sorted["overall_score"],
-            colorscale="Plasma_r",
-            cmin=0, cmax=100,
-            showscale=True,
-            colorbar=dict(
-                title=dict(text="Score", side="top"),
-                tickfont=dict(color=TEXT),
-                title_font=dict(color=TEXT),
-                orientation="h",
-                yanchor="top", y=y_offset,
-                xanchor="center", x=0.5,
-                len=0.85,
-                thickness=14,
-                outlinewidth=0,
-            ),
-        ),
-        text=peer_sorted["overall_score"].round(1).astype(str) + " pts",
-        textposition="outside",
-        textfont=dict(color=TEXT, size=10),
-    ))
-
-    # --- Client bar (highlighted to match color scale) ---
-    if client_score is not None:
-        fig.add_trace(go.Bar(
-            x=[client_score],
-            y=[f"{client_name} ★"],
-            orientation="h",
-            name=client_name,
-            marker=dict(
-                color=[client_score],
-                colorscale="Plasma_r",
-                cmin=0, cmax=100,
-                line=dict(color="#ffffff", width=2), # Strong white border for prominence
-            ),
-            text=[f"{client_score:.1f} pts"],
-            textposition="outside",
-            textfont=dict(color=TEXT, size=11, family="Google Sans, sans-serif"),
-        ))
-
-    fig.update_layout(
-        title="Financial Health Score — Sector Ranking (Latest Quarter)",
-        xaxis=dict(range=[0, 115], title="Score (0–100)"),
-        yaxis=dict(categoryorder="total ascending"),
-        barmode="overlay",
-        height=height,
-        margin=dict(b=120),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom", y=1.02,
-            xanchor="right", x=1,
-            font=dict(color=TEXT),
-            bgcolor=CARD_BG,
-            bordercolor=GRID,
-        ),
-    )
-    return _apply_theme(fig)
 
 
 

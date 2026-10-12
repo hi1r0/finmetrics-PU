@@ -8,27 +8,25 @@
 4. [Ratio Calculation Engine](#4-ratio-engine--computational-logic)
 5. [Statistical Outlier Detection Engine](#5-statistical-outlier-detection-engine)
 6. [Benchmarking Scoring Pipeline](#6-benchmarking-scoring-pipeline)
-7. [Client Comparator & Tally Bridge Ingestion](#7-client-comparator--tally-bridge-ingestion)
+7. [Reporting & Explanation Engine](#7-reporting--explanation-engine)
 8. [PowerPoint (PPTX) Executive Briefing Engine (Temporarily Disabled)](#8-powerpoint-pptx-executive-briefing-engine-temporarily-disabled)
-9. [SWOT Classification & Strategic Insight Generation](#9-swot-classification--strategic-insight-generation)
-10. [Operational Boundaries, Error Handling & Limitations](#10-operational-boundaries-error-handling--limitations)
+9. [Operational Boundaries, Error Handling & Limitations](#9-operational-boundaries-error-handling--limitations)
 
 ---
 
 ## 1. Introduction & System Purpose
 
-The **NSE Financial Outlier Detection & Benchmarking System** is a robust Python-based quantitative finance platform designed to automate cross-sectional financial analysis, statistical anomaly detection, and strategic benchmarking for companies listed on the National Stock Exchange of India (NSE) as well as private clients. 
+The **NSE Financial Outlier Detection & Benchmarking System** is a robust Python-based quantitative finance platform designed to automate cross-sectional financial analysis, statistical anomaly detection, and strategic benchmarking for companies listed on the National Stock Exchange of India (NSE). 
 
 ### 1.1 Core Problems Solved
 1. **Parsing Friction**: Financial statements retrieved from raw APIs (like Yahoo Finance) are highly inconsistent, with changing line-item descriptions and shifted timeframes. The system automates ingestion and standardizes reports in under 60 seconds.
 2. **Distribution Skewness**: Extreme financial metrics (e.g., a P/E ratio of $5000\times$ or interest coverage of $-400\times$) drag arithmetic averages and standard deviations, rendering normal companies indistinguishable under traditional z-score models. The system addresses this with robust median-based scaling and cell-level outlier masking.
-3. **Black-Box Metrics**: Most quantitative models return a health score without auditability. The system generates a detailed **Contribution Matrix** and translates mathematical comparisons into plain-English **SWOT Narrative Reports** for executive consumption.
-4. **Private-Public Gap**: Financial consultants struggle to compare non-public clients directly against listed peers. The system bridges this gap by parsing standard client spreadsheets or aggregating raw **Tally ERP Journal entries** to compute a standardized baseline comparison.
+3. **Black-Box Metrics**: Most quantitative models return a health score without auditability. The system generates a detailed **Contribution Matrix** and translates mathematical comparisons into structured statistical explanations and multi-sheet Excel reports.
 
 ### 1.2 Target User Personas
 *   **Equity Analysts**: Run cross-sectional sector scans to flag undervalued performers or identify companies with deteriorating fundamentals.
 *   **Risk Officers**: Scan for extreme statistical outliers that could signify accounting anomalies, operational distress, or aggressive revenue recognition.
-*   **Client Advisors & Consultants**: Map private clients directly against public sector baselines to build strategic SWOT matrices and comparative financial reports.
+*   **Corporate & Portfolio Strategists**: Benchmark sector constituents against robust distribution baselines to assess relative financial health.
 
 ---
 
@@ -54,10 +52,6 @@ graph TD
     bench_class[benchmark_classifier.py]
     bench_store[benchmark_store.py]
 
-    %% Integration Modules
-    client_comp[client_comparator.py]
-    tally_bdg[tally_bridge.py]
-
     %% Outputs & Vis
     vis[visualization.py]
     report_gen[report_generator.py]
@@ -73,12 +67,6 @@ graph TD
     
     bench_core --> bench_class
     bench_core --> bench_store
-    
-    App --> client_comp
-    client_comp --> bench_core
-    
-    App --> tally_bdg
-    tally_bdg --> client_comp
     
     App --> vis
     App --> report_gen
@@ -113,13 +101,13 @@ sequenceDiagram
     Note over BC: 1. Mask Outliers<br/>2. Compute Robust Scaling<br/>3. Sigmoid Scoring (0-100)<br/>4. Pillar Aggregation
     BC->>BS: Save Sector Benchmark Profile
     BC-->>UI: Mapped Scores, Rankings & Categories
-    UI->>User: Display Dashboards, Heatmaps & SWOT Reports
+    UI->>User: Display Dashboards, Heatmaps & Benchmark Reports
 ```
 
 ### 2.3 Core Source Code Index
 The codebase consists of the following components:
 
-*   [app.py](file:///D:/Python/PYCHARM/PANDAS/app.py) — The Streamlit graphical entry point. Orchestrates session states, sidebar configuration, UI custom styling (Abyss Teal), and renders the 9 analytical tabs.
+*   [app.py](file:///D:/Python/PYCHARM/PANDAS/app.py) — The Streamlit graphical entry point. Orchestrates session states, sidebar configuration, UI custom styling (Abyss Teal), and renders the 6 analytical tabs.
 *   [modules/sector_loader.py](file:///D:/Python/PYCHARM/PANDAS/modules/sector_loader.py) — Contains structural mappings of NSE sectors (e.g., Automobile, IT, FMCG, Banking) to primary ticker symbols.
 *   [modules/data_fetcher.py](file:///D:/Python/PYCHARM/PANDAS/modules/data_fetcher.py) — Collects data from Yahoo Finance (`yfinance`), manages the local caching database, and implements API rate-limiting delays.
 *   [modules/financial_parser.py](file:///D:/Python/PYCHARM/PANDAS/modules/financial_parser.py) — Resolves field discrepancies across financial statement versions by mapping raw columns to canonical variables.
@@ -128,16 +116,14 @@ The codebase consists of the following components:
 *   [modules/benchmark_core.py](file:///D:/Python/PYCHARM/PANDAS/modules/benchmark_core.py) — Runs the  benchmarking engine, utilizing robust statistics to rank and score peer groups.
 *   [modules/benchmark_classifier.py](file:///D:/Python/PYCHARM/PANDAS/modules/benchmark_classifier.py) — Determines percentile positions, health categorization labels, and signal classes for individual ratios.
 *   [modules/benchmark_store.py](file:///D:/Python/PYCHARM/PANDAS/modules/benchmark_store.py) — Handles file persistence (Parquet/JSON) for finalized sector benchmarks.
-*   [modules/client_comparator.py](file:///D:/Python/PYCHARM/PANDAS/modules/client_comparator.py) — Normalizes uploaded client files and maps ratios to compare them against saved benchmarks.
-*   [modules/tally_bridge.py](file:///D:/Python/PYCHARM/PANDAS/modules/tally_bridge.py) — Ingests ledger structures and journal entries exported from Tally ERP to compute standardized client ratios.
-*   [modules/ai_handler.py](file:///D:/Python/PYCHARM/PANDAS/modules/ai_handler.py) — Connects to the Google Gemini API, manages key rotation, and recommends target tickers for AI Search.
+*   [modules/ai_handler.py](file:///D:/Python/PYCHARM/PANDAS/modules/ai_handler.py) — Connects to the Google Gemini API, manages key rotation, and discovers target tickers for AI Search.
 *   [modules/pptx_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_generator.py) — The orchestrating client for generating widescreen PowerPoint briefings from analysis data.
 *   [modules/pptx_slides.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_slides.py) — Renders the individual slide layout structures (Cover, Executive Summary, Scorecards, SWOT, Appendix, etc.).
 *   [modules/pptx_charts.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_charts.py) — Matplotlib-based slide-compatible chart generators (Radar, Scatter, bars) with a transparent dark canvas.
 *   [modules/pptx_components.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_components.py) — Renders shape-based widgets (Cards, KPI blocks, progress bars, tables) with exact coordinates.
 *   [modules/pptx_design_tokens.py](file:///D:/Python/PYCHARM/PANDAS/modules/pptx_design_tokens.py) — Declares design colors, dimensions, font sizes, margins, and brand guidelines for the slides deck.
 *   [modules/visualization.py](file:///D:/Python/PYCHARM/PANDAS/modules/visualization.py) — Renders interactive charts (radar, sunburst, stacked contribution bars, scatter plots, heatmaps) in Plotly and Seaborn.
-*   [modules/report_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/report_generator.py) — Compiles outputs into multi-sheet Excel workbooks with proper styling and exports SWOT classifications.
+*   [modules/report_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/report_generator.py) — Compiles outputs into multi-sheet Excel workbooks with proper styling and exports statistical explanations.
 *   [modules/utils.py](file:///D:/Python/PYCHARM/PANDAS/modules/utils.py) — Implements helpers like `safe_divide()`, exponential backoff decorators, logging config, and numeric converters.
 
 ---
@@ -428,53 +414,24 @@ This table shows the exact points contributed by each ratio to the final composi
 
 ---
 
-## 7. Client Comparator & Tally Bridge Ingestion
+## 7. Reporting & Explanation Engine
 
-The [ClientComparator](file:///D:/Python/PYCHARM/PANDAS/modules/client_comparator.py) and [TallyBridge](file:///D:/Python/PYCHARM/PANDAS/modules/tally_bridge.py) modules allow private client data to be benchmarked against public sector baselines.
+The [ReportGenerator](file:///D:/Python/PYCHARM/PANDAS/modules/report_generator.py) translates quantitative benchmark results into structured statistical explanations and multi-sheet Excel reports.
 
-### 7.1 Synonym Normalization
-When a client uploads custom ratio files, column names are matched to canonical keys using a synonym dictionary (e.g., "Acid Test" $\to$ `quick_ratio`, "Net Profit Margin" $\to$ `net_margin`).
+### 7.1 Statistical Explanations
+For each ratio in the scorecard, the system generates plain-English evaluation narratives classifying the position into opportunities, risks, or neutral observations based on deviation from the sector median:
+*   **Opportunity**: Metric performs above the peer benchmark quartile (e.g., higher margin or superior asset turnover).
+*   **Risk**: Metric performs below the peer benchmark quartile (e.g., elevated leverage or compressed cash conversion).
+*   **Neutral / At Benchmark**: Metric operates within the interquartile band of industry peers.
 
-### 7.2 TallySync Aggregation Model
-The `TallyBridge` processes ledger and journal entry exports from Tally ERP to compute financial metrics.
-
-```mermaid
-graph TD
-    A[Ledger Master CSV] & B[Journal Voucher JV CSV] --> C[tally_bridge.py Ingestion]
-    C --> D[Map Ledgers to Canonical Pillars]
-    C --> E[Aggregate Debit & Credit Transaction Journals]
-    E --> F[Calculate Ending Net Balances]
-    F --> G[Reconstruct Trial Balance Sheet]
-    G --> H[Derive Standardized Client Ratios]
-```
-
-1.  **Group to Pillar Mapping**: Ledgers are mapped to canonical financial categories based on their primary groups:
-    *   **Sales Accounts / Direct Incomes** $\to$ `revenue`
-    *   **Purchase Accounts / Direct Expenses** $\to$ `cogs`
-    *   **Indirect Expenses** $\to$ `opex`
-    *   **Bank Accounts / Cash-in-Hand** $\to$ `cash`
-    *   **Sundry Debtors** $\to$ `receivables`
-    *   **Stock-in-Hand** $\to$ `inventory`
-    *   **Sundry Creditors** $\to$ `payables`
-    *   **Secured / Unsecured Loans / Bank OD** $\to$ `debt`
-    *   **Capital Account / Reserves & Surplus** $\to$ `equity`
-
-2.  **Ending Balance Computation**: Balances are calculated based on the credit/debit nature of the categories:
-
-$$\text{Balance (Credit Nature)} = \text{Credit} - \text{Debit}$$
-$$\text{if Category is Revenue, Equity, Debt, or Payables}$$
-
-$$\text{Balance (Debit Nature)} = \text{Debit} - \text{Credit}$$
-$$\text{if Category is Assets, COGS, or OPEX}$$
-
-3.  **Standardized Client Ratios**:
-    *   $\text{Current Assets} = \text{Cash} + \text{Receivables} + \text{Inventory} + \text{Other Current Assets}$
-    *   $\text{Current Liabilities} = \text{Payables} + \text{Other Current Liabilities}$
-    *   $\text{Total Assets} = \text{Current Assets} + \text{Fixed Assets}$
-    *   $\text{Capital Employed} = \text{Total Assets} - \text{Current Liabilities}$
-    *   $\text{Operating Profit (EBIT)} = \text{Revenue} - \text{COGS} - \text{OPEX}$
-
-These derived ratios are then passed to the benchmarking engine to compare the client against the selected sector.
+### 7.2 Multi-Sheet Excel Export
+The report generator compiles an institutional workbook containing:
+1.  **Ratio Scorecard**: Complete peer × ratio evaluation matrix with raw values, percentiles, and position labels.
+2.  **Peer Benchmark**: Sector distribution summary including P10, Q1, Median, Mean, Q3, and P90 values.
+3.  **Outliers**: Complete registry of univariate and multivariate outliers detected.
+4.  **Composite Scores**: Overall 0–100 financial health scores, sector rankings, and pillar breakdown.
+5.  **Business Report**: Granular statistical explanations and risk/opportunity classifications.
+6.  **Summary**: Metadata regarding the analysis run, timestamp, and peer cohort size.
 
 ---
 
@@ -535,40 +492,17 @@ Charts embedded in slides are rendered via `pptx_charts.py` using Matplotlib's `
 
 ---
 
-## 9. SWOT Classification & Strategic Insight Generation
+## 9. Operational Boundaries, Error Handling & Limitations
 
-The SWOT engine in [report_generator.py](file:///D:/Python/PYCHARM/PANDAS/modules/report_generator.py) translates quantitative scores into qualitative strategic insights.
-
-### 9.1 Ingestion Classification Matrix
-Ratios are mapped to SWOT quadrants based on their score position and category:
-
-| Internal/External Focus | Financial Category | Strong Performance ($\ge 50$ or Above Benchmark) | Weak Performance ($< 50$ or Below Benchmark) |
-|:---|:---|:---|:---|
-| **Internal Factors** | Profitability, Efficiency, Cash Flow | **Strengths** | **Weaknesses** |
-| **External Risk Factors** | Solvency, Liquidity | **Opportunities** (Unused credit capacity) | **Threats** (Liquidity / insolvency risk) |
-| **Hybrid Trajectory** | YoY Growth | **Strengths** (Capturing market share) | **Threats** (Decelerating momentum) |
-
-### 9.2 Dynamic SWOT Narrative Generation
-For each categorized ratio, the system populates a text template with the client's raw value, peer median, and percentile rank:
-
-*   **Strength Example (Gross Margin)**:
-    > *"Gross Margin (45.2% vs Peer Median 31.0%, P82) — demonstrates strong earnings power relative to the industry."*
-*   **Threat Example (Current Ratio)**:
-    > *"Current Ratio (0.85 vs Peer Median 1.62, P12) — insufficient liquid assets relative to near-term obligations (working capital risk)."*
-
----
-
-## 10. Operational Boundaries, Error Handling & Limitations
-
-### 10.1 Error Handling & Pipeline Resiliency
+### 9.1 Error Handling & Pipeline Resiliency
 *   **Missing Financial Fields**: If a company has incomplete filings, the `safe_divide()` wrapper prevents crashes, and the benchmarking engine adjusts weights accordingly.
 *   **Delisted Tickers**: Invalid tickers are skipped during data fetching, and the sector baseline is built using the remaining peers.
 
-### 10.2 Caching Policies
+### 9.2 Caching Policies
 *   **Volatile In-Memory Storage**: Session-level calculations are stored in `st.session_state` to avoid redundant computations.
 *   **Persistent Cache Storage**: Financial statements are saved as Parquet files under `data/cache/`. To clear outdated data and free storage, users can trigger a purge via the **Clear All Cache** button in the sidebar.
 
-### 10.3 System & Analytical Limitations
+### 9.3 System & Analytical Limitations
 1.  **Dependency on API Quality**: The accuracy of the ratios depends on how consistently Yahoo Finance standardizes raw financial reports.
 2.  **Sector Homogeneity Assumption**: The benchmarking logic assumes that companies within a sector are comparable. If a sector contains both asset-heavy manufacturers and asset-light software developers, efficiency comparisons can be skewed.
 3.  **Relative Benchmark Scores**: A high composite score indicates strong performance relative to peers. If the entire sector is in decline, a high score does not guarantee absolute financial health.

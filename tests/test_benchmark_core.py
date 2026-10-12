@@ -46,16 +46,13 @@ def test_outlier_value_survives_in_own_scorecard():
     # Median of [0.5, 0.6, 0.7, 0.8, 0.9] is 0.7
     assert de_median == pytest.approx(0.7, 0.01)
 
-def test_client_comparator_evaluation(tmp_path):
-    """Test ClientComparator correctly compares client against benchmark store."""
-    from modules.benchmark_store import BenchmarkStore
-    from modules.client_comparator import ClientComparator
-    
-    store = BenchmarkStore(benchmarks_dir=tmp_path)
-    
+def test_benchmark_core_pipeline_full():
+    """Verify complete Phase 1 benchmark pipeline execution across peers."""
     data = {
         "debt_to_equity": [0.5, 0.6, 0.7, 0.8, 0.9],
+        "current_ratio": [1.5, 1.6, 1.4, 1.55, 1.45],
         "gross_margin": [40.0, 42.0, 39.0, 41.0, 40.5],
+        "operating_margin": [20.0, 21.0, 19.5, 20.5, 20.0],
         "net_margin": [12.0, 13.0, 11.5, 12.5, 12.0],
         "roe": [15.0, 16.0, 14.5, 15.5, 15.0],
         "roa": [8.0, 8.5, 7.8, 8.2, 8.0],
@@ -65,53 +62,53 @@ def test_client_comparator_evaluation(tmp_path):
     
     core = BenchmarkCore()
     result = core.run(ratio_df, pd.DataFrame())
-    store.save("TestSector", result.peer_stats_df, result.clean_matrix)
     
-    comparator = ClientComparator(store=store)
-    client_ratios = {
-        "debt_to_equity": 0.6,
-        "gross_margin": 45.0,
-        "net_margin": 14.0,
-        "roe": 18.0,
-        "roa": 9.0,
-    }
-    client_res = comparator.compare_client(client_ratios, sector="TestSector", client_name="MyClient")
+    # 1. Peer stats must contain summary stats for all computed ratios
+    peer_stats = result.peer_stats_df
+    assert not peer_stats.empty
+    assert "gross_margin" in peer_stats.index
+    assert peer_stats.loc["gross_margin", "median"] == pytest.approx(40.5, 0.01)
     
-    assert not client_res.ratio_scorecard_df.empty
-    assert client_res.pillar_summary_df.iloc[0]["composite_score"] > 50.0
-    assert pd.isna(client_res.pillar_summary_df.iloc[0]["sector_rank"])
-    assert pd.isna(client_res.pillar_summary_df.iloc[0]["percentile"])
+    # 2. Scorecard must include each company x ratio row
+    scorecard = result.ratio_scorecard_df
+    assert len(scorecard) == len(index) * len(data)
+    assert set(scorecard["ticker"]) == set(index)
+    assert "percentile_rank" in scorecard.columns
+    assert "position_label" in scorecard.columns
+    
+    # 3. Pillar summary must have ranking and composite score for all peers
+    summary = result.pillar_summary_df
+    assert len(summary) == len(index)
+    assert "composite_score" in summary.columns
+    assert "sector_rank" in summary.columns
+    assert "risk_category" in summary.columns
+    assert summary["sector_rank"].min() == 1
+    assert summary["sector_rank"].max() == len(index)
 
-def test_client_comparator_proxy_tagging(tmp_path):
-    """Test ClientComparator marks proxy net income metrics with caution label."""
+
+def test_benchmark_store_persistence(tmp_path):
+    """Verify BenchmarkStore can save and reload sector peer statistics and clean matrices."""
     from modules.benchmark_store import BenchmarkStore
-    from modules.client_comparator import ClientComparator
     
     store = BenchmarkStore(benchmarks_dir=tmp_path)
     data = {
-        "gross_margin": [40.0, 42.0, 39.0, 41.0, 40.5],
-        "net_margin": [12.0, 13.0, 11.5, 12.5, 12.0],
-        "roe": [15.0, 16.0, 14.5, 15.5, 15.0],
-        "roa": [8.0, 8.5, 7.8, 8.2, 8.0],
+        "gross_margin": [40.0, 42.0, 39.0],
+        "net_margin": [12.0, 13.0, 11.5],
     }
-    index = ["CO_A", "CO_B", "CO_C", "CO_D", "CO_E"]
+    index = ["PEER_1", "PEER_2", "PEER_3"]
     ratio_df = pd.DataFrame(data, index=index)
+    
     core = BenchmarkCore()
     result = core.run(ratio_df, pd.DataFrame())
-    store.save("Retail", result.peer_stats_df, result.clean_matrix)
     
-    comparator = ClientComparator(store=store)
-    client_ratios = {
-        "gross_margin": 45.0,
-        "net_margin": 14.0,
-        "roe": 18.0,
-        "roa": 9.0,
-        "net_income_basis": "ebit_proxy_partial",
-    }
-    client_res = comparator.compare_client(client_ratios, sector="Retail", client_name="TallyClient")
-    scorecard = client_res.ratio_scorecard_df
+    store.save("Banking", result.peer_stats_df, result.clean_matrix)
+    assert "Banking" in store.list_available()
     
-    net_margin_row = scorecard[scorecard["ratio"] == "net_margin"].iloc[0]
-    assert net_margin_row["health_label"] == "Approximated (pre-tax/interest basis)"
-    assert net_margin_row["signal"] == "warning"
+    loaded = store.load("Banking")
+    assert loaded is not None
+    loaded_stats, loaded_matrix, loaded_meta = loaded
+    assert loaded_stats.loc["gross_margin", "median"] == pytest.approx(40.0, 0.01)
+    assert len(loaded_matrix) == 3
+    assert loaded_meta["sector"] == "Banking"
+
 

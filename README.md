@@ -1,6 +1,6 @@
-# FinMetrics Suite Pvt: Cross-Sectional Financial Outlier Detection and Client Benchmarking System
+# FinMetrics: Cross-Sectional Financial Outlier Detection and Sector Benchmarking System
 
-An enterprise-grade cross-sectional financial intelligence platform for National Stock Exchange (NSE) listed equities and private client corporate entities. The system integrates automated financial statement acquisition, multi-method anomaly detection, 5-pillar composite solvency scoring, Tally ERP 9/Prime trial balance parsing, and automated executive PowerPoint/PDF briefing synthesis.
+An enterprise-grade cross-sectional financial intelligence platform for National Stock Exchange (NSE) listed equities. The system integrates automated financial statement acquisition, multi-method anomaly detection (IQR, Modified Z-score, Isolation Forest), 5-pillar composite solvency and health scoring, sector benchmark matrices, and automated executive Excel reporting.
 
 ---
 
@@ -10,29 +10,27 @@ An enterprise-grade cross-sectional financial intelligence platform for National
 graph TD
     subgraph Data Acquisition & Ingestion
         A1[NSE Sector Mapping] --> B1[Data Fetcher - yfinance API]
-        A2[Client Financial Records] --> B2[Tally Bridge - XML/CSV Parser]
         B1 --> C1[Local Parquet/JSON Cache]
     end
 
     subgraph Normalization & Ratio Computation
         B1 --> D1[Financial Parser - Alias Mapping]
-        B2 --> D1
         D1 --> E1[Ratio Engine - 30+ Financial Metrics]
     end
 
     subgraph Analytical Core
         E1 --> F1[Outlier Engine - IQR, Z-Score, Isolation Forest]
         E1 --> F2[Benchmark Core - Sector Statistics & Matrix]
-        F2 --> G1[Client Comparator - Peer Deviation & Percentiles]
         F1 --> H1[Composite Financial Health Scorer]
+        F2 --> H1
     end
 
     subgraph Intelligence & Reporting
-        G1 --> I1[AI Handler - Gemini Key Pool & SWOT Engine]
-        H1 --> I1
-        I1 --> J1[Interactive Streamlit Dashboard]
-        I1 --> J2[PPTX Generator - 12-Slide Executive Deck]
-        I1 --> J3[Report Generator - Multi-Sheet Excel & PDF]
+        H1 --> J1[Interactive Streamlit Dashboard]
+        F2 --> J1
+        F1 --> J1
+        H1 --> J2[Report Generator - Multi-Sheet Excel]
+        F2 --> J2
     end
 ```
 
@@ -41,48 +39,33 @@ graph TD
 ## 2. Directory Structure and Component Mapping
 
 ```
-finmetrics-suite-pvt/
+finmetrics/
 |-- app.py                         # Streamlit multi-tab enterprise dashboard entry point
-|-- generate_pdf.py                # Standalone technical & executive PDF compiler
 |-- requirements.txt               # Production Python dependency specification
 |-- .env.example                   # Environment configuration template
 |-- .gitignore                     # Git security and cache exclusion rules
-|-- README.md                      # Primary architectural blueprint and specification
+|-- README.md                      # Primary architectural specification
 |-- SYSTEM_LOGICS_AND_BLUEPRINT.md # Mathematical and algorithmic blueprint
 |-- USER_MANUAL.md                 # End-user operational guide
-|-- USER_MANUAL.docx               # Formatted Word manual documentation
-|-- NSE_Outlier_Detective_Overview.pdf # Executive slide deck overview
 |
 |-- modules/                       # Core analytical and presentation engines
 |   |-- __init__.py                # Package initialization
-|   |-- ai_handler.py              # Multi-key Gemini API management & narrative synthesis
+|   |-- ai_handler.py              # Multi-key Gemini API management & ticker discovery
 |   |-- benchmark_classifier.py    # Company size, lifecycle, and model classification
 |   |-- benchmark_core.py          # Sector statistical matrix & distribution modeling
 |   |-- benchmark_store.py         # Disk persistence and caching for benchmark runs
-|   |-- client_comparator.py       # Client-vs-peer deviation, gap, and percentile engine
 |   |-- data_fetcher.py            # yfinance API pipeline with TTL caching & retry logic
 |   |-- financial_parser.py        # Statement standardization, schema aliasing, sign handling
 |   |-- outlier_engine.py          # IQR, Modified Z-Score, and Isolation Forest algorithms
-|   |-- pptx_charts.py             # Native python-pptx vector charting implementations
-|   |-- pptx_components.py         # UI cards, callout containers, scorecards, tables
-|   |-- pptx_design_tokens.py      # Typography, palette, padding, and layout geometries
-|   |-- pptx_generator.py          # Master PowerPoint presentation compiler
-|   |-- pptx_slides.py             # 12 standardized slide layout templates
 |   |-- ratio_engine.py            # 30+ cross-sectional financial ratio calculators
-|   |-- report_generator.py        # Multi-tab styled openpyxl Excel & insight generation
+|   |-- report_generator.py        # Multi-sheet Excel export & statistical explanations
 |   |-- sector_loader.py           # NSE sector and industry ticker catalogs
-|   |-- tally_bridge.py            # Tally XML/CSV parser, account mapping, and trial balance
 |   |-- utils.py                   # Math routines, logging framework, and formatting
 |   `-- visualization.py           # Plotly interactive figures & Abyss Teal styling
 |
-|-- client/                        # Client-specific sample data and trial balances
 |-- data/                          # Benchmark cache storage and database targets
-|-- docs/                          # In-depth architectural and mathematical manuals
-|   |-- 01_overview_architecture.md
-|   |-- 02_ratios_and_outliers.md
-|   |-- 03_benchmarking_and_scoring.md
-|   `-- 04_visuals_and_conclusion.md
-`-- Report/                        # Academic & technical LaTeX report source and PDF
+|-- tests/                         # Pytest unit and integration test suite
+`-- blueprints/                    # System architecture blueprints and code audit specs
 ```
 
 ---
@@ -98,55 +81,33 @@ The system computes over 30 standardized financial metrics organized into seven 
 | **Liquidity** | Current Ratio, Quick Ratio, Cash Ratio | `Current Assets / Current Liabilities`<br>`(Cash + Marketable Securities + Receivables) / Current Liabilities` |
 | **Solvency & Leverage** | Debt to Equity, Debt to Assets, Interest Coverage | `Total Debt / Total Equity`<br>`EBIT / Interest Expense` |
 | **Profitability** | Gross Margin, Operating Margin, Net Margin, ROE, ROA, ROCE | `Operating Income / Revenue`<br>`Net Income / Average Equity`<br>`EBIT / Capital Employed` |
-| **Operational Efficiency** | Asset Turnover, Inventory Turnover, DSO, Cash Conversion Cycle | `Revenue / Total Assets`<br>`COGS / Average Inventory`<br>`DIO + DSO - DPO` |
-| **Cash Flow Health** | Operating Cash Flow Ratio, Free Cash Flow Margin, Cash Flow to Debt | `CFO / Current Liabilities`<br>`(CFO - CapEx) / Revenue` |
-| **Growth Metrics** | Revenue CAGR, EBITDA Growth, EPS Growth | `(Value_t / Value_{t-1}) - 1` |
-| **Valuation** | Price to Earnings (P/E), Price to Book (P/B), EV/EBITDA | `Market Price / EPS`<br>`Enterprise Value / EBITDA` |
+| **Operating Efficiency** | Asset Turnover, Inventory Turnover, Receivables Turnover | `Revenue / Total Assets`<br>`COGS / Inventory`<br>`Revenue / Accounts Receivable` |
+| **Cash Flow Health** | Operating Cash Flow Ratio, Free Cash Flow Margin, Cash Conversion Ratio | `Operating Cash Flow / Current Liabilities`<br>`FCF / Revenue`<br>`Operating Cash Flow / Net Income` |
+| **Growth Potential** | Revenue Growth, Net Income Growth, Operating Cash Flow Growth | `(Metric_t - Metric_t-1) / Metric_t-1` |
+| **Per Share & Valuation** | EPS, Book Value Per Share, Price to Free Cash Flow | `Net Income / Shares Outstanding`<br>`Equity / Shares Outstanding` |
 
 ---
 
 ### 3.2 Outlier Detection Framework
 
-The platform deploys a three-tier statistical and machine learning anomaly detection pipeline:
+The Outlier Engine deploys three distinct, complementary detection models:
 
-```mermaid
-flowchart LR
-    A[Standardized Ratio Matrix] --> B[Univariate: Tukey Fences IQR]
-    A --> C[Univariate: Modified Z-Score MAD]
-    A --> D[Multivariate: Isolation Forest]
-    B --> E[Consensus Outlier Scoring Engine]
-    C --> E
-    D --> E
-    E --> F[Severity Classification & Root Cause Assignment]
-```
-
-1. **Tukey Fences (Interquartile Range - IQR)**:
-   $$\text{IQR} = Q_3 - Q_1$$
-   $$\text{Lower Fence} = Q_1 - k \cdot \text{IQR}, \quad \text{Upper Fence} = Q_3 + k \cdot \text{IQR} \quad (k = 1.5)$$
-
-2. **Modified Z-Score (Median Absolute Deviation - MAD)**:
-   $$M_i = \frac{0.6745 \cdot (x_i - \tilde{x})}{\text{MAD}}$$
-   $$\text{MAD} = \text{median}(|x_i - \tilde{x}|)$$
-   Anomalies flagged when $|M_i| > 2.5$.
-
-3. **Isolation Forest (Multivariate Anomaly Detection)**:
-   Constructs an ensemble of isolation trees to partition high-dimensional ratio space. Outliers are identified by short average path lengths:
-   $$s(x, n) = 2^{-\frac{E(h(x))}{c(n)}}$$
+1. **Interquartile Range (IQR) Fencing**: Identifies values falling outside `[Q1 - 1.5*IQR, Q3 + 1.5*IQR]`.
+2. **Modified Z-Score (Median Absolute Deviation - MAD)**: Robust standardization flagging observations where `|M_i| > 3.5`.
+3. **Isolation Forest (Multivariate Anomaly Scoring)**: Unsupervised ensemble tree model detecting multidimensional structural anomalies across the ratio feature space.
 
 ---
 
-### 3.3 Composite Financial Health Scoring Model
+### 3.3 Composite Solvency & Financial Health Scoring
 
-Entities are evaluated across five weighted operational pillars (0 to 100 scale):
+Companies are evaluated on an objective 0–100 scale across five financial pillars:
 
-$$\text{Composite Score} = \sum_{j=1}^{5} w_j \cdot P_j$$
-
-| Pillar ($P_j$) | Weight ($w_j$) | Evaluated Key Performance Indicators |
-| :--- | :---: | :--- |
-| **Profitability** | 30% | Operating Margin, Net Margin, ROE, ROCE |
-| **Solvency** | 20% | Debt/Equity, Interest Coverage, Debt/Assets |
-| **Growth** | 20% | 3-Year Revenue CAGR, EBITDA Expansion |
-| **Liquidity** | 15% | Current Ratio, Quick Ratio, Cash Ratio |
+| Pillar | Default Weight | Key Ratio Components |
+| :--- | :--- | :--- |
+| **Profitability** | 25% | Operating Margin, Net Margin, ROE, ROCE |
+| **Solvency & Leverage**| 25% | Debt to Equity, Interest Coverage, Debt Ratio |
+| **Liquidity** | 20% | Current Ratio, Quick Ratio, Cash Ratio |
+| **Cash Flow** | 15% | Operating Cash Flow Ratio, FCF Margin |
 | **Efficiency** | 15% | Asset Turnover, Inventory Turnover, DSO |
 
 #### Health Classification Tiers
@@ -158,28 +119,16 @@ $$\text{Composite Score} = \sum_{j=1}^{5} w_j \cdot P_j$$
 
 ---
 
-## 4. Tally ERP 9 / Prime Integration & Client Benchmarking
+## 4. Multi-Key Gemini AI Handler
 
-The platform features an automated ingestion bridge for private client data:
-
-1. **Trial Balance Parsing**: Ingests raw XML exports or CSV dumps from Tally ERP.
-2. **Account Classification**: Normalizes custom chart of accounts into standardized financial statement categories.
-3. **Comparative Analysis**: Compares private client metrics directly against NSE sector medians, quartiles, and peer distributions.
-4. **Gap Identification**: Pinpoints specific areas where client performance deviates significantly from industry standards.
-
----
-
-## 5. Multi-Key Gemini AI Synthesis
-
-The platform features an AI Handler supporting dynamic API key pooling:
+The platform includes an AI Handler supporting dynamic API key pooling:
 - **Key Rotation**: Cycles across multiple Gemini API keys to distribute quota and avoid rate limits.
 - **Model Discovery**: Dynamically resolves the highest performance available Gemini model.
-- **SWOT Analysis**: Generates corporate Strengths, Weaknesses, Opportunities, and Threats based on ratio deviations.
-- **Executive Summaries**: Produces audit-ready natural language commentary for corporate presentations.
+- **Industry Discovery**: Performs intelligent ticker searching and categorization for custom peer groups.
 
 ---
 
-## 6. Installation and Execution
+## 5. Installation and Execution
 
 ### Prerequisites
 - Python 3.10, 3.11, 3.12, or 3.13
@@ -189,8 +138,8 @@ The platform features an AI Handler supporting dynamic API key pooling:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/hi1r0/finmetrics-suite-pvt.git
-cd finmetrics-suite-pvt
+git clone https://github.com/hi1r0/finmetrics.git
+cd finmetrics
 
 # 2. Set up virtual environment (recommended)
 python -m venv .venv
@@ -204,7 +153,7 @@ pip install -r requirements.txt
 
 # 4. Configure environment keys
 cp .env.example .env
-# Edit .env and supply your GEMINI_API_KEY
+# Edit .env and supply your GEMINI_API_KEY (optional)
 ```
 
 ### Launching the Application
@@ -218,18 +167,26 @@ The application will be accessible at `http://localhost:8501`.
 
 ---
 
+## 6. Running Tests
+
+```bash
+python -m pytest
+```
+
+---
+
 ## 7. Technology Stack
 
 - **Frontend & Interface**: Streamlit
 - **Visualization**: Plotly Graph Objects, Seaborn, Matplotlib
 - **Analytical & Statistical Engine**: NumPy, Pandas, SciPy, Scikit-Learn, Statsmodels
 - **Market Data Pipeline**: yfinance, Requests, Python-Dateutil
-- **Document & Presentation Generation**: python-pptx, openpyxl, xlsxwriter, fpdf2
+- **Document & Reporting Generation**: xlsxwriter, openpyxl
 - **Artificial Intelligence**: Google GenAI SDK (Gemini API)
-- **Data Formats**: Apache Parquet, SQLite, JSON, XML, CSV
+- **Data Formats**: Apache Parquet, SQLite, JSON, CSV
 
 ---
 
 ## 8. License and Operational Disclaimer
 
-This system is designed for institutional analysis, academic research, and corporate benchmarking. Financial ratio outputs and automated AI narratives represent algorithmic statistical computations and should be verified against official audited corporate disclosures prior to commercial investment decisions.
+This system is designed for institutional analysis, academic research, and corporate benchmarking. Financial ratio outputs represent algorithmic statistical computations and should be verified against official audited corporate disclosures prior to commercial investment decisions.
