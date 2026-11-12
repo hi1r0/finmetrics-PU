@@ -5,7 +5,7 @@
 Traditional corporate benchmarking has evolved from manual spreadsheet transcription to proprietary financial databases:
 \begin{itemize}
     \item \textbf{Manual Spreadsheet Benchmarking}: Analysts manually extract and transcribe quarterly figures into Microsoft Excel models. This foundational framework, formalized by Damodaran \cite{damodaran2012investment}, remains slow, labor-intensive, and prone to human error.
-    \item \textbf{Proprietary Financial Terminals}: Bloomberg Terminals and S\&P Capital IQ automate data harvesting and standardization. However, their high annual licensing fees (\$24,000+ per user) and closed database architectures prevent private enterprises from easily uploading double-entry Tally ERP ledger data for direct cross-sectional benchmarking.
+    \item \textbf{Proprietary Financial Terminals}: Bloomberg Terminals and S\&P Capital IQ automate data harvesting and standardization. However, their high annual licensing fees (\$24,000+ per user) and closed database architectures prevent independent researchers from easily integrating custom statistical outlier screening models.
 \end{itemize}
 
 \section{Machine Learning \& Robust Outlier Detection in Finance}
@@ -33,7 +33,7 @@ Corporate financial datasets frequently contain extreme outliers from non-recurr
         % Right Track (Advanced Robust/ML)
         \node (ml1) [block, right=1.5cm of trad1] {\textbf{FinMetrics Robust Suite}\\Automated statement parsing, multi-layered filters};
         \node (ml2) [goodblock, below=of ml1] {\textbf{Dynamic Stats \& ML}\\Tukey Fences (IQR), Modified Z-Score (MAD), Isolation Forest};
-        \node (ml3) [goodblock, below=of ml2] {\textbf{Clean Peer Baselines}\\Robust, outlier-masked baselines and K-Means archetypes};
+        \node (ml3) [goodblock, below=of ml2] {\textbf{Clean Peer Baselines}\\Robust, outlier-masked baselines};
 
         % Connections
         \draw [arrow] (trad1) -- (trad2);
@@ -44,13 +44,6 @@ Corporate financial datasets frequently contain extreme outliers from non-recurr
     \caption{Conceptual Comparison of Traditional vs. Robust Machine Learning Benchmarking Pipelines}
     \label{fig:lit_workflow}
 \end{figure}
-
-\section{K-Means Clustering \& Corporate Archetypes}
-Traditional industry classifications group companies with vastly different financial architectures. Unsupervised clustering offers a robust mathematical alternative:
-\begin{itemize}
-    \item \textbf{K-Means Centroid Partitioning}: Groups $n$ observations into $K$ clusters by minimizing the Within-Cluster Sum of Squares (WCSS): $\sum\limits_{k=1}^K \sum\limits_{x_i \in C_k} ||x_i - \mu_k||^2$ \cite{macqueen1967some}.
-    \item \textbf{Archetype Segmentation}: Clusters are determined via the Elbow Method/Silhouette analysis and mapped to distinct operational categories (e.g., \textit{"Elite Market Leaders"} vs. \textit{"High-Risk / Distressed"}).
-\end{itemize}
 
 \begin{figure}[htbp]
     \centering
@@ -105,20 +98,8 @@ Traditional industry classifications group companies with vastly different finan
 
         % Level 3
         \node[green] (clean) at (0, -4.8) {
-            \textbf{Clean Masked Dataset}\\
+            \textbf{Clean Masked Dataset \&}\\\textbf{Robust Baselines}\\
             (Outliers removed\\from baselines)
-        };
-
-        % Level 4
-        \node[lavender] (kmeans) at (0, -7.0) {
-            \textbf{K-Means Clustering}\\
-            (WCSS centroid\\partitioning)
-        };
-
-        % Level 5
-        \node[green] (archetypes) at (0, -9.2) {
-            \textbf{Corporate Archetypes}\\
-            (Elite, High-Risk, Efficient)
         };
 
         % =========================================================================
@@ -143,25 +124,20 @@ Traditional industry classifications group companies with vastly different finan
             \draw[rounded corners=2pt] (iforest.south) |- (merge);
             \draw (zscore.south) -- (merge);
             \draw[->] (merge) -- (clean.north);
-
-            % --- Bottom Vertical Drops ---
-            \draw[->] (clean.south) -- (kmeans.north);
-            \draw[->] (kmeans.south) -- (archetypes.north);
             
         \end{scope}
 
     \end{tikzpicture}
-    \caption{Multi-layered Robust Outlier Masking and K-Means Clustering Pipeline}
+    \caption{Multi-layered Robust Outlier Masking and Baseline Generation Pipeline}
     \label{fig:outlier_cluster_pipeline}
 \end{figure}
 
 \section{Research Gaps}
-Three critical research gaps remain in current financial intelligence frameworks:
+Two critical research gaps remain in current financial intelligence frameworks:
 \begin{itemize}
     \setlength{\itemsep}{2pt}
     \setlength{\parskip}{0pt}
     \setlength{\parsep}{0pt}
     \item \textbf{Lack of Nomenclature Autonomy}: Scrapers fail to handle inconsistent reporting names, causing column mismatches or missing values in raw statement parsing.
     \item \textbf{Baseline Outlier Contamination}: Distressed peer data distorts average standard deviations. Standard methods lack automatic statistical masking before baseline generation.
-    \item \textbf{Lack of ERP Double-Entry Integration}: Existing benchmarks require manual ratio inputs and lack streamers to process raw, varying-sign debit/credit transaction ledger CSVs.
 \end{itemize}
