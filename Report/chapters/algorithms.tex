@@ -191,56 +191,8 @@ The mathematical parameters governing the tree-isolation metrics are summarized 
     \label{fig:isolation_tree}
 \end{figure}
 
-\section{K-Means Clustering for Peer Archetypes}
-Unsupervised K-Means clustering is deployed to segment the peer set into distinct corporate archetypes based on a three-dimensional feature vector $\mathbf{X}$:
-
-\begin{equation}
-    \mathbf{X} = [\text{Operating Margin}, \text{Debt-to-Equity}, \text{Asset Turnover}]
-\end{equation}
-
-The algorithm groups the scaled feature space into $K=3$ clusters by minimizing the within-cluster sum of squares (WCSS):
-
-\begin{equation}
-    \arg\min_{\mathbf{S}} \sum_{j=1}^{3} \sum_{\mathbf{x}_i \in S_j} \|\mathbf{x}_i - \boldsymbol{\mu}_j\|^2
-\end{equation}
-
-Centroids ($\boldsymbol{\mu}_j$) are mapped back to their original dimensions to determine corporate profiles:
-\begin{itemize}
-    \item High Margins + Low Debt + Stable Turnover $\rightarrow$ \textbf{Elite Market Leader}
-    \item Low Margins + High Debt $\rightarrow$ \textbf{Debt-Strained Underperformer}
-    \item High Turnover + Low Margins $\rightarrow$ \textbf{High-Volume Bootstrapper}
-    \item High Margins + Slower Turnover $\rightarrow$ \textbf{Asset-Heavy Profit Leader}
-    \item Average Margins + Standard Debt + Standard Turnover $\rightarrow$ \textbf{Balanced Sector Participant}
-\end{itemize}
-
-The multidimensional parameters and vector spaces utilized in K-Means clustering are defined in Table~\ref{tab:glossary_kmeans}.
-
-\begin{table}[H]
-    \centering
-    \renewcommand{\arraystretch}{0.85}
-    \caption{K-Means Clustering Archetype Variables}
-    \label{tab:glossary_kmeans}
-    \footnotesize
-    \begin{tabularx}{\textwidth}{lX}
-        \toprule
-        \textbf{Variable / Symbol} & \textbf{Operational Definition and Description} \\
-        \midrule
-        $\mathbf{X}$ & Three-dimensional feature vector of key financial operational dimensions. \\
-        $\mathbf{K}$ & Total number of target corporate cluster archetypes (default set to 3). \\
-        $\mathbf{S}$ & Partition set containing the corporate entities assigned to each cluster. \\
-        $\boldsymbol{\mu}_j$ & Multidimensional centroid vector representing the profile of cluster $j$. \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
-
-\section{TallySync Double-Entry Bridge Ingestion}
-The \textit{Tally Bridge} converts raw ERP ledger dumps and transaction journals into standard financial ratios.
-To prevent memory issues when processing large-scale journal logs, the engine streams files in chunks of 50,000 records.
-Because accounting entries can have varying sign behaviors depending on their category, the system checks ledger classifications: for credit-nature accounts, the balance is calculated as `credit - debit`, while for debit-nature accounts, it is computed as `debit - credit`.
-
-
 \section{Algorithms Pseudocode}
-To facilitate the practical deployment and computational replication of our analytical framework, this section formalizes the core processes as structured, language-agnostic pseudocode. Specifically, we present the algorithmic logic governing our univariate outlier detection and baseline masking engine, which maintains statistical integrity across noisy peer distributions, followed by the TallySync double-entry journal processing pipeline designed to securely aggregate raw transaction logs. To facilitate cross-referencing and trace the exact operations, the primary variables and notations deployed across the pseudocodes are defined in Table~\ref{tab:glossary_pseudocode}.
+To facilitate the practical deployment and computational replication of our analytical framework, this section formalizes the core processes as structured, language-agnostic pseudocode. Specifically, we present the algorithmic logic governing our univariate outlier detection and baseline masking engine, which maintains statistical integrity across noisy peer distributions. To facilitate cross-referencing and trace the exact operations, the primary variables and notations deployed across the pseudocode are defined in Table~\ref{tab:glossary_pseudocode}.
 
 \begin{table}[H]
     \centering
@@ -256,8 +208,6 @@ To facilitate the practical deployment and computational replication of our anal
         $\mathbf{O}$ & Outlier database tracking tagged anomalies in $\{(company, ratio, value)\}$. \\
         $\mathbf{V}, \mathbf{Z}$ & Non-null value vector and computed modified Z-scores for a ratio column. \\
         $\mathbf{LB}, \mathbf{UB}$ & Calculated Tukey outlier boundaries (Lower Bound and Upper Bound). \\
-        $\text{dr}, \text{cr}$ & Debit and credit ledger transaction amounts from streamed journal lines. \\
-        $\mathbf{P}$ & Hash-map storing aggregated double-entry balances for financial pillars. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -300,48 +250,6 @@ The algorithm operates as follows:
         \EndFor
     \EndFor
     \State \Return $O, C$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
-\subsection{TallySync ERP Double-Entry Journal Aggregator}
-The TallySync ingestion bridge (detailed in Algorithm~\ref{alg:tally}) acts as a high-throughput transaction engine, converting raw double-entry ledger streams into structured, standardized financial statements.
-The pipeline operates as follows:
-\begin{enumerate}
-    \item \textbf{Ledger Mapping}: It maps raw ledger accounts from the ERP database to standard public statement pillars (e.g. \textit{revenue, debt, assets, payables}) using standard category classifications.
-    \item \textbf{Streamed Ingestion}: To prevent memory strain, transaction journals are processed in chunks of 50,000 logs.
-    \item \textbf{Sign-Nature Correction}: Transactions are aggregated according to the double-entry accounting nature of the pillar. For credit-nature categories, balances accumulate as `credit - debit`, while debit-nature categories accumulate as `debit - credit`.
-    \item \textbf{Ratio Ingestion}: Once all transactional journals are aggregated, the Trial Balance is resolved and derived into the standard 30+ canonical financial ratios.
-\end{enumerate}
-
-\begin{algorithm}[H]
-\caption{TallySync ERP Double-Entry Journal Aggregator}
-\label{alg:tally}
-\footnotesize
-\begin{algorithmic}[1]
-\Procedure{ProcessTally}{$\text{J\_path}, \text{L\_path}$}
-    \State $\text{G} \gets \text{load\_group\_mappings}()$; $\text{M} \gets \emptyset$; $\text{Master} \gets \text{read\_csv}(\text{L\_path})$ \Comment{Init maps}
-    \For{each row in $\text{Master}$}
-        \State $\text{ledger}, \text{group} \gets \text{row}[\text{'NAME'}], \text{row}[\text{'PRIMARYGROUP'}]$
-        \State $\text{M}[\text{ledger}] \gets \text{G}\text{.get}(\text{group}, \text{"EXCLUDE"})$
-    \EndFor
-    
-    \State $\text{P} \gets \text{initialize\_pillars\_to\_zero}()$; $\text{CR\_Nature} \gets \{\text{"revenue", "payables", "liabilities", "debt", "equity"}\}$
-    \State $\text{Stream} \gets \text{stream\_csv}(\text{J\_path}, \text{chunk\_size}=50000)$
-    \For{each chunk in $\text{Stream}$}
-        \For{each row in $\text{chunk}$}
-            \State $\text{ledger} \gets \text{row}[\text{'PARTICULARS'}]$; $\text{pillar} \gets \text{M}\text{.get}(\text{ledger}, \text{"EXCLUDE"})$
-            \State \textbf{if} $\text{pillar} = \text{"EXCLUDE"}$ \textbf{then} \textbf{continue}
-            \State $\text{dr}, \text{cr} \gets \text{float}(\text{row}[\text{'DEBIT'}], 0.0), \text{float}(\text{row}[\text{'CREDIT'}], 0.0)$
-            \If{$\text{pillar} \in \text{CR\_Nature}$}
-                \State $\text{P}[\text{pillar}] \gets \text{P}[\text{pillar}] + (\text{cr} - \text{dr})$
-            \Else
-                \State $\text{P}[\text{pillar}] \gets \text{P}[\text{pillar}] + (\text{dr} - \text{cr})$
-            \EndIf
-        \EndFor
-    \EndFor
-    \State $\text{R} \gets \text{calculate\_ratios\_from\_pillars}(\text{P})$
-    \State \Return $\text{R}$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
