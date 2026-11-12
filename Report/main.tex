@@ -24,7 +24,7 @@
     pdftitle={FinMetrics Suite: An AI-Powered Cross-Sectional Financial Analysis, Anomaly Detection, and Strategic Benchmarking System},
     pdfauthor={N Rohit Vedhanandh},
     pdfsubject={Corporate Internship},
-    pdfkeywords={Financial Analysis, Anomaly Detection, Outlier Screening, Unsupervised Learning, K-Means Clustering, Isolation Forest, ERP Integration, TallySync, SWOT Grid, Strategic Benchmarking}
+    pdfkeywords={Financial Analysis, Anomaly Detection, Outlier Screening, Robust Statistics, Modified Z-Score, Isolation Forest, Pillar Scoring, Strategic Benchmarking, NSE Equities}
 }
 
 % --- TikZ Package & Libraries ---
@@ -109,7 +109,7 @@
         \textbf{\large REPORT ON} \\[0.4cm]
         
         \textbf{\Large FinMetrics Suite} \\[0.3cm]
-        {\large An AI-Powered Cross-Sectional Financial Analysis, Anomaly Detection, \\ and Strategic Benchmarking System for Public \\ Sectors and Private ERP Ingestions \par}
+        {\large An AI-Powered Cross-Sectional Financial Analysis, Anomaly Detection, \\ and Strategic Benchmarking System \par}
         \vspace{0.8cm}
 
         
@@ -118,7 +118,7 @@
         \textbf{\large NAME: N Rohit Vedhanandh} \\[0.2cm]
         \textbf{\large REG. NO.: 25MSQUFPY0002} \\[0.8cm]
         
-        \textbf{\large MAY 2026}
+        \textbf{\large NOVEMBER 2026}
         
     \end{center}
 \end{titlepage}
@@ -198,9 +198,9 @@ Certified to be the bonafide record of work done in \textbf{MSQF 534: Corporate 
     \textbf{\LARGE ABSTRACT} \\[1.0cm]
 \end{center}
 
-Automated cross-sectional financial analysis is a critical tool in modern corporate intelligence and equity research, yet it remains constrained by reporting nomenclature disparities, baseline outlier skewness, and the divide between highly structured public statements and private enterprise databases. This thesis presents the design, implementation, and evaluation of the \textbf{\textit{FinMetrics Suite}} (the \textit{Financial Outlier Detection and Strategic Benchmarking System}), an end-to-end Python-based analytical framework. The system features a custom standardization parser with a 60-field alias map to resolve naming variations in public filings, a robust statistical engine implementing Tukey Fences (IQR) and robust Modified Z-Scores (using Median Absolute Deviation) to identify and mask reporting anomalies, and an unsupervised multivariate anomaly detector using Isolation Forests. To automate peer group alignment, the framework integrates the Gemini AI model to dynamically search, discover, and define the correct market sector for a given ticker or abstract query.
+Automated cross-sectional financial analysis is a critical tool in modern corporate intelligence and equity research, yet it remains constrained by reporting nomenclature disparities and baseline outlier skewness across public market filings. This thesis presents the design, implementation, and evaluation of the \textbf{\textit{FinMetrics Suite}} (the \textit{Financial Outlier Detection and Strategic Benchmarking System}), an end-to-end Python-based analytical framework. The system features automated public financial statement harvesting via the Yahoo Finance API, a custom standardization parser with a 60-field alias map to resolve naming variations in public disclosures, a robust statistical engine implementing Tukey Fences (IQR) and robust Modified Z-Scores (using Median Absolute Deviation) to identify and mask reporting anomalies, and an unsupervised multivariate anomaly detector using Isolation Forests. To automate peer group alignment, the framework integrates the Gemini AI model to dynamically search, discover, and define the correct market sector for a given ticker or abstract query.
 
-Furthermore, to bridge the public-private operational divide, a high-throughput TallySync ERP bridge was developed alongside options for manual entering of financials or ratios. The bridge stream-processes raw transaction journal CSV exports in chunks of 50,000 rows, maps accounting groups to standard public statement pillars, balances a Trial Balance, and derives 30+ canonical financial ratios. Unsupervised K-Means clustering is deployed to segment the peer set and map the client to a corporate archetype (e.g. \textit{Elite Market Leader}), and a rule-based SWOT classifier synthesizes relative percentile ranks into a 2x2 SWOT grid. Results demonstrate that our outlier masking routine prevents baseline distortion, reducing the standard deviation of an outlier-contaminated sector Operating Margin distribution from $39.54\%$ to $1.28\%$, and our TallySync bridge aggregates journals to balance a Trial Balance to within $10^{-6}$ INR in 4.2 seconds. The system outputs interactive visual dashboards, stateful Gemini-driven diagnostic chat sessions, and professionally formatted multi-sheet Excel reports, providing independent financial advisors and SME managers with institutional-grade quantitative insights.
+To evaluate company financial standing against robust industry baselines, the framework introduces a 5-pillar composite scoring model that maps standardized financial ratios across Profitability, Liquidity, Solvency, Efficiency, and Growth to normalized 0--100 scores using a bounded Sigmoid transformation. Empirical evaluation across 13 National Stock Exchange (NSE) sectors demonstrates that our outlier masking routine prevents baseline distortion, reducing the standard deviation of an outlier-contaminated sector Operating Margin distribution from $39.54\%$ to $1.28\%$. The system outputs interactive visual dashboards, stateful Gemini-driven diagnostic chat sessions, and professionally formatted multi-sheet Excel reports, providing quantitative analysts, equity researchers, and financial advisors with institutional-grade competitive insights.
 
 % =========================================================
 % TABLE OF CONTENTS & LISTS
@@ -231,10 +231,8 @@ Furthermore, to bridge the public-private operational divide, a high-throughput 
         \textbf{EBIT} & Earnings Before Interest and Taxes \\
         \textbf{EBITDA} & Earnings Before Interest, Taxes, Depreciation, and Amortization \\
         \textbf{EPS} & Earnings Per Share \\
-        \textbf{ERP} & Enterprise Resource Planning \\
         \textbf{FP\&A} & Financial Planning and Analysis \\
         \textbf{IQR} & Interquartile Range \\
-        \textbf{JV} & Journal Voucher \\
         \textbf{MAD} & Median Absolute Deviation \\
         \textbf{ML} & Machine Learning \\
         \textbf{OCF} & Operating Cash Flow \\
