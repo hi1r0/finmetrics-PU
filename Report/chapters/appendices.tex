@@ -60,25 +60,4 @@ def detect(self, ratio_matrix: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 \end{lstlisting}
 
-\chapter{Tally ERP Ingestion Formats}
-\label{ch:appendix_tally_formats}
-The required CSV structures for uploading private enterprise ledger groups and double-entry transaction journals in the \textit{TallySync} bridge are defined below:
-
-\section{Ledger Master CSV Format}
-The Ledger Master file maps local transaction accounts to their primary Tally accounting groups:
-
-\begin{lstlisting}[language=python, caption=Ledger Master CSV Format]
-CLIENT_ID,COMPANY_NAME,FINANCIAL_YEAR,NAME,PARENT,PRIMARYGROUP,OPENING,CLOSING,GUID,SYNC_TIME
-10000_VSM,VIBRANT SUPERMARKET,2025-26,0% CST SALES,CST T/O,Sales Accounts,0.0,0.0,783aa38d-...,15-04-26 20:26
-10000_VSM,VIBRANT SUPERMARKET,2025-26,0% Integrated Supply,Purchase Accounts,Purchase Accounts,0.0,-6000907.42,783aa38d-...,15-04-26 20:26
-\end{lstlisting}
-
-\section{Journal Voucher CSV Format}
-The Journal Voucher file streams the actual credit and debit transaction journal voucher records:
-
-\begin{lstlisting}[language=python, caption=Journal Voucher CSV Format]
-CLIENT_ID,COMPANY_NAME,FINANCIAL_YEAR,DATE,PARTICULARS,VCHTYPE,VCHNO,DEBIT,CREDIT,VOUCHERKEY,NARRATION
-10000_VSM,VIBRANT SUPERMARKET,2025-26,1-Apr-25,KISHOREKUMAR,GST Common Invoices,KIS-01/25-26,0.0,2000.0,783aa38d-...,Being Rent
-10000_VSM,VIBRANT SUPERMARKET,2025-26,1-Apr-25,Rent,GST Common Invoices,KIS-01/25-26,-2000.0,0.0,783aa38d-...,Being Rent
-\end{lstlisting}
 
