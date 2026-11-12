@@ -2,20 +2,16 @@
 \label{ch:results}
 
 \section{Experimental Setup}
-The analytical engine was tested on a Windows 11 platform equipped with an Intel Core i7 processor and 16 GB of RAM. The evaluation was split into two testing protocols:
-\begin{enumerate}
-    \item \textbf{Public Baseline Performance}: Benchmarked 13 public market sectors, with peer group sizes ranging from 5 to 29 companies.
-    \item \textbf{Private Client Integration}: Processed a Tally ERP dataset containing 1,385 ledger accounts and a multi-thousand row Journal Voucher log.
-\end{enumerate}
+The analytical engine was evaluated on a Windows 11 platform equipped with an Intel Core i7 processor and 16~GB of RAM. The testing protocol was conducted across 13 public market sectors using authentic National Stock Exchange (NSE) equity filings, evaluating peer groups ranging from 5 to 29 companies. The experimental pipeline ingested annual financial statements, calculated 26 core financial ratios across five analytical pillars, and established robust sector benchmarks to evaluate target enterprises against cross-sectional peer distributions.
 
 \section{Results Analysis}
-The TallySync bridge successfully processed the raw double-entry transaction log and generated a balanced Trial Balance:
+The cross-sectional sector ingestion pipeline was evaluated across the 13 NSE industry peer groups. Focusing on the Automobile sector as a representative heavy-manufacturing benchmark, the automated normalization engine processed all constituent corporate filings. Across the diverse peer group, corporate reporting exhibits substantial variance in accounting terminology (e.g., varying line items for operational expenses, lease obligations, short-term debt classifications, and treasury investments).
+
+The automated schema mapping and normalization layers achieved:
 \begin{itemize}
-    \item \textbf{Total Unique Ledgers Ingested}: 1,385
-    \item \textbf{Total Aggregated Debit Balances}: 590,856,997.09 INR
-    \item \textbf{Total Aggregated Credit Balances}: 590,856,997.09 INR
-    \item \textbf{Trial Balance Difference}: 0.00000213 INR (rounding precision limit)
-    \item \textbf{Pillar Mapping}: Mapped ledger accounts to their corresponding accounting categories (e.g. standardizing inventory, receivables, debt).
+    \item \textbf{Zero Schema Breaks}: Successfully ingested diverse filing nomenclatures across standalone and consolidated financial statements without manual schema overrides or pipeline halts.
+    \item \textbf{Unified Metric Standardisation}: Mapped disparate reporting items into 26 canonical financial ratios across Solvency, Liquidity, Asset Velocity, Profitability, and Cash Flow Generation.
+    \item \textbf{Cross-Sectional Harmonisation}: Cleanly aligned varying fiscal calendar reporting structures and disclosure depths across all sector constituents, generating complete, comparable multi-dimensional benchmark matrices.
 \end{itemize}
 
 \section{Outlier Masking Evaluation}
@@ -23,6 +19,8 @@ To evaluate the impact of outlier masking, we compared the descriptive baseline 
 
 \begin{table}[htbp]
     \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
     \caption{Impact of Outlier Masking on Peer Group Statistics}
     \label{tab:outlier_impact}
     \begin{tabular}{>{\bfseries}lrr}
@@ -46,20 +44,21 @@ To evaluate the impact of outlier masking, we compared the descriptive baseline 
 
 Without masking, the anomalous margins of Company 4 ($85.0\%$) and Company 6 ($-45.0\%$) skewed the standard deviation to $39.54\%$, which diluted the comparative boundaries. Masking the outlier cells restored the standard deviation to $1.28\%$, protecting the benchmark baseline.
 
-\section{Interpretation of Client Results}
-The system benchmarked a private FMCG client against the public peer baseline. The client's financial profile revealed a clear strategic contradiction (Figure~\ref{fig:client_scorecard}):
-\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-    \item \textbf{Profitability}: Operating Margin in the 85th percentile (assigned an \textit{"Elite"} health label).
-    \item \textbf{Liquidity}: Current Ratio in the bottom 10th percentile (assigned a \textit{"Critical"} health label).
-    \item \textbf{Interpretation}: The client possesses strong pricing power and cost controls, but faces a severe liquidity squeeze. A deep-dive into working capital velocity revealed slow inventory turnover, indicating cash is locked up in unsold stock.
+\section{Benchmarking Case Study: Listed Enterprise Evaluation}
+To assess the end-to-end capabilities of the benchmarking engine on real-world market data, we evaluated Maruti Suzuki India Limited (\texttt{MARUTI.NS}) against the 9-peer Automobile sector baseline established by the system. The diagnostic evaluation revealed distinct operational strengths and strategic trade-offs across the core analytical pillars (Figure~\ref{fig:client_scorecard}):
+\begin{itemize}
+    \item \textbf{Solvency \& Liquidity}: Maruti exhibits near-zero financial leverage, recording a Debt-to-Equity ratio of $0.001$ and an exceptional Interest Coverage ratio of $68.38\times$. In the cross-sectional distribution, this performance ranks in the \textit{Elite} tier (95th percentile), positioned well above the sector median and demonstrating virtually zero debt default risk.
+    \item \textbf{Asset \& Inventory Velocity}: The company demonstrates superior operational speed, achieving an Asset Turnover of $0.346$ and an Inventory Turnover of $4.56$ (compared to the sector median of $2.87$). These metrics position Maruti in the \textit{Elite} tier (90th percentile), reflecting lean manufacturing practices, rapid order fulfillment, and highly optimized supply chain throughput.
+    \item \textbf{Profitability}: In contrast to its solvency and operational velocity, Maruti recorded an Operating Margin of $9.68\%$, placing it in the \textit{Weak} / moderate tier (25th percentile, near benchmark lows). While sound in absolute terms, Maruti's operating margins lag significantly behind premium niche peers such as Eicher Motors ($32.83\%$) and Bajaj Auto ($27.36\%$), which command superior pricing power and lucrative two-wheeler/export margins.
 \end{itemize}
-\subsection{Strategic SWOT Recommendations and Action Plan}
-Based on the synthesized 2x2 SWOT grid and the corporate archetype classification, a targeted operational action plan was developed for the FMCG client:
-\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-    \item \textbf{Optimize Working Capital Velocity (Liquidity Strategy)}: Transition to a Just-In-Time (JIT) replenishment model for slow-moving inventory and run promotional clearing cycles to convert stagnant stock into operational cash.
-    \item \textbf{Leverage Pricing Power (Profitability Strategy)}: Utilize the client's high Operating Margin (85th percentile) to negotiate shorter credit terms or advance payments with distributors, accelerating accounts receivable collections.
-    \item \textbf{Extend Accounts Payable Cycles}: Extend vendor payment terms (Days Payable Outstanding) from 30 to 45 days to preserve operational cash flow without incurring additional short-term debt.
-    \item \textbf{Secure Revolving Credit Lines}: Establish a pre-approved revolving credit line to cover immediate obligations (e.g., payroll) while inventory velocity and collection reforms take effect.
+
+\subsection{Strategic Diagnostic Insights}
+\label{sec:strategic_insights}
+The diagnostic contrast between Maruti's capital structure and profitability yields concrete strategic implications:
+\begin{itemize}
+    \item \textbf{Fortress Balance Sheet and Defensive Resilience}: Maruti's near-zero debt capitalization and rapid asset velocity furnish formidable balance sheet resilience. The company operates without debt-servicing burdens, generating robust internal operating cash flows that insulate the firm against interest-rate volatility and macroeconomic downturns.
+    \item \textbf{Margin Compression and Competitive Pressures}: Despite high sales volumes and asset turnover, mass-market passenger vehicle pricing constraints expose Maruti to margin compression. Rising raw material input costs (e.g., steel, precious metals for catalytic converters) cannot be immediately passed on to price-sensitive retail buyers.
+    \item \textbf{Transition to Electric Vehicles and Capital Reinvestment}: Maruti faces substantial capital expenditure demands to develop dedicated Electric Vehicle (EV) platforms and next-generation hybrid powertrains. Its fortress balance sheet provides the strategic liquidity required to fund long-term R\&D and platform electrification without compromising solvency.
 \end{itemize}
 
 \begin{figure}[H]
@@ -71,32 +70,37 @@ Based on the synthesized 2x2 SWOT grid and the corporate archetype classificatio
     pct_label/.style={font=\small\bfseries, anchor=west}
 ]
     % Grid lines
-    \draw[gray!15, dashed, line width=0.5pt] (2.5, 0) -- (2.5, 2.8);
-    \draw[gray!15, dashed, line width=0.5pt] (5.0, 0) -- (5.0, 2.8);
-    \draw[gray!15, dashed, line width=0.5pt] (7.5, 0) -- (7.5, 2.8);
-    \draw[gray!15, dashed, line width=0.5pt] (10.0, 0) -- (10.0, 2.8);
+    \draw[gray!15, dashed, line width=0.5pt] (2.5, 0) -- (2.5, 3.8);
+    \draw[gray!15, dashed, line width=0.5pt] (5.0, 0) -- (5.0, 3.8);
+    \draw[gray!15, dashed, line width=0.5pt] (7.5, 0) -- (7.5, 3.8);
+    \draw[gray!15, dashed, line width=0.5pt] (10.0, 0) -- (10.0, 3.8);
 
     % Axis line
     \draw[thick, -{Stealth[scale=0.8]}] (0,0) -- (10.8, 0) node[right, font=\scriptsize\bfseries\color{black!80}] {Percentile (\%)};
-    \draw[thick] (0,0) -- (0,2.8);
+    \draw[thick] (0,0) -- (0,3.8);
 
     % Axis ticks and labels
     \foreach \x/\label in {0/0, 2.5/25, 5.0/50, 7.5/75, 10.0/100} {
         \draw[thick] (\x, 0) -- (\x, -0.1) node[below, axis_label] {\label};
     }
 
-    % Profitability Bar (85% -> 8.5 units)
-    \draw[fill=green!55!blue!70, draw=green!40!black, thick, rounded corners=1.5pt] (0, 1.5) rectangle (8.5, 2.0);
-    \node[bar_label] at (0, 2.3) {Profitability (Operating Margin)};
-    \node[pct_label, color=green!45!black] at (8.7, 1.75) {85th Pct};
+    % Solvency Bar (95% -> 9.5 units)
+    \draw[fill=green!55!blue!70, draw=green!40!black, thick, rounded corners=1.5pt] (0, 2.7) rectangle (9.5, 3.2);
+    \node[bar_label] at (0, 3.5) {Solvency (Debt-to-Equity / Interest Coverage)};
+    \node[pct_label, color=green!45!black] at (9.7, 2.95) {95th Pct (Elite)};
 
-    % Liquidity Bar (14% -> 1.4 units)
-    \draw[fill=red!70!black!80, draw=red!40!black, thick, rounded corners=1.5pt] (0, 0.3) rectangle (1.4, 0.8);
-    \node[bar_label] at (0, 1.1) {Liquidity (Current Ratio)};
-    \node[pct_label, color=red!70!black] at (1.6, 0.55) {14th Pct};
+    % Asset Efficiency Bar (90% -> 9.0 units)
+    \draw[fill=teal!65!black!70, draw=teal!40!black, thick, rounded corners=1.5pt] (0, 1.5) rectangle (9.0, 2.0);
+    \node[bar_label] at (0, 2.3) {Asset Efficiency (Asset Turnover)};
+    \node[pct_label, color=teal!55!black] at (9.2, 1.75) {90th Pct (Elite)};
+
+    % Profitability Bar (25% -> 2.5 units)
+    \draw[fill=orange!80!red!80, draw=red!50!black, thick, rounded corners=1.5pt] (0, 0.3) rectangle (2.5, 0.8);
+    \node[bar_label] at (0, 1.1) {Profitability (Operating Margin)};
+    \node[pct_label, color=red!70!black] at (2.7, 0.55) {25th Pct (Weak)};
 
 \end{tikzpicture}
-\caption{Client Financial Health Scorecard (Percentile Rankings)}
+\caption{Maruti Suzuki India Limited: Financial Health Scorecard (Percentile Rankings)}
 \label{fig:client_scorecard}
 \end{figure}
 
@@ -113,12 +117,10 @@ The execution times of the core pipeline stages are summarized in Table~\ref{tab
         \midrule
         Data Harvesting (15 Peers, uncached) & 14.50 s \\
         Data Ingestion (15 Peers, cached) & 1.20 s \\
-        Tally ERP Aggregation (100k rows) & 4.20 s \\
         Outlier Detection \& Core Scoring & 0.45 s \\
-        UML/K-Means Clustering & 0.25 s \\
         Excel Report Generation & 1.10 s \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-The caching layer reduces statement ingestion times by over $90\%$, making the application highly responsive.
+The caching layer reduces statement ingestion times from 14.50~s to 1.20~s (an operational reduction exceeding $90\%$), ensuring that iterative cross-sectional benchmarking remains highly responsive for interactive decision support.
