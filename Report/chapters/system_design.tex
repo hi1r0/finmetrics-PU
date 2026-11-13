@@ -254,6 +254,9 @@ The Level 1 Data Flow Diagram (Figure~\ref{fig:dfd1}) details the internal proce
 \section{Module Descriptions}
 The system consists of the following modules, each encapsulating specific functional logic:
 \begin{itemize}
+    \setlength{\itemsep}{1.5pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
     \item \textbf{sector\_loader.py}: A template mapping utility that lists standard public market tickers under 13 sectors: Automobiles, IT, FMCG, Banking, Pharma, Oil \& Gas, Metals, Cement, Telecom, Power, Realty, Capital Goods, and Infrastructure.
     \item \textbf{data\_fetcher.py}: Handles secure connections to the `yfinance` Ticker wrapper. Implements asynchronous API requests and caches raw quarterly/annual statements in Parquet format with a 24-hour TTL config.
     \item \textbf{financial\_parser.py}: Normalizes messy statements into clean, structured DataFrames. Scans the rows, renames matched variants using the alias map \texttt{ALIAS\_MAP}, removes duplicate metrics, and converts all entries to numeric types.

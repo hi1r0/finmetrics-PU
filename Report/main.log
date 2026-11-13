@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  13 NOV 2026 21:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  13 NOV 2026 21:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1206,13 +1206,13 @@ Chapter 2.
 
 
 
-{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}] [
-6]) [7]
+{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}]) 
+[6]
 \openout2 = `chapters/system_design.aux'.
 
  (chapters/system_design.tex
 Chapter 3.
-[8
+[7
 
 
 
@@ -1227,38 +1227,38 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
- [9]
+ [8]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 70.
 
-[10] [11]) [12] [13]
+[9] [10]) [11]
 \openout2 = `chapters/algorithms.aux'.
 
  (chapters/algorithms.tex
 Chapter 4.
-[14
+[12
 
 
 
 
-] [15]
+] [13]
 Overfull \hbox (4.33662pt too wide) in paragraph at lines 108--109
 []\T1/lmr/m/n/12 (-20) The Iso-la-tion For-est al-go-rithm iso-lates anoma-lies
  by ran-domly par-ti-tion-ing high-dimensional
  []
 
-[16] [17]
+[14] [15]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
 put line 226.
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/lmr/m/sc/10'.
 (microtype)             Ignoring protrusion settings for this character.
-) [18] [19]
+) [16] [17]
 \openout2 = `chapters/implementation.aux'.
 
  (chapters/implementation.tex
 Chapter 5.
-[20
+[18
 
 
 
@@ -1271,17 +1271,17 @@ File: lstlang1.sty 2025/11/14 1.11b listings language file
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
 nput line 49.
 
-[21] (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+[19] (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
-) [22]
+) [20]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 111.
- [23]) [24]
+ [21]) [22]
 \openout2 = `chapters/results.aux'.
 
  (chapters/results.tex
 Chapter 6.
-[25
+[23
 
 
 
@@ -1289,17 +1289,17 @@ Chapter 6.
 ]
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <10.95> on input line 26.
- [26] [27]) [28]
+ [24] [25]) [26]
 \openout2 = `chapters/conclusion.aux'.
 
  (chapters/conclusion.tex
 Chapter 7.
-[29
+[27
 
 
 
 
-]) [30] (main.bbl) [31
+]) [28] (main.bbl) [29
 
 
 
@@ -1308,10 +1308,10 @@ Chapter 7.
 
  (chapters/appendices.tex
 Appendix A.
-[32
+[30
 
 
-]) [33] (main.aux (chapters/introduction.aux)
+]) [31] (main.aux (chapters/introduction.aux)
 (chapters/literature_survey.aux) (chapters/system_design.aux)
 (chapters/algorithms.aux) (chapters/implementation.aux) (chapters/results.aux)
 (chapters/conclusion.aux) (chapters/appendices.aux))
@@ -1321,9 +1321,9 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 31920 strings out of 467871
- 588548 string characters out of 5419828
- 1463402 words of memory out of 5000000
+ 31918 strings out of 467871
+ 588534 string characters out of 5419828
+ 1463418 words of memory out of 5000000
  59651 multiletter control sequences out of 15000+600000
  767058 words of font info for 267 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1354,9 +1354,9 @@ b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C
 ers/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Users
 /Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/Hp
 /AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (41 pages, 24635476 bytes).
+Output written on main.pdf (39 pages, 24633773 bytes).
 PDF statistics:
- 851 PDF objects out of 1000 (max. 8388607)
- 259 named destinations out of 1000 (max. 500000)
+ 842 PDF objects out of 1000 (max. 8388607)
+ 257 named destinations out of 1000 (max. 500000)
  80329 words of extra memory for PDF output out of 89155 (max. 10000000)
 

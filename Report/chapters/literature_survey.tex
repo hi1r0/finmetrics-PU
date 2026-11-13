@@ -4,6 +4,9 @@
 \section{Existing Methodologies}
 Traditional corporate benchmarking has evolved from manual spreadsheet transcription to proprietary financial databases:
 \begin{itemize}
+    \setlength{\itemsep}{1.5pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
     \item \textbf{Manual Spreadsheet Benchmarking}: Analysts manually extract and transcribe quarterly figures into Microsoft Excel models. This foundational framework, formalized by Damodaran \cite{damodaran2012investment}, remains slow, labor-intensive, and prone to human error.
     \item \textbf{Proprietary Financial Terminals}: Bloomberg Terminals and S\&P Capital IQ automate data harvesting and standardization. However, their high annual licensing fees (\$24,000+ per user) and closed database architectures prevent independent researchers from easily integrating custom statistical outlier screening models.
 \end{itemize}
@@ -11,6 +14,9 @@ Traditional corporate benchmarking has evolved from manual spreadsheet transcrip
 \section{Machine Learning \& Robust Outlier Detection in Finance}
 Corporate financial datasets frequently contain extreme outliers from non-recurring activities, distorting standard mean-based Z-score benchmarking. To resolve this, robust statistics and unsupervised machine learning models are deployed:
 \begin{itemize}
+    \setlength{\itemsep}{1.5pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
     \item \textbf{Tukey's Fences (IQR)}: Non-parametric filter using the Interquartile Range ($IQR = Q_3 - Q_1$) to define bounds as $[Q_1 - k \cdot IQR, \; Q_3 + k \cdot IQR]$ \cite{tukey1977exploratory}. Resilient against extreme skewness as it relies on medians.
     \item \textbf{Modified Z-Scores (MAD)}: Measures statistical dispersion via the Median Absolute Deviation ($MAD = \text{median}(|x_i - \tilde{x}|)$). The Modified Z-Score $M_i$ is formulated as $M_i = 0.6745(x_i - \tilde{x}) / MAD$. Flags outliers exceeding $3.5$ robustly.
     \item \textbf{Isolation Forests (iForest)}: An unsupervised machine learning algorithm \cite{liu2008isolation} that isolates anomalies in multi-dimensional space by randomly partitioning feature values. Anomalies isolate closer to the tree root, resulting in shorter path lengths.
@@ -19,10 +25,10 @@ Corporate financial datasets frequently contain extreme outliers from non-recurr
 \begin{figure}[htbp]
     \centering
     \begin{tikzpicture}[
-        node distance=0.8cm and 0.5cm,
-        block/.style={rectangle, draw=black, fill=blue!5, text width=4.0cm, text centered, rounded corners, minimum height=1.2cm, font=\scriptsize},
-        badblock/.style={rectangle, draw=black, fill=red!5, text width=4.0cm, text centered, rounded corners, minimum height=1.2cm, font=\scriptsize},
-        goodblock/.style={rectangle, draw=black, fill=green!5, text width=4.0cm, text centered, rounded corners, minimum height=1.2cm, font=\scriptsize},
+        node distance=0.55cm and 0.5cm,
+        block/.style={rectangle, draw=black, fill=blue!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
+        badblock/.style={rectangle, draw=black, fill=red!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
+        goodblock/.style={rectangle, draw=black, fill=green!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
         arrow/.style={thick,->,>=stealth}
     ]
         % Left Track (Traditional)
@@ -54,13 +60,13 @@ Corporate financial datasets frequently contain extreme outliers from non-recurr
     \definecolor{boxborder}{RGB}{80, 80, 80}
 
     \begin{tikzpicture}[
-        % Using a serif font and scriptsize to make the figure more compact and professional
         font=\rmfamily\scriptsize,
+        scale=0.92, transform shape,
         >={Stealth[length=5pt, width=3.75pt]},
         % Base styling for all nodes
         box/.style={
             draw=boxborder, rounded corners=4pt, align=center,
-            minimum width=3.3cm, minimum height=1.2cm, inner sep=4pt, thick
+            minimum width=3.3cm, minimum height=1.1cm, inner sep=4pt, thick
         },
         lavender/.style={box, fill=lavenderbg},
         peach/.style={box, fill=peachbg},
