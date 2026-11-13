@@ -1,5 +1,6 @@
 import os
 import re
+import fitz
 
 def test_system_architecture_figure_tex():
     tex_path = "Report/chapters/implementation.tex"
@@ -39,3 +40,64 @@ def test_system_architecture_figure_tex():
     assert "1. Dispatches" in content
     assert "2. Delivers" in content
     assert "3. Renders" in content
+
+
+def test_pdf_figure52_layout():
+    log_path = "Report/main.log"
+    pdf_path = "Report/main.pdf"
+
+    assert os.path.exists(log_path), f"{log_path} must exist"
+    assert os.path.exists(pdf_path), f"{pdf_path} must exist"
+
+    # 1. Verify build log has 0 fatal errors, 0 undefined references, 0 undefined citations
+    with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+        log_text = f.read()
+
+    fatal_errors = (
+        re.findall(r"! LaTeX Error.*", log_text)
+        + re.findall(r"! Emergency stop", log_text)
+        + re.findall(r"Fatal error occurred", log_text)
+    )
+    undef_refs = (
+        re.findall(r"Reference `.*' on page .* undefined", log_text)
+        + re.findall(r"LaTeX Warning: There were undefined references", log_text)
+    )
+    undef_cits = (
+        re.findall(r"Citation `.*' on page .* undefined", log_text)
+        + re.findall(r"LaTeX Warning: There were undefined citations", log_text)
+    )
+
+    assert len(fatal_errors) == 0, f"Found fatal errors in main.log: {fatal_errors}"
+    assert len(undef_refs) == 0, f"Found undefined references in main.log: {undef_refs}"
+    assert len(undef_cits) == 0, f"Found undefined citations in main.log: {undef_cits}"
+
+    # 2. Verify total page count of exactly 39 pages
+    doc = fitz.open(pdf_path)
+    assert len(doc) == 39, f"Expected exactly 39 pages, got {len(doc)}"
+
+    # 3. Verify Figure 5.2 is cleanly located on Page 30 (0-indexed 29)
+    page30 = doc[29]
+    page30_text = page30.get_text()
+    assert "Figure 5.2" in page30_text, "Figure 5.2 must be located on Page 30 (0-indexed 29)"
+
+    # 4. Verify text elements from Figure 5.2 are cleanly extracted
+    expected_elements = [
+        "DataFetcher",
+        "FinancialParser",
+        "RatioEngine",
+        "OutlierEngine",
+        "BenchmarkCore",
+        "Streamlit UI",
+        "Raw DF",
+        "Parsed DF",
+        "30+ Ratios",
+        "Outlier Mask",
+    ]
+    for elem in expected_elements:
+        assert elem in page30_text, f"Missing element '{elem}' in Page 30 text"
+
+    # 5. Verify Chapter 6 begins cleanly on Page 31 (0-indexed 30)
+    page31 = doc[30]
+    page31_text = page31.get_text()
+    assert "Chapter 6" in page31_text, "Chapter 6 must begin cleanly on Page 31 (0-indexed 30)"
+
