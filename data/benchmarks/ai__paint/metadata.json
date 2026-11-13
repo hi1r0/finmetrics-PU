@@ -1,0 +1,17 @@
+{
+  "sector": "AI: paint",
+  "timestamp": "2026-10-19T21:03:01.912531",
+  "n_peers": 6,
+  "requested_tickers": [
+    "ASIANPAINT.NS",
+    "BERGEPAINT.NS",
+    "KANSAINER.NS",
+    "AKZOINDIA.NS",
+    "INDIGOPNTS.NS",
+    "SHALPAINTS.NS",
+    "SIRCA.NS"
+  ],
+  "failed_tickers": [
+    "AKZOINDIA.NS"
+  ]
+}
