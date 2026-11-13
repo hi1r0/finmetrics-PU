@@ -12,10 +12,22 @@ def test_flowchart_environment_and_labels():
     assert "\\section{Algorithmic Workflow \\& Flowchart}" in content
     assert "\\subsection{Univariate Outlier Detection Process}" in content
 
-    # Figure and label
-    assert "\\begin{figure}" in content
+    # Placement and figure environment
+    assert "\\clearpage" in content
+    assert "\\begin{figure}[t!]" in content
     assert "\\label{fig:outlier_flowchart}" in content
     assert "Univariate Outlier Detection and Baseline Masking Flowchart" in content
+
+    # Colors
+    assert "\\definecolor{peachbg}{RGB}{253, 238, 226}" in content
+    assert "\\definecolor{lavenderbg}{RGB}{238, 240, 252}" in content
+    assert "\\definecolor{greenbg}{RGB}{228, 248, 232}" in content
+    assert "\\definecolor{boxborder}{RGB}{40, 45, 55}" in content
+
+    # Node dimensions and styles
+    assert "minimum width=5.2cm" in content
+    assert "minimum height=1.1cm" in content
+    assert "font=\\rmfamily\\small" in content
 
     # Flowchart nodes
     assert "Select Ratio Column" in content

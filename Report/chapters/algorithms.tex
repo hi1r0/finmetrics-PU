@@ -222,31 +222,30 @@ The algorithm operates as follows:
     \item \textbf{Outlier Masking}: If an anomaly is detected, the company is added to the outlier database $O$, and the clean copy matrix $C$ masks this specific cell as $\text{NaN}$ (Not a Number). This prevents contaminated entries from skewing the peer group median and dispersion baselines.
 \end{enumerate}
 
-\begin{figure}[htbp]
+\clearpage
+\begin{figure}[t!]
     \centering
-    \definecolor{termgreen}{RGB}{232, 245, 233}
-    \definecolor{procblue}{RGB}{227, 242, 253}
-    \definecolor{decamber}{RGB}{255, 243, 224}
-    \definecolor{bordergray}{RGB}{60, 60, 60}
+    \definecolor{peachbg}{RGB}{253, 238, 226}
+    \definecolor{lavenderbg}{RGB}{238, 240, 252}
+    \definecolor{greenbg}{RGB}{228, 248, 232}
+    \definecolor{boxborder}{RGB}{40, 45, 55}
 
     \begin{tikzpicture}[
-        font=\rmfamily\scriptsize,
-        scale=0.92, transform shape,
-        >={Stealth[length=5pt, width=3.5pt]},
-        node distance=0.6cm and 1.2cm,
+        font=\rmfamily\small,
+        node distance=1.1cm and 2.0cm,
         terminal/.style={
-            draw=teal!70!black, rounded corners=10pt, fill=termgreen,
-            minimum width=2.4cm, minimum height=0.72cm, align=center, thick, font=\bfseries\scriptsize
+            draw=boxborder, rounded corners=12pt, fill=greenbg,
+            minimum width=3.8cm, minimum height=1.0cm, align=center, thick, font=\bfseries\small
         },
         process/.style={
-            draw=blue!70!black, rounded corners=3pt, fill=procblue,
-            minimum width=3.4cm, minimum height=0.72cm, align=center, thick, font=\scriptsize
+            draw=boxborder, rounded corners=4pt, fill=lavenderbg,
+            minimum width=5.2cm, minimum height=1.1cm, align=center, thick, font=\small
         },
         decision/.style={
-            draw=orange!80!black, diamond, aspect=2.0, fill=decamber,
-            inner sep=2pt, align=center, thick, font=\bfseries\scriptsize
+            draw=boxborder, diamond, aspect=2.1, fill=peachbg,
+            inner sep=4pt, align=center, thick, font=\bfseries\small
         },
-        arrow/.style={thick, ->, draw=black!80}
+        arrow/.style={thick, ->, draw=boxborder, >={Stealth[length=6.5pt, width=4.5pt]}}
     ]
 
         % Central vertical spine
@@ -256,7 +255,7 @@ The algorithm operates as follows:
         \node (enough) [decision, below=of clean] {Enough Data?};
 
         % Skip branch (Right of Enough Data)
-        \node (skip) [process, right=1.4cm of enough] {Skip Column};
+        \node (skip) [process, right=1.9cm of enough] {Skip Column};
 
         % Main computation branch (Below Enough Data)
         \node (iqr) [process, below=of enough] {Calculate IQR};
@@ -264,11 +263,11 @@ The algorithm operates as follows:
         \node (outlier) [decision, below=of zscore] {Is it an Outlier?};
 
         % Branches for Outlier decision
-        \node (mask) [process, below left=0.6cm and 0.4cm of outlier] {Mask Value};
-        \node (keep) [process, below right=0.6cm and 0.4cm of outlier] {Keep Value};
+        \node (mask) [process, below left=0.9cm and 0.1cm of outlier] {Mask Value};
+        \node (keep) [process, below right=0.9cm and 0.1cm of outlier] {Keep Value};
 
         % Merge and End
-        \node (finish) [terminal, below=1.8cm of outlier] {END};
+        \node (finish) [terminal, below=2.3cm of outlier] {END};
 
         % Connections
         \draw [arrow] (start) -- (select);
@@ -276,16 +275,16 @@ The algorithm operates as follows:
         \draw [arrow] (clean) -- (enough);
 
         % Enough Data branches
-        \draw [arrow] (enough) -- node[above, font=\scriptsize\bfseries] {No} (skip);
-        \draw [arrow] (enough) -- node[right, font=\scriptsize\bfseries] {Yes} (iqr);
+        \draw [arrow] (enough) -- node[above, font=\small\bfseries] {No} (skip);
+        \draw [arrow] (enough) -- node[right, font=\small\bfseries] {Yes} (iqr);
 
         % Calculation flow
         \draw [arrow] (iqr) -- (zscore);
         \draw [arrow] (zscore) -- (outlier);
 
         % Outlier branches
-        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\scriptsize\bfseries] {Yes} (mask);
-        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\scriptsize\bfseries] {No} (keep);
+        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\small\bfseries] {Yes} (mask);
+        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\small\bfseries] {No} (keep);
 
         % Connect mask & keep to finish
         \draw [arrow] (mask) |- (finish);
