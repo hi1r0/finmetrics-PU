@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  13 NOV 2026 21:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  13 NOV 2026 21:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1247,13 +1247,7 @@ Overfull \hbox (4.33662pt too wide) in paragraph at lines 108--109
  by ran-domly par-ti-tion-ing high-dimensional
  []
 
-[14] [15]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 226.
-Package microtype Info: Character `029' is missing
-(microtype)             in font `T1/lmr/m/sc/10'.
-(microtype)             Ignoring protrusion settings for this character.
-) [16] [17]
+[14] [15]) [16] [17]
 \openout2 = `chapters/implementation.aux'.
 
  (chapters/implementation.tex
@@ -1321,11 +1315,11 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 31918 strings out of 467871
- 588534 string characters out of 5419828
- 1463418 words of memory out of 5000000
- 59651 multiletter control sequences out of 15000+600000
- 767058 words of font info for 267 fonts, out of 8000000 for 9000
+ 31942 strings out of 467871
+ 589197 string characters out of 5419828
+ 1464897 words of memory out of 5000000
+ 59695 multiletter control sequences out of 15000+600000
+ 753257 words of font info for 255 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,17n,104p,1166b,2117s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
@@ -1334,29 +1328,26 @@ Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx6.pfb><C:/User
 s/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx7.pfb><C:/Users/Hp
 /AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx8.pfb><C:/Users/Hp/App
 Data/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb><C:/Users/Hp/AppDa
-ta/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pfb><C:/Users/Hp/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Hp/AppData/Lo
-cal/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:/Users/Hp/AppData/Local
-/Programs/MiKTeX/fonts/type1/public/lm/lmmi6.pfb><C:/Users/Hp/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Hp/AppData/Local/Program
-s/MiKTeX/fonts/type1/public/lm/lmmi8.pfb><C:/Users/Hp/AppData/Local/Programs/Mi
-KTeX/fonts/type1/public/lm/lmmib10.pfb><C:/Users/Hp/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/lm/lmr12.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts
-/type1/public/lm/lmr5.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type
-1/public/lm/lmr6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/pub
-lic/lm/lmr7.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/l
-m/lmr8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr
-i10.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12
-.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pf
-b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C
-:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb><C:/Us
-ers/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Users
-/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/Hp
-/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (39 pages, 24633773 bytes).
+ta/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Hp/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:/Users/Hp/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/lm/lmmi6.pfb><C:/Users/Hp/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Hp/AppData/Local/Progr
+ams/MiKTeX/fonts/type1/public/lm/lmmi8.pfb><C:/Users/Hp/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/lm/lmmib10.pfb><C:/Users/Hp/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX
+/fonts/type1/public/lm/lmr12.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fon
+ts/type1/public/lm/lmr5.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/ty
+pe1/public/lm/lmr6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/lm/lmr8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/lm/lmri12.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
+/lmsy10.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
+sy6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.
+pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb
+><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C
+:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
+Output written on main.pdf (39 pages, 24572733 bytes).
 PDF statistics:
- 842 PDF objects out of 1000 (max. 8388607)
+ 827 PDF objects out of 1000 (max. 8388607)
  257 named destinations out of 1000 (max. 500000)
- 80329 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 72137 words of extra memory for PDF output out of 74296 (max. 10000000)
 
