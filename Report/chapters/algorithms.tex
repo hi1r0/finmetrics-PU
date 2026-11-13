@@ -191,13 +191,13 @@ The mathematical parameters governing the tree-isolation metrics are summarized 
     \label{fig:isolation_tree}
 \end{figure}
 
-\section{Algorithms Pseudocode}
-To facilitate the practical deployment and computational replication of our analytical framework, this section formalizes the core processes as structured, language-agnostic pseudocode. Specifically, we present the algorithmic logic governing our univariate outlier detection and baseline masking engine, which maintains statistical integrity across noisy peer distributions. To facilitate cross-referencing and trace the exact operations, the primary variables and notations deployed across the pseudocode are defined in Table~\ref{tab:glossary_pseudocode}.
+\section{Algorithmic Workflow \& Flowchart}
+To facilitate the practical deployment and computational replication of our analytical framework, this section formalizes the core processes as structured, language-agnostic pseudocode. Specifically, we present the visual workflow and computational logic governing our univariate outlier detection and baseline masking engine, which maintains statistical integrity across noisy peer distributions. To facilitate cross-referencing and trace the exact operations, the primary variables and notations deployed across the workflow are defined in Table~\ref{tab:glossary_pseudocode}.
 
 \begin{table}[H]
     \centering
     \renewcommand{\arraystretch}{0.85}
-    \caption{Algorithms Pseudocode Mathematical Symbols}
+    \caption{Algorithmic Workflow Mathematical Symbols}
     \label{tab:glossary_pseudocode}
     \footnotesize
     \begin{tabularx}{\textwidth}{lX}
@@ -212,8 +212,8 @@ To facilitate the practical deployment and computational replication of our anal
     \end{tabularx}
 \end{table}
 
-\subsection{Univariate Outlier Detection and Baseline Masking}
-The outlier detection procedure (detailed in Algorithm~\ref{alg:outliers}) robustly identifies and isolates anomalies in financial ratio distributions. 
+\subsection{Univariate Outlier Detection Process}
+The outlier detection procedure (illustrated in Figure~\ref{fig:outlier_flowchart}) robustly identifies and isolates anomalies in financial ratio distributions. 
 The algorithm operates as follows:
 \begin{enumerate}
     \item \textbf{Data Cleaning}: For each financial ratio column, it drops any missing values to extract a clean vector $V$.
@@ -222,34 +222,79 @@ The algorithm operates as follows:
     \item \textbf{Outlier Masking}: If an anomaly is detected, the company is added to the outlier database $O$, and the clean copy matrix $C$ masks this specific cell as $\text{NaN}$ (Not a Number). This prevents contaminated entries from skewing the peer group median and dispersion baselines.
 \end{enumerate}
 
-\begin{algorithm}[H]
-\caption{Univariate Outlier Detection and Baselines}
-\label{alg:outliers}
-\footnotesize
-\begin{algorithmic}[1]
-\Procedure{DetectOutliers}{$R, k, \theta$}
-    \State $O \gets \emptyset$; $C \gets R$ \Comment{Initialize outlier set and clean copy}
-    \For{each ratio column $j$ in $R$}
-        \State $V \gets \text{dropna}(R[:, j])$
-        \State \textbf{if} $\text{length}(V) < 3$ \textbf{then} \textbf{continue}
-        \State $Q_1, Q_3 \gets \text{percentile}(V, 25), \text{percentile}(V, 75)$
-        \State $\text{IQR} \gets Q_3 - Q_1$
-        \State $\text{LB}, \text{UB} \gets Q_1 - k \cdot \text{IQR}, Q_3 + k \cdot \text{IQR}$
-        \State $\tilde{v} \gets \text{median}(V)$; $\text{MAD} \gets \text{median}(|V - \tilde{v}|)$
-        \If{$\text{MAD} = 0$}
-            \State $\sigma \gets \text{std}(V)$; $Z \gets (V - \text{mean}(V)) / \sigma$
-        \Else
-            \State $Z \gets 0.6745 \times (V - \tilde{v}) / \text{MAD}$
-        \EndIf
-        \For{each company index $i$ in $R$}
-            \State $v \gets R[i, j]$
-            \State $\text{iqr\_flag} \gets (v < \text{LB}) \lor (v > \text{UB})$; $\text{z\_flag} \gets |Z[i]| > \theta$
-            \If{$\text{iqr\_flag} \lor \text{z\_flag}$}
-                \State $O \gets O \cup \{(i, j, v)\}$; $C[i, j] \gets \text{NaN}$ \Comment{Mask outlier cell}
-            \EndIf
-        \EndFor
-    \EndFor
-    \State \Return $O, C$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+\begin{figure}[htbp]
+    \centering
+    \definecolor{termgreen}{RGB}{232, 245, 233}
+    \definecolor{procblue}{RGB}{227, 242, 253}
+    \definecolor{decamber}{RGB}{255, 243, 224}
+    \definecolor{bordergray}{RGB}{60, 60, 60}
+
+    \begin{tikzpicture}[
+        font=\rmfamily\scriptsize,
+        scale=0.92, transform shape,
+        >={Stealth[length=5pt, width=3.5pt]},
+        node distance=0.6cm and 1.2cm,
+        terminal/.style={
+            draw=teal!70!black, rounded corners=10pt, fill=termgreen,
+            minimum width=2.4cm, minimum height=0.72cm, align=center, thick, font=\bfseries\scriptsize
+        },
+        process/.style={
+            draw=blue!70!black, rounded corners=3pt, fill=procblue,
+            minimum width=3.4cm, minimum height=0.72cm, align=center, thick, font=\scriptsize
+        },
+        decision/.style={
+            draw=orange!80!black, diamond, aspect=2.0, fill=decamber,
+            inner sep=2pt, align=center, thick, font=\bfseries\scriptsize
+        },
+        arrow/.style={thick, ->, draw=black!80}
+    ]
+
+        % Central vertical spine
+        \node (start) [terminal] {START};
+        \node (select) [process, below=of start] {Select Ratio Column};
+        \node (clean) [process, below=of select] {Remove Missing Values};
+        \node (enough) [decision, below=of clean] {Enough Data?};
+
+        % Skip branch (Right of Enough Data)
+        \node (skip) [process, right=1.4cm of enough] {Skip Column};
+
+        % Main computation branch (Below Enough Data)
+        \node (iqr) [process, below=of enough] {Calculate IQR};
+        \node (zscore) [process, below=of iqr] {Calculate Z-score};
+        \node (outlier) [decision, below=of zscore] {Is it an Outlier?};
+
+        % Branches for Outlier decision
+        \node (mask) [process, below left=0.6cm and 0.4cm of outlier] {Mask Value};
+        \node (keep) [process, below right=0.6cm and 0.4cm of outlier] {Keep Value};
+
+        % Merge and End
+        \node (finish) [terminal, below=1.8cm of outlier] {END};
+
+        % Connections
+        \draw [arrow] (start) -- (select);
+        \draw [arrow] (select) -- (clean);
+        \draw [arrow] (clean) -- (enough);
+
+        % Enough Data branches
+        \draw [arrow] (enough) -- node[above, font=\scriptsize\bfseries] {No} (skip);
+        \draw [arrow] (enough) -- node[right, font=\scriptsize\bfseries] {Yes} (iqr);
+
+        % Calculation flow
+        \draw [arrow] (iqr) -- (zscore);
+        \draw [arrow] (zscore) -- (outlier);
+
+        % Outlier branches
+        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\scriptsize\bfseries] {Yes} (mask);
+        \draw [arrow] (outlier) -| node[above, pos=0.25, font=\scriptsize\bfseries] {No} (keep);
+
+        % Connect mask & keep to finish
+        \draw [arrow] (mask) |- (finish);
+        \draw [arrow] (keep) |- (finish);
+
+        % Connect skip down to finish
+        \draw [arrow] (skip) |- (finish);
+
+    \end{tikzpicture}
+    \caption{Univariate Outlier Detection and Baseline Masking Flowchart}
+    \label{fig:outlier_flowchart}
+\end{figure}
