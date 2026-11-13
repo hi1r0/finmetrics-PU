@@ -72,8 +72,32 @@ def test_pdf_compilation_and_layout():
     toc = doc.get_toc()
     matching_toc = [item for item in toc if "Algorithmic Workflow" in item[1] and "Flowchart" in item[1]]
     assert len(matching_toc) > 0, f"TOC entry for Algorithmic Workflow & Flowchart not found in {toc}"
+    assert matching_toc[0][2] == 24, f"TOC entry should target Page 24, got {matching_toc[0][2]}"
 
-    # 3. Verify flowchart node labels in extracted text
+    # 3. Verify Page 25 (0-indexed page 24) contents and geometry
+    page25 = doc[24]
+    page25_text = page25.get_text()
+    assert "Figure 4.2: Univariate Outlier Detection and Baseline Masking Flowchart" in page25_text
+
+    blocks = page25.get_text("blocks")
+    header_block = [b for b in blocks if "Algorithms and Methodology" in b[4]]
+    start_block = [b for b in blocks if "START" in b[4]]
+    caption_block = [b for b in blocks if "Figure 4.2" in b[4]]
+
+    assert len(header_block) > 0, "Running header missing on Page 25"
+    assert len(start_block) > 0, "'START' node missing on Page 25"
+    assert len(caption_block) > 0, "Caption missing on Page 25"
+
+    header_bottom = header_block[0][3]
+    start_top = start_block[0][1]
+    assert start_top - header_bottom < 150, f"Flowchart top is too far from header: {start_top - header_bottom} pt"
+    assert caption_block[0][1] > 600, f"Flowchart should extend towards bottom, caption at {caption_block[0][1]}"
+
+    # Verify Chapter 5 begins on Page 26 (0-indexed 25)
+    page26_text = doc[25].get_text()
+    assert "Chapter 5" in page26_text
+
+    # 4. Verify flowchart node labels in extracted text
     mandatory_terms = [
         "Select Ratio Column",
         "Calculate IQR",
@@ -86,10 +110,6 @@ def test_pdf_compilation_and_layout():
         "Keep Value",
     ]
 
-    all_text = ""
-    for page in doc:
-        all_text += page.get_text() + "\n"
-
     for term in mandatory_terms:
-        assert term.lower() in all_text.lower(), f"Term '{term}' missing from compiled PDF text"
+        assert term.lower() in page25_text.lower(), f"Term '{term}' missing from Page 25 text"
 
