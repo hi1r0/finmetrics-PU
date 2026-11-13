@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  12 NOV 2026 23:59
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  13 NOV 2026 21:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -403,6 +403,43 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 Package color Info: Driver file: pdftex.def on input line 149.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx))
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pdfpages.sty
+Package: pdfpages 2026/03/30 v0.6h Insert pages of external PDF documents (AM)
+
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty
+Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
+\calc@Acount=\count326
+\calc@Bcount=\count327
+\calc@Adimen=\dimen262
+\calc@Bdimen=\dimen263
+\calc@Askip=\skip76
+\calc@Bskip=\skip77
+LaTeX Info: Redefining \setlength on input line 86.
+LaTeX Info: Redefining \addtolength on input line 87.
+\calc@Ccount=\count328
+\calc@Cskip=\skip78
+)
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/eso-pic\eso-pic.sty
+Package: eso-pic 2026/05/31 v3.0e eso-pic (RN)
+\ESO@tempdima=\dimen264
+\ESO@tempdimb=\dimen265
+)
+\AM@pagewidth=\dimen266
+\AM@pageheight=\dimen267
+\AM@fboxrule=\dimen268
+
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pppdftex.def
+File: pppdftex.def 2026/03/30 v0.6h Pdfpages driver for pdfTeX (AM)
+)
+\pdfpages@includegraphics@status=\count329
+\AM@pagebox=\box63
+\AM@global@opts=\toks34
+\AM@pagecnt=\count330
+\AM@toc@title=\toks35
+\AM@lof@heading=\toks36
+\c@AM@survey=\count331
+\AM@templatesizebox=\box64
+)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
 Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
 
@@ -446,15 +483,15 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
-\c@section@level=\count326
+\c@section@level=\count332
 ) (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.st
 y
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
-\@linkdim=\dimen262
-\Hy@linkcounter=\count327
-\Hy@pagecounter=\count328
+\@linkdim=\dimen269
+\Hy@linkcounter=\count333
+\Hy@pagecounter=\count334
  (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
@@ -463,7 +500,7 @@ Now handling font encoding PD1 ...
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count329
+\Hy@SavedSpaceFactor=\count335
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
@@ -480,14 +517,14 @@ Package hyperref Info: Plain pages OFF on input line 4210.
 Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4462.
-\c@Hy@tempcnt=\count330
+\c@Hy@tempcnt=\count336
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
 \Urlmuskip=\muskip18
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4801.
-\XeTeXLinkMargin=\dimen263
+\XeTeXLinkMargin=\dimen270
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
@@ -497,9 +534,9 @@ y
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count331
-\Field@Width=\dimen264
-\Fld@charsize=\dimen265
+\Fld@menulength=\count337
+\Field@Width=\dimen271
+\Fld@charsize=\dimen272
 Package hyperref Info: Hyper figures OFF on input line 6078.
 Package hyperref Info: Link nesting OFF on input line 6083.
 Package hyperref Info: Hyper index ON on input line 6086.
@@ -507,15 +544,15 @@ Package hyperref Info: backreferencing OFF on input line 6093.
 Package hyperref Info: Link coloring ON on input line 6096.
 Package hyperref Info: Link coloring with OCG OFF on input line 6103.
 Package hyperref Info: PDF/A mode OFF on input line 6108.
-\Hy@abspage=\count332
-\c@Item=\count333
-\c@Hfootnote=\count334
+\Hy@abspage=\count338
+\c@Item=\count339
+\c@Hfootnote=\count340
 )
 Package hyperref Info: Driver: hpdftex.
  (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
 File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
-\Fld@listcount=\count335
-\c@bookmark@seq@number=\count336
+\Fld@listcount=\count341
+\c@bookmark@seq@number=\count342
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfilech
 eck.sty
@@ -528,7 +565,7 @@ Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 84.
 )
-\Hy@SectionHShift=\skip76
+\Hy@SectionHShift=\skip79
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/bookmark\bookmark.sty
 Package: bookmark 2026-05-21 v1.32 PDF bookmarks (HO)
@@ -536,24 +573,24 @@ Package: bookmark 2026-05-21 v1.32 PDF bookmarks (HO)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex
 .def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count337
+\l__color_backend_stack_int=\count343
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/bookmark\bkm-pdftex.def
 File: bkm-pdftex.def 2026-05-21 v1.32 bookmark driver for pdfTeX (HO)
-\BKM@id=\count338
+\BKM@id=\count344
 ))
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.sty
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.sty
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-co
 mmon.tex
-\pgfutil@everybye=\toks34
-\pgfutil@tempdima=\dimen266
-\pgfutil@tempdimb=\dimen267
+\pgfutil@everybye=\toks37
+\pgfutil@tempdima=\dimen273
+\pgfutil@tempdimb=\dimen274
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-la
 tex.def
-\pgfutil@abb=\box63
+\pgfutil@abb=\box65
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.cod
 e.tex
@@ -572,33 +609,33 @@ Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.co
 de.tex
-\pgfkeys@pathtoks=\toks35
-\pgfkeys@temptoks=\toks36
+\pgfkeys@pathtoks=\toks38
+\pgfkeys@temptoks=\toks39
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeyslib
 raryfiltered.code.tex
-\pgfkeys@tmptoks=\toks37
+\pgfkeys@tmptoks=\toks40
 ))
-\pgf@x=\dimen268
-\pgf@y=\dimen269
-\pgf@xa=\dimen270
-\pgf@ya=\dimen271
-\pgf@xb=\dimen272
-\pgf@yb=\dimen273
-\pgf@xc=\dimen274
-\pgf@yc=\dimen275
-\pgf@xd=\dimen276
-\pgf@yd=\dimen277
+\pgf@x=\dimen275
+\pgf@y=\dimen276
+\pgf@xa=\dimen277
+\pgf@ya=\dimen278
+\pgf@xb=\dimen279
+\pgf@yb=\dimen280
+\pgf@xc=\dimen281
+\pgf@yc=\dimen282
+\pgf@xd=\dimen283
+\pgf@yd=\dimen284
 \w@pgf@writea=\write3
 \r@pgf@reada=\read2
-\c@pgf@counta=\count339
-\c@pgf@countb=\count340
-\c@pgf@countc=\count341
-\c@pgf@countd=\count342
-\t@pgf@toka=\toks38
-\t@pgf@tokb=\toks39
-\t@pgf@tokc=\toks40
-\pgf@sys@id@count=\count343
+\c@pgf@counta=\count345
+\c@pgf@countb=\count346
+\c@pgf@countc=\count347
+\c@pgf@countd=\count348
+\t@pgf@toka=\toks41
+\t@pgf@tokb=\toks42
+\t@pgf@tokc=\toks43
+\pgf@sys@id@count=\count349
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.cfg
 File: pgf.cfg 2025-08-29 v3.1.11a (3.1.11a)
@@ -616,8 +653,8 @@ File: pgfsys-common-pdf.def 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsysso
 ftpath.code.tex
 File: pgfsyssoftpath.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfsyssoftpath@smallbuffer@items=\count344
-\pgfsyssoftpath@bigbuffer@items=\count345
+\pgfsyssoftpath@smallbuffer@items=\count350
+\pgfsyssoftpath@bigbuffer@items=\count351
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsyspr
 otocol.code.tex
@@ -653,12 +690,12 @@ x
 e.tex)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparser.c
 ode.tex
-\pgfmath@dimen=\dimen278
-\pgfmath@count=\count346
-\pgfmath@box=\box64
-\pgfmath@toks=\toks41
-\pgfmath@stack@operand=\toks42
-\pgfmath@stack@operation=\toks43
+\pgfmath@dimen=\dimen285
+\pgfmath@count=\count352
+\pgfmath@box=\box66
+\pgfmath@toks=\toks44
+\pgfmath@stack@operand=\toks45
+\pgfmath@stack@operation=\toks46
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfunction
 s.code.tex)
@@ -682,59 +719,59 @@ s.integerarithmetics.code.tex)
 e.tex)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat.co
 de.tex
-\c@pgfmathroundto@lastzeros=\count347
+\c@pgfmathroundto@lastzeros=\count353
 ))
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.tex
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepo
 ints.code.tex
 File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@picminx=\dimen279
-\pgf@picmaxx=\dimen280
-\pgf@picminy=\dimen281
-\pgf@picmaxy=\dimen282
-\pgf@pathminx=\dimen283
-\pgf@pathmaxx=\dimen284
-\pgf@pathminy=\dimen285
-\pgf@pathmaxy=\dimen286
-\pgf@xx=\dimen287
-\pgf@xy=\dimen288
-\pgf@yx=\dimen289
-\pgf@yy=\dimen290
-\pgf@zx=\dimen291
-\pgf@zy=\dimen292
+\pgf@picminx=\dimen286
+\pgf@picmaxx=\dimen287
+\pgf@picminy=\dimen288
+\pgf@picmaxy=\dimen289
+\pgf@pathminx=\dimen290
+\pgf@pathmaxx=\dimen291
+\pgf@pathminy=\dimen292
+\pgf@pathmaxy=\dimen293
+\pgf@xx=\dimen294
+\pgf@xy=\dimen295
+\pgf@yx=\dimen296
+\pgf@yy=\dimen297
+\pgf@zx=\dimen298
+\pgf@zy=\dimen299
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepa
 thconstruct.code.tex
 File: pgfcorepathconstruct.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@path@lastx=\dimen293
-\pgf@path@lasty=\dimen294
+\pgf@path@lastx=\dimen300
+\pgf@path@lasty=\dimen301
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorepa
 thusage.code.tex
 File: pgfcorepathusage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@shorten@end@additional=\dimen295
-\pgf@shorten@start@additional=\dimen296
+\pgf@shorten@end@additional=\dimen302
+\pgf@shorten@start@additional=\dimen303
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoresc
 opes.code.tex
 File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfpic=\box65
-\pgf@hbox=\box66
-\pgf@layerbox@main=\box67
-\pgf@picture@serial@count=\count348
+\pgfpic=\box67
+\pgf@hbox=\box68
+\pgf@layerbox@main=\box69
+\pgf@picture@serial@count=\count354
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoregr
 aphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgflinewidth=\dimen297
+\pgflinewidth=\dimen304
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoretr
 ansformations.code.tex
 File: pgfcoretransformations.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@pt@x=\dimen298
-\pgf@pt@y=\dimen299
-\pgf@pt@temp=\dimen300
+\pgf@pt@x=\dimen305
+\pgf@pt@y=\dimen306
+\pgf@pt@temp=\dimen307
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorequ
 ick.code.tex
@@ -751,14 +788,14 @@ File: pgfcorepathprocessing.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorear
 rows.code.tex
 File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowsep=\dimen301
+\pgfarrowsep=\dimen308
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoresh
 ade.code.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@max=\dimen302
-\pgf@sys@shading@range@num=\count349
-\pgf@shadingcount=\count350
+\pgf@max=\dimen309
+\pgf@sys@shading@range@num=\count355
+\pgf@shadingcount=\count356
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreim
 age.code.tex
@@ -767,7 +804,7 @@ File: pgfcoreimage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcoreex
 ternal.code.tex
 File: pgfcoreexternal.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfexternal@startupbox=\box68
+\pgfexternal@startupbox=\box70
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcorela
 yers.code.tex
@@ -788,7 +825,7 @@ File: pgfcorerdf.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulesha
 pes.code.tex
 File: pgfmoduleshapes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfnodeparttextbox=\box69
+\pgfnodeparttextbox=\box71
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmoduleplo
 t.code.tex
@@ -797,8 +834,8 @@ File: pgfmoduleplot.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-
 version-0-65.sty
 Package: pgfcomp-version-0-65 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@nodesepstart=\dimen303
-\pgf@nodesepend=\dimen304
+\pgf@nodesepstart=\dimen310
+\pgf@nodesepend=\dimen311
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcomp-
 version-1-18.sty
@@ -814,10 +851,10 @@ x))
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.cod
 e.tex
 Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
-\pgffor@iter=\dimen305
-\pgffor@skip=\dimen306
-\pgffor@stack=\toks44
-\pgffor@toks=\toks45
+\pgffor@iter=\dimen312
+\pgffor@skip=\dimen313
+\pgffor@stack=\toks47
+\pgffor@toks=\toks48
 ))
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz\t
 ikz.code.tex
@@ -826,34 +863,34 @@ Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibrary
 plothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@plot@mark@count=\count351
-\pgfplotmarksize=\dimen307
+\pgf@plot@mark@count=\count357
+\pgfplotmarksize=\dimen314
 )
-\tikz@lastx=\dimen308
-\tikz@lasty=\dimen309
-\tikz@lastxsaved=\dimen310
-\tikz@lastysaved=\dimen311
-\tikz@lastmovetox=\dimen312
-\tikz@lastmovetoy=\dimen313
-\tikzleveldistance=\dimen314
-\tikzsiblingdistance=\dimen315
-\tikz@figbox=\box70
-\tikz@figbox@bg=\box71
-\tikz@tempbox=\box72
-\tikz@tempbox@bg=\box73
-\tikztreelevel=\count352
-\tikznumberofchildren=\count353
-\tikznumberofcurrentchild=\count354
-\tikz@fig@count=\count355
+\tikz@lastx=\dimen315
+\tikz@lasty=\dimen316
+\tikz@lastxsaved=\dimen317
+\tikz@lastysaved=\dimen318
+\tikz@lastmovetox=\dimen319
+\tikz@lastmovetoy=\dimen320
+\tikzleveldistance=\dimen321
+\tikzsiblingdistance=\dimen322
+\tikz@figbox=\box72
+\tikz@figbox@bg=\box73
+\tikz@tempbox=\box74
+\tikz@tempbox@bg=\box75
+\tikztreelevel=\count358
+\tikznumberofchildren=\count359
+\tikznumberofcurrentchild=\count360
+\tikz@fig@count=\count361
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulemat
 rix.code.tex
 File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfmatrixcurrentrow=\count356
-\pgfmatrixcurrentcolumn=\count357
-\pgf@matrix@numberofcolumns=\count358
+\pgfmatrixcurrentrow=\count362
+\pgfmatrixcurrentcolumn=\count363
+\pgf@matrix@numberofcolumns=\count364
 )
-\tikz@expandcount=\count359
+\tikz@expandcount=\count365
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/l
 ibraries\tikzlibrarytopaths.code.tex
@@ -874,15 +911,15 @@ File: tikzlibraryarrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibrary
 arrows.code.tex
 File: pgflibraryarrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\arrowsize=\dimen316
+\arrowsize=\dimen323
 ))
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibrary
 arrows.meta.code.tex
 File: pgflibraryarrows.meta.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowinset=\dimen317
-\pgfarrowlength=\dimen318
-\pgfarrowwidth=\dimen319
-\pgfarrowlinewidth=\dimen320
+\pgfarrowinset=\dimen324
+\pgfarrowlength=\dimen325
+\pgfarrowwidth=\dimen326
+\pgfarrowlinewidth=\dimen327
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz/l
 ibraries\tikzlibrarypositioning.code.tex
@@ -897,24 +934,24 @@ File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (chapters/conclusion.aux) (chapters/appendices.aux))
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 92.
-LaTeX Font Info:    ... okay on input line 92.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -952,17 +989,17 @@ LaTeX Font Info:    ... okay on input line 92.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count360
-\scratchdimen=\dimen321
-\scratchbox=\box74
-\nofMPsegments=\count361
-\nofMParguments=\count362
-\everyMPshowfont=\toks46
-\MPscratchCnt=\count363
-\MPscratchDim=\dimen322
-\MPnumerator=\count364
-\makeMPintoPDFobject=\count365
-\everyMPtoPDFconversion=\toks47
+\scratchcounter=\count366
+\scratchdimen=\dimen328
+\scratchbox=\box76
+\nofMPsegments=\count367
+\nofMParguments=\count368
+\everyMPshowfont=\toks49
+\MPscratchCnt=\count369
+\MPscratchDim=\dimen329
+\MPnumerator=\count370
+\makeMPintoPDFobject=\count371
+\everyMPtoPDFconversion=\toks50
 )
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base
 .sty
@@ -973,17 +1010,17 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-\c@lstlisting=\count366
+\c@lstlisting=\count372
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Info: Redefining \microtypecontext on input line 92.
-Package microtype Info: Applying patch `item' on input line 92.
-Package microtype Info: Applying patch `toc' on input line 92.
-Package microtype Info: Applying patch `eqnum' on input line 92.
-Package microtype Info: Applying patch `footnote' on input line 92.
-Package microtype Info: Applying patch `verbatim' on input line 92.
-LaTeX Info: Redefining \microtypesetup on input line 92.
+LaTeX Info: Redefining \microtypecontext on input line 93.
+Package microtype Info: Applying patch `item' on input line 93.
+Package microtype Info: Applying patch `toc' on input line 93.
+Package microtype Info: Applying patch `eqnum' on input line 93.
+Package microtype Info: Applying patch `footnote' on input line 93.
+Package microtype Info: Applying patch `verbatim' on input line 93.
+LaTeX Info: Redefining \microtypesetup on input line 93.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -998,12 +1035,25 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-Package hyperref Info: Link coloring ON on input line 92.
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape.sty
+Package: pdflscape 2022-10-27 v0.13 Display of landscape pages in PDF
+
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape-nometa
+data.sty
+Package: pdflscape-nometadata 2022-10-28 v0.13 Display of landscape pages in PD
+F (HO)
+
+(C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/graphics\lscape.sty
+Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+))
+Package hyperref Info: Link coloring ON on input line 93.
 <pondicherry_university_logo.png, id=6, 316.18124pt x 316.18124pt>
 File: pondicherry_university_logo.png Graphic file (type png)
 <use pondicherry_university_logo.png>
 Package pdftex.def Info: pondicherry_university_logo.png  used on input line 10
-5.
+6.
 (pdftex.def)             Requested size: 117.43875pt x 117.43872pt.
 
 [1
@@ -1014,39 +1064,39 @@ ty_logo.png>]
 File: pondicherry_university_logo.png Graphic file (type png)
 <use pondicherry_university_logo.png>
 Package pdftex.def Info: pondicherry_university_logo.png  used on input line 13
-7.
+8.
 (pdftex.def)             Requested size: 103.34666pt x 103.34627pt.
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-46.
+47.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-46.
+47.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-146.
+147.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-146.
+147.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 146.
+(Font)              <12> on input line 147.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 146.
+(Font)              <8> on input line 147.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 146.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 146
+(Font)              <6> on input line 147.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 147
 .
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
@@ -1055,7 +1105,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 146
+LaTeX Font Info:    Trying to load font information for U+msb on input line 147
 .
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
@@ -1064,14 +1114,60 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-Overfull \hbox (6.33025pt too wide) in paragraph at lines 169--171
+Overfull \hbox (6.33025pt too wide) in paragraph at lines 170--172
 \T1/lmr/bx/n/12 (-20) Submitted for the M.Sc. De-gree Prac-ti-cal Ex-am-i-na-ti
 on held on []. 
  []
 
-[1] [2] [3{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.e
-nc}{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}
-] (main.toc [4
+
+
+pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
+: found PDF version <1.7>, but at most version <1.5> allowed
+<internship_certificate.pdf, id=15, 597.55246pt x 845.07718pt>
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf>
+Package pdftex.def Info: internship_certificate.pdf  used on input line 185.
+(pdftex.def)             Requested size: 597.551pt x 845.07512pt.
+
+
+pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
+: found PDF version <1.7>, but at most version <1.5> allowed
+
+
+pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
+: found PDF version <1.7>, but at most version <1.5> allowed
+<internship_certificate.pdf, id=17, page=1, 597.55246pt x 845.07718pt>
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf, page 1>
+Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
+185.
+(pdftex.def)             Requested size: 597.551pt x 845.07512pt.
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf, page 1>
+Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
+185.
+(pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
+[1]
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf, page 1>
+Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
+185.
+(pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf, page 1>
+Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
+185.
+(pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
+File: internship_certificate.pdf Graphic file (type pdf)
+<use internship_certificate.pdf, page 1>
+Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
+185.
+(pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
+ [2
+
+ <./internship_certificate.pdf>] [3{C:/Users/Hp/AppData/Local/Programs/MiKTeX/f
+onts/enc/dvips/lm/lm-rm.enc}{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/en
+c/dvips/lm/lm-mathit.enc}] (main.toc [4
 
 ] [5])
 \tf@toc=\write4
@@ -1082,7 +1178,8 @@ nc}{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}
 ]
 \openout2 = `chapters/introduction.aux'.
 
- (chapters/introduction.tex
+
+(chapters/introduction.tex
 Chapter 1.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
@@ -1226,13 +1323,13 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 31059 strings out of 467871
- 572961 string characters out of 5419828
- 1448292 words of memory out of 5000000
- 58816 multiletter control sequences out of 15000+600000
+ 31916 strings out of 467871
+ 588503 string characters out of 5419828
+ 1463318 words of memory out of 5000000
+ 59649 multiletter control sequences out of 15000+600000
  767058 words of font info for 267 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,15n,104p,1166b,2115s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,17n,104p,1166b,2117s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
 C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/
 Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx6.pfb><C:/User
@@ -1259,9 +1356,9 @@ b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C
 ers/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Users
 /Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/Hp
 /AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (40 pages, 759811 bytes).
+Output written on main.pdf (40 pages, 24631692 bytes).
 PDF statistics:
- 834 PDF objects out of 1000 (max. 8388607)
+ 841 PDF objects out of 1000 (max. 8388607)
  257 named destinations out of 1000 (max. 500000)
- 80306 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 80321 words of extra memory for PDF output out of 89155 (max. 10000000)
 

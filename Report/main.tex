@@ -17,6 +17,7 @@
 \usepackage{microtype}
 \usepackage{setspace}
 \usepackage{color}
+\usepackage{pdfpages}
 \usepackage[pdftex,bookmarksnumbered=true,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
 \usepackage{bookmark}
 
@@ -179,13 +180,9 @@ Certified to be the bonafide record of work done in \textbf{MSQF 534: Corporate 
 \end{minipage}
 
 % =========================================================
-% INTERNSHIP COMPLETION CERTIFICATE (BLANK PAGE)
+% INTERNSHIP COMPLETION CERTIFICATE
 % =========================================================
-\newpage
-\thispagestyle{plain}
-\phantomsection
-\addcontentsline{toc}{chapter}{Internship Certificate}
-\mbox{}
+\includepdf[pages=1,pagecommand={\thispagestyle{plain}\phantomsection\addcontentsline{toc}{chapter}{Internship Certificate}}]{internship_certificate.pdf}
 
 % =========================================================
 % ABSTRACT
