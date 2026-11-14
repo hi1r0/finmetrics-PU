@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  14 NOV 2026 08:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  14 NOV 2026 20:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1165,17 +1165,16 @@ Package pdftex.def Info: internship_certificate.pdf , page1 used on input line
 (pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
  [2
 
- <./internship_certificate.pdf>] [3{C:/Users/Hp/AppData/Local/Programs/MiKTeX/f
-onts/enc/dvips/lm/lm-rm.enc}{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/en
-c/dvips/lm/lm-mathit.enc}] (main.toc [4
+ <./internship_certificate.pdf>] (main.toc [3
 
-] [5])
+] [4])
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
- [6] [7
+ [5] [6
 
-]
+] [7{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:
+/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}]
 \openout2 = `chapters/introduction.aux'.
 
 
@@ -1345,7 +1344,7 @@ m/lmsy6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
 sy8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10
 .pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pf
 b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (39 pages, 24539614 bytes).
+Output written on main.pdf (39 pages, 24539643 bytes).
 PDF statistics:
  825 PDF objects out of 1000 (max. 8388607)
  257 named destinations out of 1000 (max. 500000)

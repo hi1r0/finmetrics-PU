@@ -185,21 +185,6 @@ Certified to be the bonafide record of work done in \textbf{MSQF 534: Corporate 
 \includepdf[pages=1,pagecommand={\thispagestyle{plain}\phantomsection\addcontentsline{toc}{chapter}{Internship Certificate}}]{internship_certificate.pdf}
 
 % =========================================================
-% ABSTRACT
-% =========================================================
-\newpage
-\thispagestyle{plain}
-\phantomsection
-\addcontentsline{toc}{chapter}{Abstract}
-\begin{center}
-    \textbf{\LARGE ABSTRACT} \\[1.0cm]
-\end{center}
-
-Automated cross-sectional financial analysis is a critical tool in modern corporate intelligence and equity research, yet it remains constrained by reporting nomenclature disparities and baseline outlier skewness across public market filings. This thesis presents the design, implementation, and evaluation of the \textbf{\textit{FinMetrics Suite}} (the \textit{Financial Outlier Detection and Strategic Benchmarking System}), an end-to-end Python-based analytical framework. The system features automated public financial statement harvesting via the Yahoo Finance API, a custom standardization parser with a 60-field alias map to resolve naming variations in public disclosures, a robust statistical engine implementing Tukey Fences (IQR) and robust Modified Z-Scores (using Median Absolute Deviation) to identify and mask reporting anomalies, and an unsupervised multivariate anomaly detector using Isolation Forests. To automate peer group alignment, the framework integrates the Gemini AI model to dynamically search, discover, and define the correct market sector for a given ticker or abstract query.
-
-To evaluate company financial standing against robust industry baselines, the framework introduces a 5-pillar composite scoring model that maps standardized financial ratios across Profitability, Liquidity, Solvency, Efficiency, and Growth to normalized 0--100 scores using a bounded Sigmoid transformation. Empirical evaluation across 13 National Stock Exchange (NSE) sectors demonstrates that our outlier masking routine prevents baseline distortion, reducing the standard deviation of an outlier-contaminated sector Operating Margin distribution from $39.54\%$ to $1.28\%$. The system outputs interactive visual dashboards, stateful Gemini-driven diagnostic chat sessions, and professionally formatted multi-sheet Excel reports, providing quantitative analysts, equity researchers, and financial advisors with institutional-grade competitive insights.
-
-% =========================================================
 % TABLE OF CONTENTS & LISTS
 % =========================================================
 \newpage
@@ -244,6 +229,21 @@ To evaluate company financial standing against robust industry baselines, the fr
         \bottomrule
     \end{tabular}
 \end{center}
+
+% =========================================================
+% ABSTRACT
+% =========================================================
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Abstract}
+\begin{center}
+    \textbf{\LARGE ABSTRACT} \\[1.0cm]
+\end{center}
+
+Automated cross-sectional financial analysis is a critical tool in modern corporate intelligence and equity research, yet it remains constrained by reporting nomenclature disparities and baseline outlier skewness across public market filings. This thesis presents the design, implementation, and evaluation of the \textbf{\textit{FinMetrics Suite}} (the \textit{Financial Outlier Detection and Strategic Benchmarking System}), an end-to-end Python-based analytical framework. The system features automated public financial statement harvesting via the Yahoo Finance API, a custom standardization parser with a 60-field alias map to resolve naming variations in public disclosures, a robust statistical engine implementing Tukey Fences (IQR) and robust Modified Z-Scores (using Median Absolute Deviation) to identify and mask reporting anomalies, and an unsupervised multivariate anomaly detector using Isolation Forests. To automate peer group alignment, the framework integrates the Gemini AI model to dynamically search, discover, and define the correct market sector for a given ticker or abstract query.
+
+To evaluate company financial standing against robust industry baselines, the framework introduces a 5-pillar composite scoring model that maps standardized financial ratios across Profitability, Liquidity, Solvency, Efficiency, and Growth to normalized 0--100 scores using a bounded Sigmoid transformation. Empirical evaluation across 13 National Stock Exchange (NSE) sectors demonstrates that our outlier masking routine prevents baseline distortion, reducing the standard deviation of an outlier-contaminated sector Operating Margin distribution from $39.54\%$ to $1.28\%$. The system outputs interactive visual dashboards, stateful Gemini-driven diagnostic chat sessions, and professionally formatted multi-sheet Excel reports, providing quantitative analysts, equity researchers, and financial advisors with institutional-grade competitive insights.
 
 % =========================================================
 % MAIN CONTENT
