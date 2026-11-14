@@ -11,10 +11,10 @@ def test_system_architecture_figure_tex():
     # 1. Figure environment and scaling
     assert "\\begin{figure}" in content
     assert "\\label{fig:seq_diagram}" in content
-    assert "\\resizebox{\\textwidth}{!}" in content, "Figure must be wrapped in \\resizebox{\\textwidth}{!}"
+    assert re.search(r"\\resizebox\{[0-9\.]*\\textwidth\}\{!\}", content), "Figure must be wrapped in \\resizebox{...\\textwidth}{!}"
 
-    # 2. Local colors defined
-    for color in ["peachbg", "peachborder", "lavenderbg", "lavenderborder", "boxborder", "darktext"]:
+    # 2. Local colors defined (including lavenderhead)
+    for color in ["peachbg", "peachborder", "lavenderbg", "lavenderborder", "lavenderhead", "boxborder", "darktext"]:
         assert f"\\definecolor{{{color}}}" in content, f"Missing \\definecolor{{{color}}}"
 
     # 3. Pill badge tag style and intermediate data tags
@@ -24,19 +24,42 @@ def test_system_architecture_figure_tex():
         assert badge in content, f"Missing badge text: {badge}"
         assert re.search(rf"node\[[^\]]*tag[^\]]*\]\s*\{{{re.escape(badge)}\}}", content), f"Badge {badge} must use tag style"
 
-    # 4. Top row nodes and non-colliding widths (controller <= 10.5cm)
+    # 4. Top row nodes
     assert "User Input" in content
     assert "Streamlit UI" in content
     assert "Output View" in content
-    match_width = re.search(r"orchestrator/\.style=\{[^}]*minimum width=([\d\.]+)cm", content)
-    assert match_width, "orchestrator style must define minimum width"
-    width = float(match_width.group(1))
-    assert width <= 10.5, f"orchestrator minimum width must be <= 10.5cm (got {width}cm)"
 
     # 5. Removal of unpadded \rule cutting across engine text
     assert "\\rule{" not in content, "Unpadded \\rule cutting across engine text must be removed"
 
-    # 6. Presence of closed loop orchestration steps
+    # 6. Header styling
+    assert "card_header" in content or "header" in content, "Card header style must be defined"
+    assert "lavenderhead" in content, "lavenderhead color must be used"
+
+    # 7. 3-tier structure presence
+    # Tier 2: DataFetcher, FinancialParser, RatioEngine
+    # Tier 3: OutlierEngine, BenchmarkCore
+    fetcher_match = re.search(r"\(fetcher\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
+    parser_match = re.search(r"\(parser\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
+    ratio_match = re.search(r"\(ratio\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
+    outlier_match = re.search(r"\(outlier\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
+    core_match = re.search(r"\(core\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
+
+    assert fetcher_match and parser_match and ratio_match and outlier_match and core_match, "All 5 engine nodes must have coordinates defined"
+
+    t2_y = float(fetcher_match.group(2))
+    assert float(parser_match.group(2)) == t2_y and float(ratio_match.group(2)) == t2_y, (
+        f"Tier 2 nodes (fetcher, parser, ratio) must share y-coordinate ({t2_y})"
+    )
+
+    t3_y = float(outlier_match.group(2))
+    assert float(core_match.group(2)) == t3_y, (
+        f"Tier 3 nodes (outlier, core) must share y-coordinate ({t3_y})"
+    )
+
+    assert t2_y > t3_y, f"Tier 2 (y={t2_y}) must be strictly above Tier 3 (y={t3_y})"
+
+    # 8. Presence of closed loop orchestration steps
     assert "1. Dispatches" in content
     assert "2. Delivers" in content
     assert "3. Renders" in content

@@ -121,105 +121,121 @@ Following completion of the analytical pipeline, the evaluated outputs are publi
 \definecolor{peachborder}{RGB}{140, 110, 95}
 \definecolor{lavenderbg}{RGB}{238, 240, 252}
 \definecolor{lavenderborder}{RGB}{135, 145, 185}
+\definecolor{lavenderhead}{RGB}{218, 224, 250}
 \definecolor{boxborder}{RGB}{40, 45, 55}
 \definecolor{darktext}{RGB}{40, 45, 55}
 
 \begin{figure}[htbp]
     \centering
-    \resizebox{\textwidth}{!}{%
+    \resizebox{0.96\textwidth}{!}{%
     \begin{tikzpicture}[
         >={Stealth[length=6pt, width=4pt]},
         % Central Orchestrator Style
         orchestrator/.style={
             draw=peachborder, fill=peachbg, text=darktext, font=\bfseries, thick,
-            rounded corners=6pt, minimum width=10.0cm, minimum height=1.1cm, align=center
+            rounded corners=6pt, minimum width=6.6cm, minimum height=1.1cm, align=center
         },
-        % Sub-Engine Module Style
-        engine/.style={
-            draw=lavenderborder, fill=lavenderbg, text=darktext, rounded corners=6pt, thick,
-            minimum width=3.0cm, minimum height=2.6cm, text width=2.85cm, align=center, inner sep=3pt
-        },
-        % Input/Output Component Style
+        % Perimeter Input/Output Component Style
         io_box/.style={
             draw=boxborder, fill=white, rounded corners=6pt, thick, text=darktext,
-            minimum width=3.2cm, minimum height=1.2cm, text width=3.0cm, align=center, font=\small
+            minimum width=3.2cm, minimum height=1.1cm, text width=3.0cm, align=center, font=\small
+        },
+        % Sub-Engine Card Container Style
+        engine/.style={
+            draw=lavenderborder, fill=lavenderbg, text=darktext, rounded corners=6pt, thick,
+            minimum height=2.2cm, align=center, inner sep=0pt
+        },
+        % Card Header Banner Style
+        card_header/.style={
+            draw=lavenderborder, fill=lavenderhead, text=darktext, rounded corners=4pt, thick,
+            font=\bfseries\small, align=center, minimum height=0.52cm
         },
         % Intermediate Data Tag Style
         tag/.style={
-            fill=white, draw=lavenderborder, rounded corners=3pt, inner sep=2pt, font=\scriptsize\bfseries, text=darktext
+            fill=white, draw=lavenderborder, rounded corners=3pt, inner sep=2.5pt, font=\scriptsize\bfseries, text=darktext
         }
     ]
 
         % =========================================================================
-        % 1. ARCHITECTURE LAYERS & NODES
+        % 1. ARCHITECTURE LAYERS & NODES (3-TIER SPACIOUS LAYOUT)
         % =========================================================================
-        
-        % Core Controller (Top Layer)
-        \node[orchestrator] (app) at (0.0, 2.8) {Streamlit UI (\texttt{app.py}) [Central Controller]};
 
-        % Perimeter Entry/Exit Nodes
-        \node[io_box] (user) at (-8.8, 2.8) {\textbf{User Input}\\Sector/Tickers \&\\Config Controls};
-        \node[io_box] (output) at (8.8, 2.8) {\textbf{Output View}\\Heatmaps, Scorecards\\\& Excel Reports};
+        % Tier 1: Controller & Perimeter I/O (Top, y=3.2)
+        \node[orchestrator] (app) at (0.0, 3.2) {Streamlit UI (\texttt{app.py})\\[2pt]\footnotesize\textbf{[Central Controller]}};
+        \node[io_box] (user) at (-5.5, 3.2) {\textbf{User Input}\\[1pt]\scriptsize Sector/Tickers \& Config};
+        \node[io_box] (output) at (5.5, 3.2) {\textbf{Output View}\\[1pt]\scriptsize Heatmaps, Scores \& Reports};
 
-        % Downstream Processing Engines (Bottom Layer)
-        \node[engine] (fetcher) at (-8.8, -1.5) {
-            \textbf{\normalsize DataFetcher}\\[4pt]
-            \raggedright\scriptsize
-            $\bullet$ yfinance API\\
-            $\bullet$ Parquet Cache\\
-            $\bullet$ Market Info\\
-            $\bullet$ Async Pulls
+        % Tier 2: Ingestion & Feature Kernel (Middle, y=0.5)
+        \node[engine, minimum width=3.6cm] (fetcher) at (-5.2, 0.5) {};
+        \node[card_header, minimum width=3.52cm] (fetcher_hdr) at ($(fetcher.north) - (0, 0.28cm)$) {DataFetcher};
+        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(fetcher.north) - (0, 0.58cm)$) {
+            \raggedright
+            \vspace{1pt}
+            \hspace{4pt}$\bullet$ yfinance API\\[2pt]
+            \hspace{4pt}$\bullet$ Parquet Cache\\[2pt]
+            \hspace{4pt}$\bullet$ Market Info\\[2pt]
+            \hspace{4pt}$\bullet$ Async Pulls
         };
 
-        \node[engine] (parser) at (-4.4, -1.5) {
-            \textbf{\normalsize FinancialParser}\\[4pt]
-            \raggedright\scriptsize
-            $\bullet$ 60-Field Synonyms\\
-            $\bullet$ Canonical Map\\
-            $\bullet$ GAAP / Ind-AS\\
-            $\bullet$ Type Coercion
+        \node[engine, minimum width=3.6cm] (parser) at (0.0, 0.5) {};
+        \node[card_header, minimum width=3.52cm] (parser_hdr) at ($(parser.north) - (0, 0.28cm)$) {FinancialParser};
+        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(parser.north) - (0, 0.58cm)$) {
+            \raggedright
+            \vspace{1pt}
+            \hspace{4pt}$\bullet$ 60-Field Synonyms\\[2pt]
+            \hspace{4pt}$\bullet$ Canonical Map\\[2pt]
+            \hspace{4pt}$\bullet$ GAAP / Ind-AS\\[2pt]
+            \hspace{4pt}$\bullet$ Type Coercion
         };
 
-        \node[engine] (ratio) at (0.0, -1.5) {
-            \textbf{\normalsize RatioEngine}\\[4pt]
-            \raggedright\scriptsize
-            $\bullet$ 30+ Ratios\\
-            $\bullet$ 5 Core Pillars\\
-            $\bullet$ YoY/QoQ Trends\\
-            $\bullet$ CAGR Growth
+        \node[engine, minimum width=3.6cm] (ratio) at (5.2, 0.5) {};
+        \node[card_header, minimum width=3.52cm] (ratio_hdr) at ($(ratio.north) - (0, 0.28cm)$) {RatioEngine};
+        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(ratio.north) - (0, 0.58cm)$) {
+            \raggedright
+            \vspace{1pt}
+            \hspace{4pt}$\bullet$ 30+ Ratios\\[2pt]
+            \hspace{4pt}$\bullet$ 5 Core Pillars\\[2pt]
+            \hspace{4pt}$\bullet$ YoY/QoQ Trends\\[2pt]
+            \hspace{4pt}$\bullet$ CAGR Growth
         };
 
-        \node[engine] (outlier) at (4.4, -1.5) {
-            \textbf{\normalsize OutlierEngine}\\[4pt]
-            \raggedright\scriptsize
-            $\bullet$ Tukey IQR Fences\\
-            $\bullet$ Robust Z-Scores\\
-            $\bullet$ Isolation Forest\\
-            $\bullet$ Severity Scores
+        % Tier 3: Anomaly & Benchmarking Kernel (Bottom, y=-2.4)
+        \node[engine, minimum width=4.0cm] (outlier) at (-2.6, -2.4) {};
+        \node[card_header, minimum width=3.92cm] (outlier_hdr) at ($(outlier.north) - (0, 0.28cm)$) {OutlierEngine};
+        \node[anchor=north, text width=3.7cm, font=\scriptsize, text=darktext] at ($(outlier.north) - (0, 0.58cm)$) {
+            \raggedright
+            \vspace{1pt}
+            \hspace{4pt}$\bullet$ Tukey IQR Fences\\[2pt]
+            \hspace{4pt}$\bullet$ Robust Z-Scores\\[2pt]
+            \hspace{4pt}$\bullet$ Isolation Forest\\[2pt]
+            \hspace{4pt}$\bullet$ Severity Scores
         };
 
-        \node[engine] (core) at (8.8, -1.5) {
-            \textbf{\normalsize BenchmarkCore}\\[4pt]
-            \raggedright\scriptsize
-            $\bullet$ Outlier Masking\\
-            $\bullet$ RobustScaler\\
-            $\bullet$ Sigmoid Scoring\\
-            $\bullet$ Percentile Ranks
+        \node[engine, minimum width=4.0cm] (core) at (2.6, -2.4) {};
+        \node[card_header, minimum width=3.92cm] (core_hdr) at ($(core.north) - (0, 0.28cm)$) {BenchmarkCore};
+        \node[anchor=north, text width=3.7cm, font=\scriptsize, text=darktext] at ($(core.north) - (0, 0.58cm)$) {
+            \raggedright
+            \vspace{1pt}
+            \hspace{4pt}$\bullet$ Outlier Masking\\[2pt]
+            \hspace{4pt}$\bullet$ RobustScaler\\[2pt]
+            \hspace{4pt}$\bullet$ Sigmoid Scoring\\[2pt]
+            \hspace{4pt}$\bullet$ Percentile Ranks
         };
 
         % =========================================================================
-        % 2. ORCHESTRATION PIPELINE FLOWS
+        % 2. ORCHESTRATION PIPELINE FLOWS (NON-CROSSING CONNECTORS)
         % =========================================================================
-        
+
         % User to Central Controller
-        \draw[->, thick, draw=boxborder] (user) -- 
+        \draw[->, thick, draw=boxborder] (user.east) -- 
             node[above, font=\scriptsize\bfseries, text=darktext] {Config \& Tickers} 
             (app.west);
 
         % Dispatch Trigger from App to DataFetcher
+        \draw[thick, draw=boxborder] (app.west |- app.south) -- ($(app.south -| fetcher.north)$);
         \draw[->, thick, draw=boxborder] ($(app.south -| fetcher.north)$) -- 
             node[left, font=\scriptsize\bfseries, text=darktext, align=right] {1. Dispatches\\Fetch Job} 
-            ($(fetcher.north)$);
+            (fetcher.north);
 
         % Sequential Pipeline Connections with Centered Badges
         \draw[->, thick, draw=boxborder] (fetcher.east) -- 
@@ -228,16 +244,18 @@ Following completion of the analytical pipeline, the evaluated outputs are publi
         \draw[->, thick, draw=boxborder] (parser.east) -- 
             node[midway, tag] {Parsed DF} (ratio.west);
 
-        \draw[->, thick, draw=boxborder] (ratio.east) -- 
-            node[midway, tag] {30+ Ratios} (outlier.west);
+        % Tier 2 to Tier 3 Flow via clean orthogonal path below Tier 3
+        \draw[->, thick, draw=boxborder] (ratio.south) -- (5.2, -3.7) -- 
+            node[midway, tag] {30+ Ratios} 
+            (-2.6, -3.7) -- (outlier.south);
 
         \draw[->, thick, draw=boxborder] (outlier.east) -- 
             node[midway, tag] {Outlier Mask} (core.west);
 
         % Return Results from BenchmarkCore to App
-        \draw[->, thick, draw=boxborder] ($(core.north)$) -- 
+        \draw[->, thick, draw=boxborder] (core.north) -- 
             node[right, font=\scriptsize\bfseries, text=darktext, align=left] {2. Delivers Scores\\\& Peer Baselines} 
-            ($(app.south -| core.north)$);
+            (app.south -| core.north);
 
         % Render Output Views from App
         \draw[->, thick, draw=boxborder] (app.east) -- 
