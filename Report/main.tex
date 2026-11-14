@@ -66,7 +66,8 @@
 \definecolor{headergray}{rgb}{0.7,0.7,0.7}
 \definecolor{commentgray}{rgb}{0.5,0.5,0.5}
 \fancyhead[L]{\textcolor{charcoal}{\small\nouppercase{\leftmark}}}
-\fancyhead[R]{\textcolor{charcoal}{\small\thepage}}
+\fancyhead[R]{}
+\fancyfoot[C]{\textcolor{charcoal}{\small\thepage}}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{headergray}\leaders\hrule height 0.4pt\hfill}}
 \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
 \setlength{\headheight}{25pt}
@@ -269,18 +270,21 @@ To evaluate company financial standing against robust industry baselines, the fr
 \bibliography{references}
 
 % =========================================================
-% APPENDICES
+% APPENDIX
 % =========================================================
 \newpage
 \appendix
-\renewcommand{\chaptername}{Appendix}
 \bookmarksetup{startatroot}
-\pdfbookmark[0]{Appendices}{appendices}
-\makeatletter
-\renewcommand{\toclevel@chapter}{1}
-\renewcommand{\toclevel@section}{2}
-\renewcommand{\toclevel@subsection}{3}
-\makeatother
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}{Appendix}{10pt}{\Huge}
+\let\origaddcontentsline\addcontentsline
+\renewcommand{\addcontentsline}[3]{%
+  \ifstrequal{#2}{chapter}{%
+    \origaddcontentsline{#1}{#2}{Appendix: Core Source Code}%
+  }{%
+    \origaddcontentsline{#1}{#2}{#3}%
+  }%
+}
 \include{chapters/appendices}
 \bookmarksetup{startatroot}
 

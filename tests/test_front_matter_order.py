@@ -62,3 +62,51 @@ def test_front_matter_order_in_pdf():
     assert idx_toc < idx_abbr, f"TOC must precede Abbreviations: {titles}"
     assert idx_abbr < idx_abs, f"Abbreviations must precede Abstract: {titles}"
     assert idx_abs < idx_intro, f"Abstract must precede Introduction: {titles}"
+
+
+def test_bottom_centered_page_numbers_and_appendix():
+    pdf_path = "Report/main.pdf"
+    assert os.path.exists(pdf_path), "Report/main.pdf must exist"
+
+    doc = fitz.open(pdf_path)
+    assert len(doc) == 39, f"Expected 39 pages total, got {len(doc)}"
+
+    for i, page in enumerate(doc):
+        if i == 0:
+            continue  # Title page is unnumbered
+        blocks = page.get_text("blocks")
+        footer_blocks = [b for b in blocks if b[1] >= 735]
+        header_blocks = [b for b in blocks if b[3] <= 45]
+
+        # Verify running header contains no page numbers
+        for b in header_blocks:
+            words = b[4].strip().split()
+            for w in words:
+                assert not (w.isdigit() and len(w) <= 3), f"Header has page number on page {i+1}: {b[4]}"
+                assert w.lower() not in ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"], f"Header has roman numeral on page {i+1}: {b[4]}"
+
+        # Verify footer contains exactly one centered page number
+        assert len(footer_blocks) == 1, f"Page {i+1} expected 1 footer block, got {len(footer_blocks)}: {footer_blocks}"
+        b = footer_blocks[0]
+        cx = (b[0] + b[2]) / 2.0
+        assert abs(cx - 306.0) < 5.0, f"Page {i+1} page number not centered: cx={cx}, block={b}"
+
+    # Appendix assertions
+    # 1. Appendix page (Page 38, 0-indexed 37)
+    p38_text = doc[37].get_text()
+    assert "Appendix" in p38_text, "Page 38 must contain 'Appendix'"
+    assert "Appendix A" not in p38_text, "Page 38 must not contain 'Appendix A'"
+    assert "Core Source Code" in p38_text, "Page 38 must contain 'Core Source Code'"
+
+    # 2. Table of Contents on Page 6 (0-indexed 5)
+    p6_text = doc[5].get_text()
+    assert "Appendix: Core Source Code" in p6_text, "TOC must list 'Appendix: Core Source Code'"
+    assert "A Core Source Code" not in p6_text, "TOC must not list 'A Core Source Code'"
+
+    # 3. Bookmarks
+    toc = doc.get_toc()
+    app_bookmarks = [b for b in toc if "appendix" in b[1].lower()]
+    assert len(app_bookmarks) == 1, f"Expected 1 appendix bookmark, got {app_bookmarks}"
+    assert app_bookmarks[0][1] == "Appendix: Core Source Code"
+    assert app_bookmarks[0][2] == 38
+

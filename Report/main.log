@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  14 NOV 2026 20:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  14 NOV 2026 20:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -934,24 +934,24 @@ File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (chapters/conclusion.aux) (chapters/appendices.aux))
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1014,13 +1014,13 @@ File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Info: Redefining \microtypecontext on input line 93.
-Package microtype Info: Applying patch `item' on input line 93.
-Package microtype Info: Applying patch `toc' on input line 93.
-Package microtype Info: Applying patch `eqnum' on input line 93.
-Package microtype Info: Applying patch `footnote' on input line 93.
-Package microtype Info: Applying patch `verbatim' on input line 93.
-LaTeX Info: Redefining \microtypesetup on input line 93.
+LaTeX Info: Redefining \microtypecontext on input line 94.
+Package microtype Info: Applying patch `item' on input line 94.
+Package microtype Info: Applying patch `toc' on input line 94.
+Package microtype Info: Applying patch `eqnum' on input line 94.
+Package microtype Info: Applying patch `footnote' on input line 94.
+Package microtype Info: Applying patch `verbatim' on input line 94.
+LaTeX Info: Redefining \microtypesetup on input line 94.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -1048,12 +1048,12 @@ Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
 )
 Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
 ))
-Package hyperref Info: Link coloring ON on input line 93.
+Package hyperref Info: Link coloring ON on input line 94.
 <pondicherry_university_logo.png, id=6, 316.18124pt x 316.18124pt>
 File: pondicherry_university_logo.png Graphic file (type png)
 <use pondicherry_university_logo.png>
 Package pdftex.def Info: pondicherry_university_logo.png  used on input line 10
-6.
+7.
 (pdftex.def)             Requested size: 117.43875pt x 117.43872pt.
 
 [1
@@ -1064,39 +1064,39 @@ ty_logo.png>]
 File: pondicherry_university_logo.png Graphic file (type png)
 <use pondicherry_university_logo.png>
 Package pdftex.def Info: pondicherry_university_logo.png  used on input line 13
-8.
+9.
 (pdftex.def)             Requested size: 103.34666pt x 103.34627pt.
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-47.
+48.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-47.
+48.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-147.
+148.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-147.
+148.
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 147.
+(Font)              <12> on input line 148.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 147.
+(Font)              <8> on input line 148.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 147.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 147
+(Font)              <6> on input line 148.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 148
 .
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
@@ -1105,7 +1105,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 147
+LaTeX Font Info:    Trying to load font information for U+msb on input line 148
 .
 
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
@@ -1114,7 +1114,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-Overfull \hbox (6.33025pt too wide) in paragraph at lines 170--172
+Overfull \hbox (6.33025pt too wide) in paragraph at lines 171--173
 \T1/lmr/bx/n/12 (-20) Submitted for the M.Sc. De-gree Prac-ti-cal Ex-am-i-na-ti
 on held on []. 
  []
@@ -1126,7 +1126,7 @@ pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
 <internship_certificate.pdf, id=15, 597.55246pt x 845.07718pt>
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf>
-Package pdftex.def Info: internship_certificate.pdf  used on input line 185.
+Package pdftex.def Info: internship_certificate.pdf  used on input line 186.
 (pdftex.def)             Requested size: 597.551pt x 845.07512pt.
 
 
@@ -1140,28 +1140,28 @@ pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
 Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
-185.
+186.
 (pdftex.def)             Requested size: 597.551pt x 845.07512pt.
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
 Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
-185.
+186.
 (pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
 [1]
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
 Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
-185.
+186.
 (pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
 Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
-185.
+186.
 (pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
 Package pdftex.def Info: internship_certificate.pdf , page1 used on input line 
-185.
+186.
 (pdftex.def)             Requested size: 562.1644pt x 795.0303pt.
  [2
 
@@ -1315,13 +1315,13 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 31965 strings out of 467871
- 589291 string characters out of 5419828
- 1464610 words of memory out of 5000000
+ 31964 strings out of 467871
+ 589292 string characters out of 5419828
+ 1464608 words of memory out of 5000000
  59703 multiletter control sequences out of 15000+600000
  763499 words of font info for 267 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,17n,104p,1166b,2117s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,17n,104p,1166b,2119s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
 C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/
 Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx7.pfb><C:/User
@@ -1344,9 +1344,9 @@ m/lmsy6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
 sy8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10
 .pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pf
 b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (39 pages, 24539643 bytes).
+Output written on main.pdf (39 pages, 24539557 bytes).
 PDF statistics:
- 825 PDF objects out of 1000 (max. 8388607)
- 257 named destinations out of 1000 (max. 500000)
- 80841 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 821 PDF objects out of 1000 (max. 8388607)
+ 256 named destinations out of 1000 (max. 500000)
+ 80833 words of extra memory for PDF output out of 89155 (max. 10000000)
 
