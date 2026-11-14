@@ -117,153 +117,124 @@ The platform's analytical capabilities are integrated through an end-to-end orch
 
 Following completion of the analytical pipeline, the evaluated outputs are published to the presentation layer as interactive Plotly heatmaps, radar profiles, company ratio scorecards, and downloadable multi-sheet styled Excel workbooks generated via \texttt{ReportGenerator}. Figure~\ref{fig:seq_diagram} illustrates this system architecture and orchestration pipeline.
 
-\definecolor{peachbg}{RGB}{253, 238, 226}
-\definecolor{peachborder}{RGB}{140, 110, 95}
-\definecolor{lavenderbg}{RGB}{238, 240, 252}
-\definecolor{lavenderborder}{RGB}{135, 145, 185}
-\definecolor{lavenderhead}{RGB}{218, 224, 250}
-\definecolor{boxborder}{RGB}{40, 45, 55}
-\definecolor{darktext}{RGB}{40, 45, 55}
+% Custom colors matching the diagram
+\definecolor{uifill}{HTML}{F8E7DA}
+\definecolor{uiborder}{HTML}{8C7365}
+\definecolor{pipefill}{HTML}{E9EDFC}
+\definecolor{pipeborder}{HTML}{99A7D6}
+\definecolor{linegray}{HTML}{333333}
+
+% Helper macro for uniform bottom pipeline cards (4 single-line bullets each)
+\providecommand{\pipebox}[5]{%
+  {\fontsize{9.5}{11}\selectfont\textbf{#1}}\par\vspace{4.5pt}%
+  {\fontsize{8}{10.5}\selectfont
+    \textbullet~#2\par
+    \textbullet~#3\par
+    \textbullet~#4\par
+    \textbullet~#5\par
+  }%
+}
 
 \begin{figure}[htbp]
-    \centering
-    \resizebox{0.96\textwidth}{!}{%
-    \begin{tikzpicture}[
-        >={Stealth[length=6pt, width=4pt]},
-        % Central Orchestrator Style
-        orchestrator/.style={
-            draw=peachborder, fill=peachbg, text=darktext, font=\bfseries, thick,
-            rounded corners=6pt, minimum width=6.6cm, minimum height=1.1cm, align=center
-        },
-        % Perimeter Input/Output Component Style
-        io_box/.style={
-            draw=boxborder, fill=white, rounded corners=6pt, thick, text=darktext,
-            minimum width=3.2cm, minimum height=1.1cm, text width=3.0cm, align=center, font=\small
-        },
-        % Sub-Engine Card Container Style
-        engine/.style={
-            draw=lavenderborder, fill=lavenderbg, text=darktext, rounded corners=6pt, thick,
-            minimum height=2.2cm, align=center, inner sep=0pt
-        },
-        % Card Header Banner Style
-        card_header/.style={
-            draw=lavenderborder, fill=lavenderhead, text=darktext, rounded corners=4pt, thick,
-            font=\bfseries\small, align=center, minimum height=0.52cm
-        },
-        % Intermediate Data Tag Style
-        tag/.style={
-            fill=white, draw=lavenderborder, rounded corners=3pt, inner sep=2.5pt, font=\scriptsize\bfseries, text=darktext
-        }
-    ]
-
-        % =========================================================================
-        % 1. ARCHITECTURE LAYERS & NODES (3-TIER SPACIOUS LAYOUT)
-        % =========================================================================
-
-        % Tier 1: Controller & Perimeter I/O (Top, y=3.2)
-        \node[orchestrator] (app) at (0.0, 3.2) {Streamlit UI (\texttt{app.py})\\[2pt]\footnotesize\textbf{[Central Controller]}};
-        \node[io_box] (user) at (-5.5, 3.2) {\textbf{User Input}\\[1pt]\scriptsize Sector/Tickers \& Config};
-        \node[io_box] (output) at (5.5, 3.2) {\textbf{Output View}\\[1pt]\scriptsize Heatmaps, Scores \& Reports};
-
-        % Tier 2: Ingestion & Feature Kernel (Middle, y=0.5)
-        \node[engine, minimum width=3.6cm] (fetcher) at (-5.2, 0.5) {};
-        \node[card_header, minimum width=3.52cm] (fetcher_hdr) at ($(fetcher.north) - (0, 0.28cm)$) {DataFetcher};
-        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(fetcher.north) - (0, 0.58cm)$) {
-            \raggedright
-            \vspace{1pt}
-            \hspace{4pt}$\bullet$ yfinance API\\[2pt]
-            \hspace{4pt}$\bullet$ Parquet Cache\\[2pt]
-            \hspace{4pt}$\bullet$ Market Info\\[2pt]
-            \hspace{4pt}$\bullet$ Async Pulls
-        };
-
-        \node[engine, minimum width=3.6cm] (parser) at (0.0, 0.5) {};
-        \node[card_header, minimum width=3.52cm] (parser_hdr) at ($(parser.north) - (0, 0.28cm)$) {FinancialParser};
-        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(parser.north) - (0, 0.58cm)$) {
-            \raggedright
-            \vspace{1pt}
-            \hspace{4pt}$\bullet$ 60-Field Synonyms\\[2pt]
-            \hspace{4pt}$\bullet$ Canonical Map\\[2pt]
-            \hspace{4pt}$\bullet$ GAAP / Ind-AS\\[2pt]
-            \hspace{4pt}$\bullet$ Type Coercion
-        };
-
-        \node[engine, minimum width=3.6cm] (ratio) at (5.2, 0.5) {};
-        \node[card_header, minimum width=3.52cm] (ratio_hdr) at ($(ratio.north) - (0, 0.28cm)$) {RatioEngine};
-        \node[anchor=north, text width=3.3cm, font=\scriptsize, text=darktext] at ($(ratio.north) - (0, 0.58cm)$) {
-            \raggedright
-            \vspace{1pt}
-            \hspace{4pt}$\bullet$ 30+ Ratios\\[2pt]
-            \hspace{4pt}$\bullet$ 5 Core Pillars\\[2pt]
-            \hspace{4pt}$\bullet$ YoY/QoQ Trends\\[2pt]
-            \hspace{4pt}$\bullet$ CAGR Growth
-        };
-
-        % Tier 3: Anomaly & Benchmarking Kernel (Bottom, y=-2.4)
-        \node[engine, minimum width=4.0cm] (outlier) at (-2.6, -2.4) {};
-        \node[card_header, minimum width=3.92cm] (outlier_hdr) at ($(outlier.north) - (0, 0.28cm)$) {OutlierEngine};
-        \node[anchor=north, text width=3.7cm, font=\scriptsize, text=darktext] at ($(outlier.north) - (0, 0.58cm)$) {
-            \raggedright
-            \vspace{1pt}
-            \hspace{4pt}$\bullet$ Tukey IQR Fences\\[2pt]
-            \hspace{4pt}$\bullet$ Robust Z-Scores\\[2pt]
-            \hspace{4pt}$\bullet$ Isolation Forest\\[2pt]
-            \hspace{4pt}$\bullet$ Severity Scores
-        };
-
-        \node[engine, minimum width=4.0cm] (core) at (2.6, -2.4) {};
-        \node[card_header, minimum width=3.92cm] (core_hdr) at ($(core.north) - (0, 0.28cm)$) {BenchmarkCore};
-        \node[anchor=north, text width=3.7cm, font=\scriptsize, text=darktext] at ($(core.north) - (0, 0.58cm)$) {
-            \raggedright
-            \vspace{1pt}
-            \hspace{4pt}$\bullet$ Outlier Masking\\[2pt]
-            \hspace{4pt}$\bullet$ RobustScaler\\[2pt]
-            \hspace{4pt}$\bullet$ Sigmoid Scoring\\[2pt]
-            \hspace{4pt}$\bullet$ Percentile Ranks
-        };
-
-        % =========================================================================
-        % 2. ORCHESTRATION PIPELINE FLOWS (NON-CROSSING CONNECTORS)
-        % =========================================================================
-
-        % User to Central Controller
-        \draw[->, thick, draw=boxborder] (user.east) -- 
-            node[above, font=\scriptsize\bfseries, text=darktext] {Config \& Tickers} 
-            (app.west);
-
-        % Dispatch Trigger from App to DataFetcher
-        \draw[thick, draw=boxborder] (app.west |- app.south) -- ($(app.south -| fetcher.north)$);
-        \draw[->, thick, draw=boxborder] ($(app.south -| fetcher.north)$) -- 
-            node[left, font=\scriptsize\bfseries, text=darktext, align=right] {1. Dispatches\\Fetch Job} 
-            (fetcher.north);
-
-        % Sequential Pipeline Connections with Centered Badges
-        \draw[->, thick, draw=boxborder] (fetcher.east) -- 
-            node[midway, tag] {Raw DF} (parser.west);
-
-        \draw[->, thick, draw=boxborder] (parser.east) -- 
-            node[midway, tag] {Parsed DF} (ratio.west);
-
-        % Tier 2 to Tier 3 Flow via clean orthogonal path below Tier 3
-        \draw[->, thick, draw=boxborder] (ratio.south) -- (5.2, -3.7) -- 
-            node[midway, tag] {30+ Ratios} 
-            (-2.6, -3.7) -- (outlier.south);
-
-        \draw[->, thick, draw=boxborder] (outlier.east) -- 
-            node[midway, tag] {Outlier Mask} (core.west);
-
-        % Return Results from BenchmarkCore to App
-        \draw[->, thick, draw=boxborder] (core.north) -- 
-            node[right, font=\scriptsize\bfseries, text=darktext, align=left] {2. Delivers Scores\\\& Peer Baselines} 
-            (app.south -| core.north);
-
-        % Render Output Views from App
-        \draw[->, thick, draw=boxborder] (app.east) -- 
-            node[above, font=\scriptsize\bfseries, text=darktext] {3. Renders Views} 
-            (output.west);
-
-    \end{tikzpicture}%
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    font=\rmfamily,
+    topbox/.style={
+        rectangle,
+        rounded corners=4pt,
+        draw=linegray,
+        line width=0.75pt,
+        fill=white,
+        align=center,
+        text width=2.75cm,
+        minimum height=1.35cm,
+        inner xsep=5pt,
+        inner ysep=6pt,
+        font=\fontsize{8.2}{10}\selectfont
+    },
+    uibox/.style={
+        rectangle,
+        rounded corners=5pt,
+        draw=uiborder,
+        line width=0.75pt,
+        fill=uifill,
+        align=center,
+        minimum height=1.05cm,
+        inner xsep=16pt,
+        inner ysep=9pt,
+        font=\fontsize{9.5}{11}\selectfont
+    },
+    pipe/.style={
+        rectangle,
+        rounded corners=5pt,
+        draw=pipeborder,
+        line width=0.75pt,
+        fill=pipefill,
+        align=left,
+        text width=2.75cm,
+        minimum height=2.40cm,
+        inner xsep=5pt,
+        inner ysep=7pt
+    },
+    flowtop/.style={
+        above=2.5pt,
+        align=center,
+        font=\fontsize{8}{9.5}\selectfont\bfseries,
+        text=black
+    },
+    flowbot/.style={
+        below=2.5pt,
+        align=center,
+        font=\fontsize{8}{9.5}\selectfont\bfseries,
+        text=black
+    },
+    toplbl/.style={
+        above=3.5pt,
+        align=center,
+        font=\fontsize{8}{9.5}\selectfont\bfseries,
+        text=black
+    },
+    vertlbl/.style={
+        midway,
+        font=\fontsize{8}{9.5}\selectfont\bfseries,
+        text=black
+    },
+    arr/.style={
+        -{Stealth[length=2.4mm, width=1.6mm]},
+        draw=linegray,
+        line width=0.8pt
     }
-    \caption{System Architecture and Orchestration Pipeline of the Benchmarking Engine}
-    \label{fig:seq_diagram}
+]
+
+% --- Bottom Row: 5 Uniform Pipeline Modules ---
+\node[pipe] (df) {\pipebox{DataFetcher}{yfinance API}{Parquet Cache}{Market Info}{Async Pulls}};
+\node[pipe, right=1.40cm of df] (fp) {\pipebox{FinancialParser}{60-Field Synonyms}{Canonical Map}{GAAP / Ind-AS}{Type Coercion}};
+\node[pipe, right=1.40cm of fp] (re) {\pipebox{RatioEngine}{30+ Ratios}{5 Core Pillars}{YoY/QoQ Trends}{CAGR Growth}};
+\node[pipe, right=1.40cm of re] (oe) {\pipebox{OutlierEngine}{Tukey IQR Fences}{Robust Z-Scores}{Isolation Forest}{Severity Scores}};
+\node[pipe, right=1.40cm of oe] (bc) {\pipebox{BenchmarkCore}{Outlier Masking}{RobustScaler}{Sigmoid Scoring}{Percentile Ranks}};
+
+% --- Top Row: Controller & Views ---
+\node[uibox, above=2.25cm of re.north] (ui) {\textbf{Streamlit UI (}\texttt{app.py}\textbf{) [Central Controller]}};
+\node[topbox] (input) at (df.center |- ui.center) {{\fontsize{9.5}{11}\selectfont\textbf{User Input}}\\[2.5pt]Sector/Tickers \&\\Config Controls};
+\node[topbox] (output) at (bc.center |- ui.center) {{\fontsize{9.5}{11}\selectfont\textbf{Output View}}\\[2.5pt]Heatmaps,\\Scorecards\\\& Excel Reports};
+
+% --- Top Horizontal Arrows ---
+\draw[arr] (input.east) -- node[toplbl] {Config \& Tickers} (ui.west);
+\draw[arr] (ui.east) -- node[toplbl] {3. Renders Views} (output.west);
+
+% --- Box-to-Box Vertical Orchestration Arrows ---
+\draw[arr] (input.south) -- node[vertlbl, left=6pt, align=right] {1. Dispatches\\Fetch Job} (df.north);
+\draw[arr] (bc.north) -- node[vertlbl, right=6pt, align=left] {2. Delivers Scores\\\& Peer Baselines} (output.south);
+
+% --- Bottom Pipeline Horizontal Arrows (Split Top & Bottom Labels) ---
+\draw[arr] (df.east) -- node[flowtop] {Raw} node[flowbot] {DF} (fp.west);
+\draw[arr] (fp.east) -- node[flowtop] {Parsed} node[flowbot] {DF} (re.west);
+\draw[arr] (re.east) -- node[flowtop] {30+} node[flowbot] {Ratios} (oe.west);
+\draw[arr] (oe.east) -- node[flowtop] {Outlier} node[flowbot] {Mask} (bc.west);
+
+\end{tikzpicture}%
+}
+\caption{System Architecture and Orchestration Pipeline of the Benchmarking Engine}
+\label{fig:seq_diagram}
 \end{figure}

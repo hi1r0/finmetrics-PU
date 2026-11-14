@@ -8,61 +8,55 @@ def test_system_architecture_figure_tex():
     with open(tex_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 1. Figure environment and scaling
+    # 1. Figure environment, label, and scaling
     assert "\\begin{figure}" in content
     assert "\\label{fig:seq_diagram}" in content
-    assert re.search(r"\\resizebox\{[0-9\.]*\\textwidth\}\{!\}", content), "Figure must be wrapped in \\resizebox{...\\textwidth}{!}"
+    assert re.search(r"\\resizebox\{\\textwidth\}\{!\}", content), "Figure must be wrapped in \\resizebox{\\textwidth}{!}"
 
-    # 2. Local colors defined (including lavenderhead)
-    for color in ["peachbg", "peachborder", "lavenderbg", "lavenderborder", "lavenderhead", "boxborder", "darktext"]:
+    # 2. Color definitions
+    expected_colors = ["uifill", "uiborder", "pipefill", "pipeborder", "linegray"]
+    for color in expected_colors:
         assert f"\\definecolor{{{color}}}" in content, f"Missing \\definecolor{{{color}}}"
 
-    # 3. Pill badge tag style and intermediate data tags
-    assert "tag/.style" in content, "tag/.style must be defined in tikzpicture options"
-    assert "fill=white" in content
-    for badge in ["Raw DF", "Parsed DF", "30+ Ratios", "Outlier Mask"]:
-        assert badge in content, f"Missing badge text: {badge}"
-        assert re.search(rf"node\[[^\]]*tag[^\]]*\]\s*\{{{re.escape(badge)}\}}", content), f"Badge {badge} must use tag style"
+    # 3. Helper macro for uniform bottom pipeline cards
+    assert "\\providecommand{\\pipebox}" in content or "\\pipebox" in content, "Missing \\pipebox helper macro"
 
-    # 4. Top row nodes
-    assert "User Input" in content
+    # 4. TikZ node and arrow styles
+    expected_styles = [
+        "topbox/.style",
+        "uibox/.style",
+        "pipe/.style",
+        "flowtop/.style",
+        "flowbot/.style",
+        "toplbl/.style",
+        "vertlbl/.style",
+        "arr/.style",
+    ]
+    for style in expected_styles:
+        assert style in content, f"Missing style {style} in tikzpicture options"
+
+    # 5. Top row controller & perimeter views
     assert "Streamlit UI" in content
+    assert "User Input" in content
     assert "Output View" in content
+    assert "app.py" in content
 
-    # 5. Removal of unpadded \rule cutting across engine text
-    assert "\\rule{" not in content, "Unpadded \\rule cutting across engine text must be removed"
+    # 6. Bottom row: 5 uniform pipeline modules
+    for module in ["DataFetcher", "FinancialParser", "RatioEngine", "OutlierEngine", "BenchmarkCore"]:
+        assert module in content, f"Missing pipeline module {module}"
+        assert f"\\pipebox{{{module}}}" in content, f"Module {module} must use \\pipebox"
 
-    # 6. Header styling
-    assert "card_header" in content or "header" in content, "Card header style must be defined"
-    assert "lavenderhead" in content, "lavenderhead color must be used"
+    # 7. Split labels on bottom pipeline horizontal arrows
+    assert re.search(r"node\[flowtop\]\s*\{Raw\}\s*node\[flowbot\]\s*\{DF\}", content), "Missing split label Raw / DF"
+    assert re.search(r"node\[flowtop\]\s*\{Parsed\}\s*node\[flowbot\]\s*\{DF\}", content), "Missing split label Parsed / DF"
+    assert re.search(r"node\[flowtop\]\s*\{30\+\}\s*node\[flowbot\]\s*\{Ratios\}", content), "Missing split label 30+ / Ratios"
+    assert re.search(r"node\[flowtop\]\s*\{Outlier\}\s*node\[flowbot\]\s*\{Mask\}", content), "Missing split label Outlier / Mask"
 
-    # 7. 3-tier structure presence
-    # Tier 2: DataFetcher, FinancialParser, RatioEngine
-    # Tier 3: OutlierEngine, BenchmarkCore
-    fetcher_match = re.search(r"\(fetcher\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
-    parser_match = re.search(r"\(parser\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
-    ratio_match = re.search(r"\(ratio\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
-    outlier_match = re.search(r"\(outlier\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
-    core_match = re.search(r"\(core\)\s*at\s*\(\s*([-\d\.]+)\s*,\s*([-\d\.]+)\s*\)", content)
-
-    assert fetcher_match and parser_match and ratio_match and outlier_match and core_match, "All 5 engine nodes must have coordinates defined"
-
-    t2_y = float(fetcher_match.group(2))
-    assert float(parser_match.group(2)) == t2_y and float(ratio_match.group(2)) == t2_y, (
-        f"Tier 2 nodes (fetcher, parser, ratio) must share y-coordinate ({t2_y})"
-    )
-
-    t3_y = float(outlier_match.group(2))
-    assert float(core_match.group(2)) == t3_y, (
-        f"Tier 3 nodes (outlier, core) must share y-coordinate ({t3_y})"
-    )
-
-    assert t2_y > t3_y, f"Tier 2 (y={t2_y}) must be strictly above Tier 3 (y={t3_y})"
-
-    # 8. Presence of closed loop orchestration steps
+    # 8. Orchestration arrows and labels
+    assert r"Config \& Tickers" in content
     assert "1. Dispatches" in content
     assert "2. Delivers" in content
-    assert "3. Renders" in content
+    assert "3. Renders Views" in content
 
 
 def test_pdf_figure52_layout():
@@ -117,10 +111,13 @@ def test_pdf_figure52_layout():
         "OutlierEngine",
         "BenchmarkCore",
         "Streamlit UI",
-        "Raw DF",
-        "Parsed DF",
-        "30+ Ratios",
-        "Outlier Mask",
+        "Raw",
+        "DF",
+        "Parsed",
+        "30+",
+        "Ratios",
+        "Outlier",
+        "Mask",
         "1. Dispatches",
         "2. Delivers",
         "3. Renders",
@@ -132,4 +129,3 @@ def test_pdf_figure52_layout():
     page31 = doc[30]
     page31_text = page31.get_text()
     assert "Chapter 6" in page31_text, "Chapter 6 must begin cleanly on Page 31 (0-indexed 30)"
-
