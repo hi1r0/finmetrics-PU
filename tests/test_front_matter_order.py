@@ -97,11 +97,15 @@ def test_bottom_centered_page_numbers_and_appendix():
     assert "Appendix" in p38_text, "Page 38 must contain 'Appendix'"
     assert "Appendix A" not in p38_text, "Page 38 must not contain 'Appendix A'"
     assert "Core Source Code" in p38_text, "Page 38 must contain 'Core Source Code'"
+    assert "Outlier Filtering Logic" in p38_text, "Page 38 must contain 'Outlier Filtering Logic'"
+    assert "A.1" not in p38_text, "Page 38 must not contain 'A.1'"
 
     # 2. Table of Contents on Page 6 (0-indexed 5)
     p6_text = doc[5].get_text()
     assert "Appendix: Core Source Code" in p6_text, "TOC must list 'Appendix: Core Source Code'"
     assert "A Core Source Code" not in p6_text, "TOC must not list 'A Core Source Code'"
+    assert "Outlier Filtering Logic" in p6_text, "TOC must list 'Outlier Filtering Logic'"
+    assert "A.1" not in p6_text, "TOC must not list 'A.1'"
 
     # 3. Bookmarks
     toc = doc.get_toc()
@@ -109,4 +113,10 @@ def test_bottom_centered_page_numbers_and_appendix():
     assert len(app_bookmarks) == 1, f"Expected 1 appendix bookmark, got {app_bookmarks}"
     assert app_bookmarks[0][1] == "Appendix: Core Source Code"
     assert app_bookmarks[0][2] == 38
+
+    sec_bookmarks = [b for b in toc if "outlier filtering logic" in b[1].lower()]
+    assert len(sec_bookmarks) == 1, f"Expected 1 section bookmark, got {sec_bookmarks}"
+    assert sec_bookmarks[0][1] == "Outlier Filtering Logic"
+    assert sec_bookmarks[0][2] == 38
+
 
