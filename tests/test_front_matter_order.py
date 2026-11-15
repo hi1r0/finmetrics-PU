@@ -107,13 +107,17 @@ def test_bottom_centered_page_numbers_and_appendix():
         assert abs(cx - 306.0) < 5.0, f"Page {i+1} page number not centered: cx={cx}, block={b}"
 
     # Appendix assertions
-    # 1. Appendix page (Page 41, 0-indexed 40)
+    # 1. Appendix page (Page 41, 0-indexed 40) and listing page (Page 42, 0-indexed 41)
     p41_text = doc[40].get_text()
     assert "Appendix" in p41_text, "Page 41 must contain 'Appendix'"
     assert "Appendix A" not in p41_text, "Page 41 must not contain 'Appendix A'"
     assert "Core Source Code" in p41_text, "Page 41 must contain 'Core Source Code'"
     assert "Outlier Filtering Logic" in p41_text, "Page 41 must contain 'Outlier Filtering Logic'"
     assert "A.1" not in p41_text, "Page 41 must not contain 'A.1'"
+
+    p42_text = doc[41].get_text()
+    assert "Listing: Univariate Outlier Detection Code" in p42_text, "Page 42 must contain 'Listing: Univariate Outlier Detection Code'"
+    assert "Listing A.1" not in p42_text, "Page 42 must not contain 'Listing A.1'"
 
     # 2. Table of Contents contains Appendix: Core Source Code and Outlier Filtering Logic
     toc_text = ""

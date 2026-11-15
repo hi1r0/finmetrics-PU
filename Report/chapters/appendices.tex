@@ -6,6 +6,9 @@
 \addcontentsline{toc}{section}{Outlier Filtering Logic}
 The python source code for univariate outlier screening inside \textit{OutlierEngine} is shown below:
 
+\makeatletter
+\renewcommand{\fnum@lstlisting}{\lstlistingname}
+\makeatother
 \begin{lstlisting}[language=python, caption=Univariate Outlier Detection Code]
 def detect(self, ratio_matrix: pd.DataFrame) -> pd.DataFrame:
     records = []
