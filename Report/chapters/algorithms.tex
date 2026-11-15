@@ -21,8 +21,8 @@ Tukey Fences establish the lower and upper bounds of the acceptable financial di
 
 To formalize this outlier screening as a statistical decision process, we define the following hypothesis test for each corporate observation in the peer group:
 \begin{align}
-    \mathbf{H}_0 &: \textbf{The observation is a normal inlier} \\
-    \mathbf{H}_1 &: \textbf{The observation is an outlier}
+    \text{H}_0 &: \text{The observation is a normal inlier} \\
+    \text{H}_1 &: \text{The observation is an outlier}
 \end{align}
 
 Under the null hypothesis, the observation is assumed to lie within the normal statistical boundaries of the peer group. If the observation $x_i$ (representing the financial ratio of company $i$) falls outside the Tukey Fences, we reject $H_0$ in favor of $H_1$, and the cell is flagged as a univariate outlier:
@@ -70,8 +70,8 @@ The constant $0.6745$ serves as a scale factor, ensuring that the expected value
 
 To evaluate the standardized deviation of each corporate observation, the outlier screening is formulated as a hypothesis test:
 \begin{align}
-    \mathbf{H}_0 &: \textbf{The deviation from the median is within normal variation} \\
-    \mathbf{H}_1 &: \textbf{The deviation from the median is statistically extreme}
+    \text{H}_0 &: \text{The deviation from the median is within normal variation} \\
+    \text{H}_1 &: \text{The deviation from the median is statistically extreme}
 \end{align}
 
 We fail to reject $H_0$ for normal observations (inliers). If the absolute modified Z-score $|z_i|$ exceeds the critical threshold $\theta_{\text{zscore}}$, the null hypothesis is rejected, and the ratio is flagged as a univariate outlier:
@@ -123,8 +123,8 @@ An anomaly score close to $1.0$ indicates a highly anomalous structural profile 
 
 To classify corporate profiles based on joint financial ratios, we formulate multivariate anomaly detection as a decision-theoretic hypothesis test:
 \begin{align}
-    \mathbf{H}_0 &: \textbf{The sample exhibits a typical joint distribution across features} \\
-    \mathbf{H}_1 &: \textbf{The sample exhibits a structurally anomalous joint distribution}
+    \text{H}_0 &: \text{The sample exhibits a typical joint distribution across features} \\
+    \text{H}_1 &: \text{The sample exhibits a structurally anomalous joint distribution}
 \end{align}
 Where $\tau$ is the critical decision threshold (set to $0.5$ by default, which signifies that the expected path length matches the average path length of an unsuccessful search in a binary search tree). Under $H_0$, the sample is classified as a normal corporate profile. If the anomaly score is greater than or equal to $\tau$, the null hypothesis is rejected, and the corporate entity is classified as a multivariate anomaly.
 
