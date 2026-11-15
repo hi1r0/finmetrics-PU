@@ -7,15 +7,15 @@ The \textit{FinMetrics Suite} is developed entirely in Python 3.10+, utilizing s
 \section{Tools and Libraries}
 The package dependencies and their structural roles are defined below:
 \begin{itemize}
-    \item \textbf{Pandas (v2.1.1)}: Used for high-speed tabular operations and statement transpositions.
+    \item \textbf{Pandas (v2.1.1)}: Used for high-speed tabular operations and statement transpositions \cite{mckinney2012python}.
     \item \textbf{NumPy (v1.26.0)}: Provides vector operations, array manipulation, and robust calculations to avoid zero-division errors.
     \item \textbf{SciPy (v1.11.3)}: Supplies scientific functions, specifically `scipy.stats.percentileofscore` for ranking companies.
-    \item \textbf{Scikit-Learn (v1.3.1)}: Powers the machine learning engines: RobustScaler for median-based scaling and IsolationForest for multi-dimensional anomaly detection.
-    \item \textbf{Streamlit (v1.27.2)}: Provides the web frontend framework, handling interactive dashboards, stateful re-runs, and file upload structures.
+    \item \textbf{Scikit-Learn (v1.3.1)}: Powers the machine learning engines: RobustScaler for median-based scaling and IsolationForest for multi-dimensional anomaly detection \cite{scikit-learn}.
+    \item \textbf{Streamlit (v1.27.2)}: Provides the web frontend framework, handling interactive dashboards, stateful re-runs, and file upload structures \cite{streamlit}.
     \item \textbf{Plotly (v5.17.0)}: Generates interactive visualizations (scatter plots, rank bar charts, heatmaps).
-    \item \textbf{yfinance (v0.2.31)}: Handles connections to the Yahoo Finance API to fetch statements and market metrics.
+    \item \textbf{yfinance (v0.2.31)}: Handles connections to the Yahoo Finance API to fetch statements and market metrics \cite{yfinance}.
     \item \textbf{openpyxl \& XlsxWriter (v3.1.2)}: Generates styled multi-sheet Excel reports.
-    \item \textbf{google-generativeai (v0.3.1)}: Manages Gemini model integration for natural-language stock discovery and diagnostic chats.
+    \item \textbf{google-generativeai (v0.3.1)}: Manages Gemini model integration for natural-language stock discovery and diagnostic chats \cite{gemini2023}.
 \end{itemize}
 
 \section{Development Workflow and Methodology}
@@ -108,7 +108,7 @@ def _severity(self, val: float, lower: float, upper: float, iqr: float, z: float
 \section{System Component Integration}
 The platform's analytical capabilities are integrated through an end-to-end orchestration pipeline controlled by the Streamlit application framework (\texttt{app.py}). Serving as the central controller, \texttt{app.py} manages user session state, coordinates parameter calibration, and dispatches tasks sequentially across the analytical modules:
 \begin{enumerate}
-    \item \textbf{Data Harvester (\texttt{DataFetcher})}: Fetches multi-year quarterly and annual financial statements alongside market capitalization data via the Yahoo Finance API, persisting raw dataframes in Parquet format with a 24-hour time-to-live (TTL) cache.
+    \item \textbf{Data Harvester (\texttt{DataFetcher})}: Fetches multi-year quarterly and annual financial statements alongside market capitalization data for National Stock Exchange (NSE) equities \cite{nseindia} via the Yahoo Finance API \cite{yfinance}, persisting raw dataframes in Parquet format with a 24-hour time-to-live (TTL) cache.
     \item \textbf{Canonical Standardizer (\texttt{FinancialParser})}: Normalizes disparate accounting nomenclature into canonical financial fields using a 60-field synonym dictionary, enforcing cross-statement data consistency.
     \item \textbf{Mathematical Kernel (\texttt{RatioEngine})}: Computes 30+ financial ratios across five core performance pillars (Profitability, Operating Efficiency, Solvency, Liquidity, and Cash Flow Health) and reconstructs historical quarterly time-series and YoY growth trajectories.
     \item \textbf{Anomaly Engine (\texttt{OutlierEngine})}: Applies multi-tier statistical outlier filters---Tukey Interquartile Range (IQR) fences, MAD-based modified Z-scores, and multivariate Isolation Forest estimators---to flag abnormal values.

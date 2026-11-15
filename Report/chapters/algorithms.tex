@@ -2,7 +2,7 @@
 \label{ch:algorithms}
 
 \section{Tukey Fences (IQR Outlier Detection)}
-The Interquartile Range (IQR) represents a robust statistical measure of dispersion. Unlike the standard deviation, the IQR is highly resistant to extreme outliers because it is computed from the middle 50\% of the distribution.
+The Interquartile Range (IQR) represents a robust statistical measure of dispersion formalized by Tukey \cite{tukey1977exploratory}. Unlike the standard deviation, the IQR is highly resistant to extreme outliers because it is computed from the middle 50\% of the distribution.
 
 The IQR is defined as the difference between the third quartile ($Q_3$, 75th percentile) and the first quartile ($Q_1$, 25th percentile):
 
@@ -52,7 +52,7 @@ To provide a quick operational reference, the primary variables utilized in Tuke
 \end{table}
 
 \section{Robust Modified Z-Score}
-While standard Z-scores rely on the mean and standard deviation, they are highly sensitive to extreme outliers. To address this, we implement a robust Modified Z-score that uses the median and the Median Absolute Deviation (MAD).
+While standard Z-scores rely on the mean and standard deviation, they are highly sensitive to extreme outliers. To address this, we implement a robust Modified Z-score based on the framework of Iglewicz and Hoaglin \cite{iglewicz1993how}, which uses the median and the Median Absolute Deviation (MAD).
 
 First, the Median Absolute Deviation (MAD) is calculated:
 
@@ -105,7 +105,7 @@ The mathematical symbols and operational parameters for robust Modified Z-score 
 \section{Isolation Forest (Multivariate Anomaly Detection)}
 Univariate outlier detection methods evaluate each ratio independently. However, financial reporting irregularities often manifest as multi-dimensional structural anomalies across multiple ratios simultaneously. 
 
-The Isolation Forest algorithm isolates anomalies by randomly partitioning high-dimensional feature spaces. Because anomalous points require fewer partitions to isolate, they appear closer to the root of the decision trees.
+The Isolation Forest algorithm, introduced by Liu, Ting, and Zhou \cite{liu2008isolation}, isolates anomalies by randomly partitioning high-dimensional feature spaces. Because anomalous points require fewer partitions to isolate, they appear closer to the root of the decision trees.
 
 The anomaly score ($s$) for a sample $x$ is defined as:
 
