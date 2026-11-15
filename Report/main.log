@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  14 NOV 2026 21:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  15 NOV 2026 12:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1171,14 +1171,26 @@ Package pdftex.def Info: internship_certificate.pdf , page1 used on input line
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
- [5] [6
+ [5] (main.lof)
+\tf@lof=\write5
+\openout5 = `main.lof'.
 
-] [7{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:
-/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}]
+
+[6
+
+] (main.lot)
+\tf@lot=\write6
+\openout6 = `main.lot'.
+
+ [7
+
+] [8
+
+] [9] [10{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.en
+c}{C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}]
 \openout2 = `chapters/introduction.aux'.
 
-
-(chapters/introduction.tex
+ (chapters/introduction.tex
 Chapter 1.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
@@ -1315,11 +1327,11 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 31964 strings out of 467871
- 589292 string characters out of 5419828
- 1464608 words of memory out of 5000000
- 59703 multiletter control sequences out of 15000+600000
- 763499 words of font info for 267 fonts, out of 8000000 for 9000
+ 31991 strings out of 467871
+ 589649 string characters out of 5419828
+ 1464715 words of memory out of 5000000
+ 59714 multiletter control sequences out of 15000+600000
+ 763596 words of font info for 268 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,17n,104p,1166b,2119s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
@@ -1344,9 +1356,9 @@ m/lmsy6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
 sy8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10
 .pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pf
 b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (39 pages, 24539519 bytes).
+Output written on main.pdf (42 pages, 24550478 bytes).
 PDF statistics:
- 821 PDF objects out of 1000 (max. 8388607)
- 256 named destinations out of 1000 (max. 500000)
- 80833 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 869 PDF objects out of 1000 (max. 8388607)
+ 264 named destinations out of 1000 (max. 500000)
+ 80857 words of extra memory for PDF output out of 89155 (max. 10000000)
 

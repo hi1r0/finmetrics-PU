@@ -88,20 +88,20 @@ def test_pdf_figure52_layout():
     assert len(undef_refs) == 0, f"Found undefined references in main.log: {undef_refs}"
     assert len(undef_cits) == 0, f"Found undefined citations in main.log: {undef_cits}"
 
-    # 2. Verify total page count of exactly 39 pages
+    # 2. Verify total page count of exactly 42 pages
     doc = fitz.open(pdf_path)
-    assert len(doc) == 39, f"Expected exactly 39 pages, got {len(doc)}"
+    assert len(doc) == 42, f"Expected exactly 42 pages, got {len(doc)}"
 
-    # 3. Verify Figure 5.2 is cleanly located on Page 30 (0-indexed 29) below Section 5.3 text
-    page30 = doc[29]
-    page30_text = page30.get_text()
-    assert "Figure 5.2" in page30_text, "Figure 5.2 must be located on Page 30 (0-indexed 29)"
-    assert "Following completion of the analytical pipeline" in page30_text, (
-        "Section 5.3 text must be on Page 30"
+    # 3. Verify Figure 5.2 is cleanly located on Page 33 (0-indexed 32) below Section 5.3 text
+    page33 = doc[32]
+    page33_text = page33.get_text()
+    assert "Figure 5.2" in page33_text, "Figure 5.2 must be located on Page 33 (0-indexed 32)"
+    assert "Following completion of the analytical pipeline" in page33_text, (
+        "Section 5.3 text must be on Page 33"
     )
-    sec_idx = page30_text.find("Following completion of the analytical pipeline")
-    fig_idx = page30_text.find("Figure 5.2")
-    assert sec_idx < fig_idx, "Section 5.3 text must appear above Figure 5.2 on Page 30"
+    sec_idx = page33_text.find("Following completion of the analytical pipeline")
+    fig_idx = page33_text.find("Figure 5.2")
+    assert sec_idx < fig_idx, "Section 5.3 text must appear above Figure 5.2 on Page 33"
 
     # 4. Verify text elements from Figure 5.2 are cleanly extracted
     expected_elements = [
@@ -123,9 +123,9 @@ def test_pdf_figure52_layout():
         "3. Renders",
     ]
     for elem in expected_elements:
-        assert elem in page30_text, f"Missing element '{elem}' in Page 30 text"
+        assert elem in page33_text, f"Missing element '{elem}' in Page 33 text"
 
-    # 5. Verify Chapter 6 begins cleanly on Page 31 (0-indexed 30)
-    page31 = doc[30]
-    page31_text = page31.get_text()
-    assert "Chapter 6" in page31_text, "Chapter 6 must begin cleanly on Page 31 (0-indexed 30)"
+    # 5. Verify Chapter 6 begins cleanly on Page 34 (0-indexed 33)
+    page34 = doc[33]
+    page34_text = page34.get_text()
+    assert "Chapter 6" in page34_text, "Chapter 6 must begin cleanly on Page 34 (0-indexed 33)"
