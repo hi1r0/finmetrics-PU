@@ -37,11 +37,11 @@ def test_bibliography_in_pdf():
     undef_cits = re.findall(r"Citation `.*' undefined", log_text)
     assert len(undef_cits) == 0, f"Undefined citations found: {undef_cits}"
 
-    # Verify Bibliography on Page 40 (0-indexed 39)
+    # Verify Bibliography on Page 41 (0-indexed 40)
     doc = fitz.open(pdf_path)
-    assert len(doc) == 42, f"Expected 42 pages, got {len(doc)}"
-    page40_text = doc[39].get_text()
-    assert "Bibliography" in page40_text, "Page 40 must contain the Bibliography"
+    assert len(doc) == 43, f"Expected 43 pages, got {len(doc)}"
+    page41_text = doc[40].get_text()
+    assert "Bibliography" in page41_text, "Page 41 must contain the Bibliography"
 
     expected_authors_and_titles = [
         "Edward I. Altman",
@@ -58,4 +58,4 @@ def test_bibliography_in_pdf():
         "John W. Tukey",
     ]
     for item in expected_authors_and_titles:
-        assert item in page40_text, f"Expected '{item}' in Page 40 Bibliography text"
+        assert item in page41_text, f"Expected '{item}' in Page 41 Bibliography text"

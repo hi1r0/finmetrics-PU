@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  15 NOV 2026 12:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.29)  15 NOV 2026 13:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1121,8 +1121,8 @@ on held on [].
 
 
 
-pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
-: found PDF version <1.7>, but at most version <1.5> allowed
+pdfTeX warning: pdflatex (file ./internship_certificate.pdf): PDF inclusion: fo
+und PDF version <1.7>, but at most version <1.5> allowed
 <internship_certificate.pdf, id=15, 597.55246pt x 845.07718pt>
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf>
@@ -1130,12 +1130,12 @@ Package pdftex.def Info: internship_certificate.pdf  used on input line 186.
 (pdftex.def)             Requested size: 597.551pt x 845.07512pt.
 
 
-pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
-: found PDF version <1.7>, but at most version <1.5> allowed
+pdfTeX warning: pdflatex (file ./internship_certificate.pdf): PDF inclusion: fo
+und PDF version <1.7>, but at most version <1.5> allowed
 
 
-pdfTeX warning: pdflatex.exe (file ./internship_certificate.pdf): PDF inclusion
-: found PDF version <1.7>, but at most version <1.5> allowed
+pdfTeX warning: pdflatex (file ./internship_certificate.pdf): PDF inclusion: fo
+und PDF version <1.7>, but at most version <1.5> allowed
 <internship_certificate.pdf, id=17, page=1, 597.55246pt x 845.07718pt>
 File: internship_certificate.pdf Graphic file (type pdf)
 <use internship_certificate.pdf, page 1>
@@ -1217,13 +1217,17 @@ Chapter 2.
 
 
 
+] [6
+
 {C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}]) 
-[6]
+[7
+
+]
 \openout2 = `chapters/system_design.aux'.
 
  (chapters/system_design.tex
 Chapter 3.
-[7
+[8
 
 
 
@@ -1238,26 +1242,26 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
- [8]
+ [9]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 70.
 
-[9] [10]) [11]
+[10] [11]) [12]
 \openout2 = `chapters/algorithms.aux'.
 
  (chapters/algorithms.tex
 Chapter 4.
-[12
+[13
 
 
 
 
-] [13] [14] [15] [16]) [17]
+] [14] [15] [16] [17]) [18]
 \openout2 = `chapters/implementation.aux'.
 
  (chapters/implementation.tex
 Chapter 5.
-[18
+[19
 
 
 
@@ -1271,17 +1275,17 @@ File: lstlang1.sty 2025/11/14 1.11b listings language file
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
 nput line 49.
 
-[19] (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+[20] (C:\Users\Hp\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
-) [20]
+) [21]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 111.
- [21]) [22]
+ [22]) [23]
 \openout2 = `chapters/results.aux'.
 
  (chapters/results.tex
 Chapter 6.
-[23
+[24
 
 
 
@@ -1289,17 +1293,17 @@ Chapter 6.
 ]
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <10.95> on input line 26.
- [24] [25]) [26]
+ [25] [26]) [27]
 \openout2 = `chapters/conclusion.aux'.
 
  (chapters/conclusion.tex
 Chapter 7.
-[27
+[28
 
 
 
 
-]) [28] (main.bbl) [29
+]) [29] (main.bbl) [30
 
 
 
@@ -1308,10 +1312,10 @@ Chapter 7.
 
  (chapters/appendices.tex
 Appendix A.
-[30
+[31
 
 
-]) [31] (main.aux (chapters/introduction.aux)
+]) [32] (main.aux (chapters/introduction.aux)
 (chapters/literature_survey.aux) (chapters/system_design.aux)
 (chapters/algorithms.aux) (chapters/implementation.aux) (chapters/results.aux)
 (chapters/conclusion.aux) (chapters/appendices.aux))
@@ -1321,11 +1325,11 @@ L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 32009 strings out of 467871
- 589927 string characters out of 5419828
- 1466929 words of memory out of 5000000
- 59722 multiletter control sequences out of 15000+600000
- 763725 words of font info for 269 fonts, out of 8000000 for 9000
+ 32037 strings out of 467871
+ 590262 string characters out of 5419828
+ 1466961 words of memory out of 5000000
+ 59729 multiletter control sequences out of 15000+600000
+ 764012 words of font info for 272 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,17n,104p,1166b,2119s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
@@ -1350,9 +1354,9 @@ m/lmsy6.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
 sy8.pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10
 .pfb><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pf
 b><C:/Users/Hp/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on main.pdf (42 pages, 24561511 bytes).
+Output written on main.pdf (43 pages, 24568270 bytes).
 PDF statistics:
- 897 PDF objects out of 1000 (max. 8388607)
- 272 named destinations out of 1000 (max. 500000)
- 80857 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 932 PDF objects out of 1000 (max. 8388607)
+ 287 named destinations out of 1000 (max. 500000)
+ 80881 words of extra memory for PDF output out of 89155 (max. 10000000)
 

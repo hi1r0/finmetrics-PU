@@ -57,7 +57,7 @@ def test_front_matter_order_in_pdf():
     assert len(undef_cits) == 0, f"Undefined citations: {undef_cits}"
 
     doc = fitz.open(pdf_path)
-    assert len(doc) == 42, f"Expected 42 pages total, got {len(doc)}"
+    assert len(doc) == 43, f"Expected 43 pages total, got {len(doc)}"
 
     toc = doc.get_toc()
     # Extract front-matter chapter titles
@@ -84,7 +84,7 @@ def test_bottom_centered_page_numbers_and_appendix():
     assert os.path.exists(pdf_path), "Report/main.pdf must exist"
 
     doc = fitz.open(pdf_path)
-    assert len(doc) == 42, f"Expected 42 pages total, got {len(doc)}"
+    assert len(doc) == 43, f"Expected 43 pages total, got {len(doc)}"
 
     for i, page in enumerate(doc):
         if i == 0:
@@ -107,17 +107,17 @@ def test_bottom_centered_page_numbers_and_appendix():
         assert abs(cx - 306.0) < 5.0, f"Page {i+1} page number not centered: cx={cx}, block={b}"
 
     # Appendix assertions
-    # 1. Appendix page (Page 41, 0-indexed 40) and listing page (Page 42, 0-indexed 41)
-    p41_text = doc[40].get_text()
-    assert "Appendix" in p41_text, "Page 41 must contain 'Appendix'"
-    assert "Appendix A" not in p41_text, "Page 41 must not contain 'Appendix A'"
-    assert "Core Source Code" in p41_text, "Page 41 must contain 'Core Source Code'"
-    assert "Outlier Filtering Logic" in p41_text, "Page 41 must contain 'Outlier Filtering Logic'"
-    assert "A.1" not in p41_text, "Page 41 must not contain 'A.1'"
-
+    # 1. Appendix page (Page 42, 0-indexed 41) and listing page (Page 43, 0-indexed 42)
     p42_text = doc[41].get_text()
-    assert "Listing: Univariate Outlier Detection Code" in p42_text, "Page 42 must contain 'Listing: Univariate Outlier Detection Code'"
-    assert "Listing A.1" not in p42_text, "Page 42 must not contain 'Listing A.1'"
+    assert "Appendix" in p42_text, "Page 42 must contain 'Appendix'"
+    assert "Appendix A" not in p42_text, "Page 42 must not contain 'Appendix A'"
+    assert "Core Source Code" in p42_text, "Page 42 must contain 'Core Source Code'"
+    assert "Outlier Filtering Logic" in p42_text, "Page 42 must contain 'Outlier Filtering Logic'"
+    assert "A.1" not in p42_text, "Page 42 must not contain 'A.1'"
+
+    p43_text = doc[42].get_text()
+    assert "Listing: Univariate Outlier Detection Code" in p43_text, "Page 43 must contain 'Listing: Univariate Outlier Detection Code'"
+    assert "Listing A.1" not in p43_text, "Page 43 must not contain 'Listing A.1'"
 
     # 2. Table of Contents contains Appendix: Core Source Code and Outlier Filtering Logic
     toc_text = ""
@@ -134,12 +134,12 @@ def test_bottom_centered_page_numbers_and_appendix():
     app_bookmarks = [b for b in toc if "appendix" in b[1].lower()]
     assert len(app_bookmarks) == 1, f"Expected 1 appendix bookmark, got {app_bookmarks}"
     assert app_bookmarks[0][1] == "Appendix: Core Source Code"
-    assert app_bookmarks[0][2] == 41
+    assert app_bookmarks[0][2] == 42
 
     sec_bookmarks = [b for b in toc if "outlier filtering logic" in b[1].lower()]
     assert len(sec_bookmarks) == 1, f"Expected 1 section bookmark, got {sec_bookmarks}"
     assert sec_bookmarks[0][1] == "Outlier Filtering Logic"
-    assert sec_bookmarks[0][2] == 41
+    assert sec_bookmarks[0][2] == 42
 
 
 
