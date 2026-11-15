@@ -2,19 +2,25 @@
 \label{ch:lit}
 
 \section{Existing Methodologies}
-Traditional corporate benchmarking has evolved from manual spreadsheet analysis to proprietary financial databases. While foundational ratio analysis \cite{altman1968financial} and valuation frameworks \cite{damodaran2012investment} established standard metrics, manual transcription remains slow, labor-intensive, and prone to error. Conversely, commercial financial terminals automate data harvesting across public filings; however, closed database architectures and prohibitive annual licensing fees (\$24,000+ per workstation) prevent independent researchers from deploying customized statistical screening pipelines.
+Traditional corporate benchmarking has evolved from manual spreadsheet transcription to proprietary financial databases:
+\begin{itemize}
+    \setlength{\itemsep}{1.5pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{Manual Spreadsheet Benchmarking}: Analysts manually extract and transcribe quarterly figures into Microsoft Excel models. While foundational ratio analysis \cite{altman1968financial} and valuation frameworks \cite{damodaran2012investment} established quantitative benchmarking, manual transcription remains slow, labor-intensive, and prone to human error.
+    \item \textbf{Proprietary Financial Terminals}: Bloomberg Terminals and S\&P Capital IQ automate data harvesting and standardization. However, their high annual licensing fees (\$24,000+ per user) and closed database architectures prevent independent researchers from easily integrating custom statistical outlier screening models.
+\end{itemize}
 
 \section{Machine Learning \& Robust Outlier Detection in Finance}
-Corporate financial datasets frequently contain extreme outliers caused by non-recurring items or distressed leverage, severely distorting classical mean-based metrics. Because corporate accounting distributions exhibit heavy tails and skewness, robust non-parametric statistics and unsupervised machine learning algorithms are deployed to isolate empirical anomalies (Figure~\ref{fig:lit_workflow}).
+Corporate financial datasets frequently contain extreme outliers from non-recurring activities, distorting standard mean-based Z-score benchmarking. To resolve this, robust statistics and unsupervised machine learning models are deployed to isolate empirical anomalies (Figure~\ref{fig:lit_workflow}).
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
     \begin{tikzpicture}[
-        node distance=0.22cm and 0.4cm,
-        scale=0.80, transform shape,
-        block/.style={rectangle, draw=black, fill=blue!5, text width=4.1cm, text centered, rounded corners, minimum height=0.65cm, font=\scriptsize},
-        badblock/.style={rectangle, draw=black, fill=red!5, text width=4.1cm, text centered, rounded corners, minimum height=0.65cm, font=\scriptsize},
-        goodblock/.style={rectangle, draw=black, fill=green!5, text width=4.1cm, text centered, rounded corners, minimum height=0.65cm, font=\scriptsize},
+        node distance=0.45cm and 0.5cm,
+        block/.style={rectangle, draw=black, fill=blue!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
+        badblock/.style={rectangle, draw=black, fill=red!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
+        goodblock/.style={rectangle, draw=black, fill=green!5, text width=4.0cm, text centered, rounded corners, minimum height=1.05cm, font=\scriptsize},
         arrow/.style={thick,->,>=stealth}
     ]
         % Left Track (Traditional)
@@ -23,7 +29,7 @@ Corporate financial datasets frequently contain extreme outliers caused by non-r
         \node (trad3) [badblock, below=of trad2] {\textbf{Distorted Baselines}\\Skewed dispersion bounds, subjective credit modeling};
 
         % Right Track (Advanced Robust/ML)
-        \node (ml1) [block, right=1.2cm of trad1] {\textbf{FinMetrics Robust Suite}\\Automated statement parsing, multi-layered filters};
+        \node (ml1) [block, right=1.5cm of trad1] {\textbf{FinMetrics Robust Suite}\\Automated statement parsing, multi-layered filters};
         \node (ml2) [goodblock, below=of ml1] {\textbf{Dynamic Stats \& ML}\\Tukey Fences (IQR), Modified Z-Score (MAD), Isolation Forest};
         \node (ml3) [goodblock, below=of ml2] {\textbf{Clean Peer Baselines}\\Robust, outlier-masked baselines};
 
@@ -37,7 +43,6 @@ Corporate financial datasets frequently contain extreme outliers caused by non-r
     \label{fig:lit_workflow}
 \end{figure}
 
-\clearpage
 \subsection{Tukey's Fences (IQR Outlier Detection)}
 Tukey's Fences provide a non-parametric outlier boundary relying on order statistics rather than arithmetic moments \cite{tukey1977exploratory}. The Interquartile Range ($\text{IQR}$) measures the statistical dispersion of the central $50\%$ of the corporate peer group:
 \begin{equation}
@@ -73,7 +78,7 @@ where $h(x)$ is path length, $E(h(x))$ is expected path length, and $c(n)$ is av
 \end{equation}
 Observations with $s(x, n) \ge 0.50$ represent multivariate structural anomalies (Figure~\ref{fig:outlier_cluster_pipeline}).
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
     \definecolor{lavenderbg}{RGB}{244, 245, 252}
     \definecolor{peachbg}{RGB}{253, 246, 238}
@@ -82,11 +87,11 @@ Observations with $s(x, n) \ge 0.50$ represent multivariate structural anomalies
 
     \begin{tikzpicture}[
         font=\rmfamily\scriptsize,
-        scale=0.58, transform shape,
-        >={Stealth[length=3.5pt, width=2.5pt]},
+        scale=0.92, transform shape,
+        >={Stealth[length=5pt, width=3.75pt]},
         box/.style={
             draw=boxborder, rounded corners=4pt, align=center,
-            minimum width=3.0cm, minimum height=0.60cm, inner sep=2.0pt, thick
+            minimum width=3.3cm, minimum height=1.1cm, inner sep=4pt, thick
         },
         lavender/.style={box, fill=lavenderbg},
         peach/.style={box, fill=peachbg},
@@ -98,22 +103,27 @@ Observations with $s(x, n) \ge 0.50$ represent multivariate structural anomalies
             (30+ calculated metrics)
         };
 
-        \node[peach] (zscore) at (0, -1.2) {
-            \textbf{Modified Z-Score (MAD)}\\
-            Measures robust dispersion
+        \node[peach] (zscore) at (0, -2.4) {
+            \textbf{Modified Z-Score}\\
+            \textbf{(MAD)}\\
+            Measures robust\\
+            median dispersion
         };
-        \node[peach] (tukey) at (-3.8, -1.2) {
+        \node[peach] (tukey) at (-4.2, -2.4) {
             \textbf{Tukey's Fences (IQR)}\\
-            Filters range skewness
+            Filters extreme\\
+            univariate range skewness
         };
-        \node[peach] (iforest) at (3.8, -1.2) {
-            \textbf{Isolation Forest (iForest)}\\
-            Screens multi-dim anomalies
+        \node[peach] (iforest) at (4.2, -2.4) {
+            \textbf{Isolation Forest}\\
+            \textbf{(iForest)}\\
+            Screens multi-dimensional\\
+            outliers
         };
 
-        \node[green] (clean) at (0, -2.4) {
-            \textbf{Clean Masked Dataset \& Robust Baselines}\\
-            (Outliers removed from baselines)
+        \node[green] (clean) at (0, -4.8) {
+            \textbf{Clean Masked Dataset \&}\\\textbf{Robust Baselines}\\
+            (Outliers removed\\from baselines)
         };
 
         \begin{scope}[thick, draw=black!80]
@@ -136,16 +146,11 @@ Observations with $s(x, n) \ge 0.50$ represent multivariate structural anomalies
 \end{figure}
 
 \section{Research Gaps}
-A critical review of the literature reveals four fundamental research gaps in financial benchmarking:
-\begin{enumerate}
-    \setlength{\topsep}{1pt}
-    \setlength{\itemsep}{0pt}
+Two critical research gaps remain in current financial intelligence frameworks:
+\begin{itemize}
+    \setlength{\itemsep}{2pt}
     \setlength{\parskip}{0pt}
     \setlength{\parsep}{0pt}
-    \item \textbf{Nomenclature Disparities}: Divergent line-item terminology across accounting standards (Ind-AS, IFRS, US-GAAP) leads to schema mismatches and unhandled nulls in rigid scrapers.
-    \item \textbf{Baseline Outlier Contamination}: Prevailing models compute peer baselines directly over unscrubbed data, allowing extreme non-recurring charges to distort arithmetic averages.
-    \item \textbf{Multivariate Anomaly Gaps}: Traditional tools screen ratios independently, missing multi-dimensional accounting irregularities that span interconnected operational pillars.
-    \item \textbf{Categorical Scoring Deficits}: Conventional scorecards rely on arbitrary discrete letter grades rather than continuous, distribution-preserving sigmoid mapping functions.
-\end{enumerate}
-
-The \textit{FinMetrics Suite} overcomes these deficiencies through automated synonym mapping, three-tier outlier filtering, multivariate anomaly isolation, and calibrated sigmoid scoring.
+    \item \textbf{Lack of Nomenclature Autonomy}: Scrapers fail to handle inconsistent reporting names, causing column mismatches or missing values in raw statement parsing.
+    \item \textbf{Baseline Outlier Contamination}: Distressed peer data distorts average standard deviations. Standard methods lack automatic statistical masking before baseline generation.
+\end{itemize}
